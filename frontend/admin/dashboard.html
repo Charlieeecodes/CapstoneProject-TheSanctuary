@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | The Sanctuary</title>
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="admin-container">
+    <!-- Sidebar -->
+    <!-- Sidebar -->
+    <aside class="sidebar">
+     <div class="logo">
+       <h2>The Sanctuary</h2>
+      </div>
+        <nav>
+          <ul>
+            <li>
+              <a href="dashboard.html" class="active">
+                <img src="icons/dashboard.jpg" alt="Dashboard Icon" class="nav-icon"> Dashboard
+              </a>
+            </li>
+            <li>
+              <a href="analytics.html">
+                <img src="icons/graph.jpg" alt="Analytics Icon" class="nav-icon"> Analytics
+              </a>
+            </li>
+            <li>
+              <a href="datarecords.html">
+                <img src="icons/folder.jpg" alt="Data Records Icon" class="nav-icon"> Data Records
+              </a>
+            </li>
+            <li>
+              <a href="inquiries.html">
+                <img src="icons/paper.jpg" alt="Inquiries Icon" class="nav-icon"> Inquiries
+              </a>
+            </li>
+            <li>
+              <a href="feedbacks.html">
+                <img src="icons/feedback.jpg" alt="Feedbacks Icon" class="nav-icon"> Feedbacks
+              </a>
+            </li>
+            <li>
+              <a href="../index.html">
+                <img src="icons/logout.jpg" alt="Logout Icon" class="nav-icon"> Logout
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+    </aside>
+
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <div class="topbar">
+        <div class="topbar-left">
+          <h2>Overview</h2>
+        </div>
+        <div class="topbar-right">
+          <span id="currentDateTime"></span>
+          <div class="user-profile">
+            <img src="../assets/user.png" alt="User" class="profile-icon">
+            <div class="user-info">
+              <strong>Maria Osana</strong><br>
+              <small>Head Management</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Dashboard Overview Section -->
+      <section class="dashboard-overview">
+        <div class="stats-grid">
+          <!-- Total Inquiries -->
+        <div class="stat-card">
+          <div class="card-header">
+            <h3>Total Inquiries</h3>
+            <select>
+              <option>Month</option>
+              <option>Week</option>
+              <option>Year</option>
+            </select>
+          </div>
+          <div class="card-content">
+            <p><strong>Total Inquiries:</strong>
+              <span id="totalInquiries" class="value">0</span>
+              <span class="growth" id="inquiryGrowth">+0%</span>
+            </p>
+            <a href="analytics.html">See statistics »</a>
+          </div>
+        </div>
+          <!-- Total Bookings -->
+          <div class="stat-card">
+            <div class="card-header">
+              <h3>Total Bookings</h3>
+              <select>
+                <option>Month</option>
+                <option>Week</option>
+                <option>Year</option>
+              </select>
+            </div>
+            <div class="card-content">
+              <p><strong>Total Bookings:</strong> <span class="value">120</span> <span class="growth">+12%</span></p>
+              <a href="analytics.html">See statistics »</a>
+            </div>
+          </div>
+
+          <!-- Total Services Availed -->
+          <div class="stat-card">
+            <div class="card-header">
+              <h3>Total Services Availed</h3>
+              <select>
+                <option>Month</option>
+                <option>Week</option>
+                <option>Year</option>
+              </select>
+            </div>
+            <div class="card-content">
+              <p><strong>Top Services Availed:</strong> Funeral Services <span class="value">120</span> <span class="growth">+12%</span></p>
+              <a href="analytics.html">See statistics »</a>
+            </div>
+          </div>
+
+          <!-- Average Growth -->
+          <div class="stat-card">
+            <div class="card-header">
+              <h3>Average Growth</h3>
+              <select>
+                <option>Month</option>
+                <option>Week</option>
+                <option>Year</option>
+              </select>
+            </div>
+            <div class="card-content">
+              <p><strong>Average Growth Monthly:</strong> <span class="value green">5.2%</span> <span class="growth">↑</span></p>
+              <a href="analytics.html">See statistics »</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Updates Panel -->
+        <aside class="recent-updates">
+          <h3>Recent Updates</h3>
+          <div class="update-item">
+            <p>📩 3 New Inquiries</p>
+          </div>
+          <div class="update-item">
+            <p>💬 Feedback by Juan Dela Cruz: “Thank you for the great service.”</p>
+          </div>
+        </aside>
+      </section>
+
+      </section>
+      <section class="recent-inquiries">
+        <h2>Recent Inquiries</h2>
+        <table id="inquiryTable">
+          <thead>
+            <tr>
+              <th>ID</</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Subject</th>
+              <th>Message</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/dashboard.js"></script>
+  <script>
+function updateDateTime() {
+  const now = new Date();
+  const options = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  };
+  document.getElementById("currentDateTime").textContent = now.toLocaleString("en-US", options);
+}
+
+setInterval(updateDateTime, 1000);
+updateDateTime();
+</script>
+
+</body>
+</html>
