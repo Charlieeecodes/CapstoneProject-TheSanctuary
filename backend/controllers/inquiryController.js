@@ -16,28 +16,3 @@ exports.getAllInquiries = (req, res) => {
     res.json(results);
   });
 };
-
-exports.updateInquiryStatus = (req, res) => {
-  const { status } = req.body;
-  const { id } = req.params;
-  const sql = 'UPDATE inquiries SET status = ? WHERE id = ?';
-  db.query(sql, [status, id], (err, result) => {
-    if (err) {
-      console.error('Error updating inquiry:', err);
-      return res.status(500).json({ success: false });
-    }
-    res.json({ success: true });
-  });
-};
-
-exports.deleteInquiry = (req, res) => {
-  const { id } = req.params;
-  const sql = 'DELETE FROM inquiries WHERE id = ?';
-  db.query(sql, [id], (err, result) => {
-    if (err) {
-      console.error('Error deleting inquiry:', err);
-      return res.status(500).json({ success: false });
-    }
-    res.json({ success: true });
-  });
-};
