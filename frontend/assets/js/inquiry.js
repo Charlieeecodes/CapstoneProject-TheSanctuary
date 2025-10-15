@@ -40,42 +40,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Show only the 5 most recent
     const recent = data.slice(-5).reverse();
 
-    tbody.innerHTML = recent.map(i => `
-      <tr>
-        <td>${i.id}</td>
-        <td>${i.name}</td>
-        <td>${i.email}</td>
-        <td>${i.subject}</td>
-        <td>${new Date(i.created_at).toLocaleString()}</td>
-      </tr>
-    `).join('');
+    let html = '';
+    recent.forEach(i => {
+      html += '<tr>';
+      html += '<td>' + i.id + '</td>';
+      html += '<td>' + i.name + '</td>';
+      html += '<td>' + i.email + '</td>';
+      html += '<td>' + i.subject + '</td>';
+      html += '<td>' + new Date(i.created_at).toLocaleString() + '</td>';
+      html += '</tr>';
+    });
+    tbody.innerHTML = html;
   } catch (err) {
     console.error("Failed to load inquiries:", err);
   }
 });
-<script>
-document.addEventListener("DOMContentLoaded", async () => {
-  const tbody = document.querySelector("#recentInquiryTable tbody");
 
-  try {
-    const res = await fetch("http://localhost:5000/api/inquiries");
-    const data = await res.json();
-
-    // Show only the 5 most recent
-    const recent = data.slice(-5).reverse();
-
-    tbody.innerHTML = recent.map(i => `
-      <tr>
-        <td>${i.id}</td>
-        <td>${i.name}</td>
-        <td>${i.email}</td>
-        <td>${i.subject}</td>
-        <td>${new Date(i.created_at).toLocaleString()}</td>
-      </tr>
-    `).join('');
-  } catch (err) {
-    console.error("Failed to load inquiries:", err);
-  }
-});
-</script>
 

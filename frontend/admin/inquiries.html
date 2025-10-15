@@ -51,12 +51,10 @@
 
     <!-- Main Content -->
     <main class="main-content">
-    <!-- Topbar -->
-      <div class="topbar">
+            <div class="topbar">
         <div class="topbar-left">
           <h2>Overview</h2>
         </div>
-
         <div class="topbar-right">
           <span id="currentDateTime"></span>
           <div class="user-profile">
@@ -68,6 +66,7 @@
           </div>
         </div>
       </div>
+      <div id="topbar-container"></div>
 
       <header>
         <h1>Inquiry Management</h1>
@@ -92,7 +91,7 @@
       </section>
     </main>
   </div>
-
+</script>
   <script src="js/inquiries.js"></script>
     <script>
     function updateDateTime() {
@@ -104,11 +103,12 @@
         hour: "numeric",
         minute: "2-digit",
       };
-      document.getElementById("currentDateTime").textContent = now.toLocaleString("en-US", options);
-    }
+      document.getElementById("currentDateTime").textContent = now.toLocaleString("en-US", options)
+;                                                                                                      }
 
     setInterval(updateDateTime, 1000);
     updateDateTime();
     </script>
 </body>
 </html>
+

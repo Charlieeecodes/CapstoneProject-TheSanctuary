@@ -49,7 +49,40 @@
     </aside>  
   <div class="admin-container">
     <main class="main-content">
+                  <div class="topbar">
+        <div class="topbar-left">
+          <h2>Overview</h2>
+        </div>
+        <div class="topbar-right">
+          <span id="currentDateTime"></span>
+          <div class="user-profile">
+            <img src="../assets/user.png" alt="User" class="profile-icon">
+            <div class="user-info">
+              <strong>Maria Osana</strong><br>
+              <small>Head Management</small>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
+    </main>
+  </div>
+  <script>
+    function updateDateTime() {
+      const now = new Date();
+      const options = {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      };
+      document.getElementById("currentDateTime").textContent = now.toLocaleString("en-US", options)
+;                                                                                                      }
+
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+    </script>
 </body>
 </html>
