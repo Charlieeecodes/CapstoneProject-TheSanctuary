@@ -29,29 +29,4 @@ document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
     responseMessage.textContent = "Server error. Please try again later.";
   }
 });
-<script>
-document.addEventListener("DOMContentLoaded", async () => {
-  const tbody = document.querySelector("#recentInquiryTable tbody");
-
-  try {
-    const res = await fetch("http://localhost:5000/api/inquiries");
-    const data = await res.json();
-
-    // Show only the 5 most recent
-    const recent = data.slice(-5).reverse();
-
-    tbody.innerHTML = recent.map(i => `
-      <tr>
-        <td>${i.id}</td>
-        <td>${i.name}</td>
-        <td>${i.email}</td>
-        <td>${i.subject}</td>
-        <td>${new Date(i.created_at).toLocaleString()}</td>
-      </tr>
-    `).join('');
-  } catch (err) {
-    console.error("Failed to load inquiries:", err);
-  }
-});
-</script>
 
