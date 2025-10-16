@@ -13,45 +13,21 @@
       <div class="logo">
         <img src="icons/logo.PNG" alt="The Sanctuary Logo" class="logo-img" />
       </div>
-        <nav>
-          <ul>
-            <li>
-              <a href="dashboard.html" >
-                <img src="icons/dashboard.jpg" alt="Dashboard Icon" class="nav-icon"> Dashboard
-              </a>
-            </li>
-            <li>
-              <a href="analytics.html">
-                <img src="icons/graph.jpg" alt="Analytics Icon" class="nav-icon"> Analytics
-              </a>
-            </li>
-            <li>
-              <a href="datarecords.html">
-                <img src="icons/folder.jpg" alt="Data Records Icon" class="nav-icon"> Data Records
-              </a>
-            </li>
-            <li>
-              <a href="inquiries.html" class="active">
-                <img src="icons/paper.jpg" alt="Inquiries Icon" class="nav-icon"> Inquiries
-              </a>
-            </li>
-            <li>
-              <a href="feedbacks.html">
-                <img src="icons/feedback.jpg" alt="Feedbacks Icon" class="nav-icon"> Feedbacks
-              </a>
-            </li>
-            <li>
-              <a href="../index.html">
-                <img src="icons/logout.jpg" alt="Logout Icon" class="nav-icon"> Logout
-              </a>
-            </li>
-          </ul>
-        </nav>
+      <nav>
+        <ul>
+          <li><a href="dashboard.html"><img src="icons/dashboard.jpg" alt="Dashboard Icon" class="nav-icon"> Dashboard</a></li>
+          <li><a href="analytics.html"><img src="icons/graph.jpg" alt="Analytics Icon" class="nav-icon"> Analytics</a></li>
+          <li><a href="datarecords.html"><img src="icons/folder.jpg" alt="Data Records Icon" class="nav-icon"> Data Records</a></li>
+          <li><a href="inquiries.html" class="active"><img src="icons/paper.jpg" alt="Inquiries Icon" class="nav-icon"> Inquiries</a></li>
+          <li><a href="feedbacks.html"><img src="icons/feedback.jpg" alt="Feedbacks Icon" class="nav-icon"> Feedbacks</a></li>
+          <li><a href="../index.html"><img src="icons/logout.jpg" alt="Logout Icon" class="nav-icon"> Logout</a></li>
+        </ul>
+      </nav>
     </aside>
 
     <!-- Main Content -->
     <main class="main-content">
-            <div class="topbar">
+      <div class="topbar">
         <div class="topbar-left">
           <h2>Overview</h2>
         </div>
@@ -66,31 +42,37 @@
           </div>
         </div>
       </div>
+
       <header>
         <h1>Inquiry Management</h1>
       </header>
-      <section class="inquiry-list">
-        <table id="inquiryTable">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Subject</th>
-              <th>Message</th>
-              <th>Status</th>
-              <th>Actions</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
+
+      <!-- INQUIRY SYSTEM -->
+      <div class="inquiry-system">
+        <!-- LEFT SIDEBAR -->
+        <div class="inquiry-sidebar">
+          <h2>Recent Inquiries</h2>
+          <div class="inquiries-container">
+            <!-- Dynamic inquiries will be loaded here by JS -->
+          </div>
+        </div>
+
+        <!-- RIGHT MAIN PANEL -->
+        <div class="inquiry-detail">
+          <h2>Inquiry Detail</h2>
+          <div id="inquiry-full-content">
+            <p>Select an inquiry from the left to view full details here.</p>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
-</script>
+
+  <!-- Scripts -->
+  <script src="js/fetchInquiries.js"></script>
   <script src="js/inquiries.js"></script>
-    <script>
+  <script>
+    // Topbar date & time
     function updateDateTime() {
       const now = new Date();
       const options = {
@@ -100,12 +82,10 @@
         hour: "numeric",
         minute: "2-digit",
       };
-      document.getElementById("currentDateTime").textContent = now.toLocaleString("en-US", options)
-;                                                                                                      }
-
+      document.getElementById("currentDateTime").textContent = now.toLocaleString("en-US", options);
+    }
     setInterval(updateDateTime, 1000);
     updateDateTime();
-    </script>
+  </script>
 </body>
 </html>
-

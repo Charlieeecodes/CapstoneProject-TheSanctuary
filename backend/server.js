@@ -17,6 +17,7 @@ app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/records', recordRoutes); // ✅ NEW
 
 const PORT = process.env.PORT || 5000;
+console.log("✅ Inquiry routes mounted at /api/inquiries");
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 

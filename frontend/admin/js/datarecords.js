@@ -224,7 +224,42 @@ document.addEventListener("DOMContentLoaded", () => {
       addRecordForm.style.display = "block";
     }
   });
+        const countryButton = document.getElementById('countryButton');
+      const countryDropdown = document.getElementById('countryDropdown');
+      let selectedCode = '+63'; // Default PH
 
+      // Toggle dropdown
+      countryButton.addEventListener('click', () => {
+        countryDropdown.style.display = 
+          countryDropdown.style.display === 'block' ? 'none' : 'block';
+      });
+
+      // Handle selection
+      countryDropdown.querySelectorAll('li').forEach(item => {
+        item.addEventListener('click', () => {
+          const flag = item.dataset.flag;
+          const country = item.dataset.country;
+          const code = item.dataset.code;
+
+          selectedCode = code;
+          countryButton.innerHTML = `${flag} ${country} ${code} <span class="arrow">▼</span>`;
+          countryDropdown.style.display = 'none';
+        });
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (event) => {
+        if (!countryButton.contains(event.target) && !countryDropdown.contains(event.target)) {
+          countryDropdown.style.display = 'none';
+        }
+      });
+
+      // Example: Get the full number when saving
+      function getFullNumber() {
+        const number = document.getElementById('contactNumber').value.trim();
+        return selectedCode + number;
+      }
+      
   /* -----------------------------
    🚀 Initial load
   ----------------------------- */
