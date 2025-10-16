@@ -2,54 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Analytics | Admin Dashboard</title>
+  <title>Data Records | Admin Dashboard</title>
   <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body>
-    <div class="admin-container">
+  <div class="admin-container">
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="logo">
         <img src="icons/logo.PNG" alt="The Sanctuary Logo" class="logo-img" />
       </div>
-        <nav>
-          <ul>
-            <li>
-              <a href="dashboard.html" >
-                <img src="icons/dashboard.jpg" alt="Dashboard Icon" class="nav-icon"> Dashboard
-              </a>
-            </li>
-            <li>
-              <a href="analytics.html">
-                <img src="icons/graph.jpg" alt="Analytics Icon" class="nav-icon"> Analytics
-              </a>
-            </li>
-            <li>
-              <a href="datarecords.html" class="active">
-                <img src="icons/folder.jpg" alt="Data Records Icon" class="nav-icon"> Data Records
-              </a>
-            </li>
-            <li>
-              <a href="inquiries.html" >
-                <img src="icons/paper.jpg" alt="Inquiries Icon" class="nav-icon"> Inquiries
-              </a>
-            </li>
-            <li>
-              <a href="feedbacks.html">
-                <img src="icons/feedback.jpg" alt="Feedbacks Icon" class="nav-icon"> Feedbacks
-              </a>
-            </li>
-            <li>
-              <a href="../index.html">
-                <img src="icons/logout.jpg" alt="Logout Icon" class="nav-icon"> Logout
-              </a>
-            </li>
-          </ul>
-        </nav>
-    </aside>  
-  <div class="admin-container">
+      <nav>
+        <ul>
+          <li><a href="dashboard.html"><img src="icons/dashboard.jpg" alt="Dashboard Icon" class="nav-icon"> Dashboard</a></li>
+          <li><a href="analytics.html"><img src="icons/graph.jpg" alt="Analytics Icon" class="nav-icon"> Analytics</a></li>
+          <li><a href="datarecords.html" class="active"><img src="icons/folder.jpg" alt="Data Records Icon" class="nav-icon"> Data Records</a></li>
+          <li><a href="inquiries.html"><img src="icons/paper.jpg" alt="Inquiries Icon" class="nav-icon"> Inquiries</a></li>
+          <li><a href="feedbacks.html"><img src="icons/feedback.jpg" alt="Feedbacks Icon" class="nav-icon"> Feedbacks</a></li>
+          <li><a href="../index.html"><img src="icons/logout.jpg" alt="Logout Icon" class="nav-icon"> Logout</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
     <main class="main-content">
-            <div class="topbar">
+      <!-- ✅ Topbar -->
+      <div class="topbar">
         <div class="topbar-left">
           <h2>Overview</h2>
         </div>
@@ -64,23 +42,113 @@
           </div>
         </div>
       </div>
+
+      <!-- ✅ Page Content -->
+      <div class="content">
+        <h1>Data Records</h1>
+
+        <!-- 🔍 Search & Filter Bars -->
+        <div class="record-controls">
+          <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search records...">
+          </div>
+
+          <div class="filter-bar">
+            <select id="filterClient">
+              <option value="">All Clients</option>
+              <option value="John Doe">John Doe</option>
+              <option value="Jane Smith">Jane Smith</option>
+            </select>
+
+            <select id="filterService">
+              <option value="">All Services</option>
+
+              <optgroup label="Columbarium">
+                <option value="Unit with perpetual care">Unit with perpetual care</option>
+                <option value="Interment service">Interment service</option>
+              </optgroup>
+
+              <optgroup label="Cremation Services">
+                <option value="Adult cremation">Adult cremation</option>
+                <option value="Child cremation">Child cremation</option>
+                <option value="Baby cremation">Baby cremation</option>
+                <option value="Fetus cremation">Fetus cremation</option>
+                <option value="Bone cremation">Bone cremation</option>
+                <option value="Urns">Urns</option>
+                <option value="Keepsakes">Keepsakes</option>
+              </optgroup>
+
+              <optgroup label="Funeral Service">
+                <option value="Retrieval of cadaver">Retrieval of cadaver</option>
+                <option value="Embalming services">Embalming services</option>
+                <option value="Casket">Casket</option>
+                <option value="Chapel viewing">Chapel viewing</option>
+                <option value="House viewing or outside viewing">House viewing or outside viewing</option>
+                <option value="Hearse">Hearse</option>
+              </optgroup>
+
+              <optgroup label="Other Services">
+                <option value="Funeral Mass">Funeral Mass</option>
+                <option value="Function area">Function area</option>
+              </optgroup>
+            </select>
+
+
+            <input type="date" id="filterDate">
+          </div>
+
+          <button id="addRecordBtn">Add New Record</button>
+        </div>
+
+        <!-- ✅ Only ONE Add New Record Form -->
+        <div class="add-record" id="addRecordForm" style="display: none;">
+          <h2>Add New Record</h2>
+            <form id="recordForm">
+              <input type="text" id="clientName" placeholder="Client Name" required>
+              <input type="email" id="email" placeholder="Email" required>
+              <input type="text" id="contact" placeholder="Contact Number" required>
+              <input type="text" id="address" placeholder="Address" required>
+              <input type="text" id="serviceAvailed" placeholder="Service Availed" required>
+              <input type="date" id="recordDate" required>
+
+              <!-- 🟢 New Status Dropdown -->
+              <select id="status" required>
+                <option value="Pending">Pending</option>
+                <option value="Ongoing">Ongoing</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+
+              <button type="submit">Save Record</button>
+            </form>
+        </div>
+        <!-- 📋 Records Table -->
+        <table class="records-table">
+          <thead>
+            <tr>
+              <th>Client Name</th>
+              <th>Email</th>
+              <th>Contact</th>
+              <th>Address</th>
+              <th>Service Availed</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="recordTableBody">
+            <tr>
+              <td>John Doe</td>
+              <td>Massage</td>
+              <td>2025-10-16</td>
+              <td>Completed</td>
+              <td><button class="edit">Edit</button> <button class="delete">Delete</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </main>
   </div>
-  <script>
-function updateDateTime() {
-  const now = new Date();
-  const options = {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  };
-  document.getElementById("currentDateTime").textContent = now.toLocaleString("en-US", options);
-}
-
-setInterval(updateDateTime, 1000);
-updateDateTime();
-</script>
+  <script src="js/datarecords.js"></script>
 </body>
 </html>
