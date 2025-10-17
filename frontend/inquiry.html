@@ -4,73 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inquiry Form | The Sanctuary</title>
-  <link rel="stylesheet" href="assets/css/style.css">
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .inquiry-container {
-      background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      width: 400px;
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #333;
-    }
-
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
-      color: #333;
-    }
-
-    input, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    button {
-      margin-top: 15px;
-      width: 100%;
-      padding: 10px;
-      background-color: #2b6cb0;
-      border: none;
-      border-radius: 5px;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #2c5282;
-    }
-
-    #responseMessage {
-      margin-top: 15px;
-      text-align: center;
-      font-weight: bold;
-    }
-  </style>
+  <link rel="stylesheet" href="assets/css/inquiry.css">
 </head>
-
 <body>
   <div class="inquiry-container">
     <h2>Submit an Inquiry</h2>
@@ -93,42 +28,6 @@
     <p id="responseMessage"></p>
   </div>
 
-  <script>
-    // This connects the frontend form to your Node.js backend
-    document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const subject = document.getElementById('subject').value.trim();
-      const message = document.getElementById('message').value.trim();
-
-      const responseMessage = document.getElementById('responseMessage');
-      responseMessage.textContent = "Sending inquiry...";
-
-      try {
-        const res = await fetch('http://localhost:5000/api/inquiries', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, subject, message })
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-          responseMessage.textContent = "Inquiry submitted successfully";
-          responseMessage.style.color = "green";
-          document.getElementById('inquiryForm').reset();
-        } else {
-          responseMessage.textContent = "Failed to submit inquiry.Please try again.";
-          responseMessage.style.color = "orange";
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        responseMessage.textContent = "Server error. Please try again later.";
-        responseMessage.style.color = "red";
-      }
-    });
-  </script>
+  <script src="assets/js/inquiry.js"></script>
 </body>
 </html>

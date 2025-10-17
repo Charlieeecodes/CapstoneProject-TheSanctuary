@@ -1,11 +1,11 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const addRecordBtn = document.getElementById("addRecordBtn");
   const addRecordForm = document.getElementById("addRecordForm");
   const recordForm = document.getElementById("recordForm");
   const recordTableBody = document.getElementById("recordTableBody");
 
-  // ✅ Match backend port
   const API_URL = "http://localhost:5000/api/records";
+  let editingId = null;
 
   /* -----------------------------
    🕒 Update topbar date and time
@@ -34,29 +34,30 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(API_URL);
       const records = await res.json();
 
-      recordTableBody.innerHTML = "";
-      if (records.length === 0) {
+      if (!records || records.length === 0) {
         recordTableBody.innerHTML = "<tr><td colspan='8'>No records found.</td></tr>";
         return;
       }
 
-      records.forEach(record => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${record.client_name}</td>
-          <td>${record.email}</td>
-          <td>${record.contact}</td>
-          <td>${record.address}</td>
-          <td>${record.service}</td>
-          <td>${record.date}</td>
-          <td>${record.status}</td>
-          <td>
-            <button class="edit" data-id="${record.id}">Edit</button>
-            <button class="delete" data-id="${record.id}">Delete</button>
-          </td>
-        `;
-        recordTableBody.appendChild(row);
-      });
+      recordTableBody.innerHTML = records
+        .map(
+          (record) => `
+          <tr>
+            <td>${record.client_name}</td>
+            <td>${record.email}</td>
+            <td>${record.contact}</td>
+            <td>${record.address}</td>
+            <td>${record.service}</td>
+            <td>${record.date}</td>
+            <td>${record.status}</td>
+            <td>
+              <button class="edit" data-id="${record.id}">Edit</button>
+              <button class="delete" data-id="${record.id}">Delete</button>
+            </td>
+          </tr>
+        `
+        )
+        .join("");
     } catch (err) {
       console.error("Error loading records:", err);
       recordTableBody.innerHTML = "<tr><td colspan='8'>Failed to load records.</td></tr>";
@@ -66,8 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
   /* -----------------------------
    ➕ Add or Update record
   ----------------------------- */
-  let editingId = null;
-
   recordForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -77,13 +76,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const address = document.getElementById("address").value.trim();
     const serviceAvailed = document.getElementById("serviceAvailed").value.trim();
     const date = document.getElementById("recordDate").value;
+    const status = document.getElementById("status").value;
 
     if (!clientName || !email || !contact || !address || !serviceAvailed || !date) {
       alert("Please fill in all fields.");
       return;
     }
 
-    const status = document.getElementById("status").value;
     const payload = { clientName, email, contact, address, serviceAvailed, date, status };
 
     try {
@@ -106,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (res.ok) {
         recordForm.reset();
         addRecordForm.style.display = "none";
-        loadRecords();
+        await loadRecords();
       } else {
         alert("Failed to save record.");
       }
@@ -114,31 +113,80 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error saving record:", err);
     }
   });
-
   /* -----------------------------
-   🟣 Toggle form visibility
-  ----------------------------- */
-  addRecordBtn.addEventListener("click", () => {
-    addRecordForm.style.display =
-      addRecordForm.style.display === "none" ? "block" : "none";
-  });
+ 🔍 Search Function (Fixed)
+----------------------------- */
+document.getElementById("searchInput").addEventListener("input", async (e) => {
+  const query = e.target.value.trim();
 
-  /* -----------------------------
-   🔍 Search Function
-  ----------------------------- */
-  document.getElementById("searchInput").addEventListener("input", async (e) => {
-    const query = e.target.value.trim();
-    if (query === "") {
-      loadRecords();
-      return;
-    }
+  if (!query) {
+    await loadRecords(); // reload all if empty
+    return;
+  }
 
+  try {
     const res = await fetch(`${API_URL}/search?query=${encodeURIComponent(query)}`);
     const records = await res.json();
 
+    displayRecords(records);
+  } catch (err) {
+    console.error("Search failed:", err);
+    recordTableBody.innerHTML = "<tr><td colspan='8'>Error while searching records.</td></tr>";
+  }
+});
+
+  /* -----------------------------
+  🧮 Filter by Service (Fixed)
+  ----------------------------- */
+  document.getElementById("filterService").addEventListener("change", async (e) => {
+    const selectedService = e.target.value;
+
+    if (!selectedService) {
+      await loadRecords(); // reload all if no filter
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/search?query=${encodeURIComponent(selectedService)}`);
+      const records = await res.json();
+
+      displayRecords(records);
+    } catch (err) {
+      console.error("Filter failed:", err);
+      recordTableBody.innerHTML = "<tr><td colspan='8'>Error while filtering records.</td></tr>";
+    }
+  });
+    /* -----------------------------
+  📅 Filter by Date (Fixed)
+  ----------------------------- */
+  document.getElementById("filterDate").addEventListener("change", async (e) => {
+    const selectedDate = e.target.value;
+
+    if (!selectedDate) {
+      await loadRecords(); // reload all if cleared
+      return;
+    }
+
+    try {
+      // Backend expects "YYYY-MM-DD" format, which is what input[type=date] gives.
+      const res = await fetch(`${API_URL}/filterByDate?date=${encodeURIComponent(selectedDate)}`);
+      const records = await res.json();
+
+      displayRecords(records);
+    } catch (err) {
+      console.error("Filter by date failed:", err);
+      recordTableBody.innerHTML = "<tr><td colspan='8'>Error while filtering by date.</td></tr>";
+    }
+  });
+  
+  /* -----------------------------
+  🧩 Helper: Display Records
+  ----------------------------- */
+  function displayRecords(records) {
     recordTableBody.innerHTML = "";
-    if (records.length === 0) {
-      recordTableBody.innerHTML = "<tr><td colspan='8'>No matching records found.</td></tr>";
+
+    if (!records || records.length === 0) {
+      recordTableBody.innerHTML = "<tr><td colspan='8'>No records found.</td></tr>";
       return;
     }
 
@@ -159,109 +207,65 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
       recordTableBody.appendChild(row);
     });
-  });
+  }
+
 
   /* -----------------------------
-   🧮 Filter by Service
+   🟣 Toggle form visibility
   ----------------------------- */
-  document.getElementById("filterService").addEventListener("change", async (e) => {
-    const selectedService = e.target.value;
-    if (selectedService === "") {
-      loadRecords();
-      return;
-    }
-
-    const res = await fetch(`${API_URL}/search?query=${encodeURIComponent(selectedService)}`);
-    const records = await res.json();
-
-    recordTableBody.innerHTML = "";
-    if (records.length === 0) {
-      recordTableBody.innerHTML = "<tr><td colspan='8'>No records found for this service.</td></tr>";
-    } else {
-      records.forEach(record => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${record.client_name}</td>
-          <td>${record.email}</td>
-          <td>${record.contact}</td>
-          <td>${record.address}</td>
-          <td>${record.service}</td>
-          <td>${record.date}</td>
-          <td>${record.status}</td>
-          <td>
-            <button class="edit" data-id="${record.id}">Edit</button>
-            <button class="delete" data-id="${record.id}">Delete</button>
-          </td>
-        `;
-        recordTableBody.appendChild(row);
-      });
-    }
+  addRecordBtn.addEventListener("click", () => {
+    addRecordForm.style.display =
+      addRecordForm.style.display === "none" ? "block" : "none";
   });
 
   /* -----------------------------
-   🗑️ Delete & ✏️ Edit actions
+   🗑️ Delete & ✏️ Edit actions (fixed)
   ----------------------------- */
   recordTableBody.addEventListener("click", async (e) => {
-    const id = e.target.dataset.id;
+    const btn = e.target.closest("button");
+    if (!btn) return; // Prevent table row clicks
+    e.stopPropagation();
 
-    if (e.target.classList.contains("delete")) {
+    const id = btn.dataset.id;
+    if (!id) return;
+
+    // 🗑️ DELETE
+    if (btn.classList.contains("delete")) {
       if (confirm("Delete this record?")) {
-        await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-        loadRecords();
+        try {
+          const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+          if (res.ok) {
+            await loadRecords();
+          } else {
+            alert("Failed to delete record.");
+          }
+        } catch (err) {
+          console.error("Error deleting record:", err);
+        }
       }
     }
 
-    if (e.target.classList.contains("edit")) {
-      const row = e.target.closest("tr");
+    // ✏️ EDIT
+    if (btn.classList.contains("edit")) {
+      const row = btn.closest("tr");
       document.getElementById("clientName").value = row.children[0].textContent;
       document.getElementById("email").value = row.children[1].textContent;
       document.getElementById("contact").value = row.children[2].textContent;
       document.getElementById("address").value = row.children[3].textContent;
       document.getElementById("serviceAvailed").value = row.children[4].textContent;
       document.getElementById("recordDate").value = row.children[5].textContent;
-      document.getElementById("status").value = row.children[6].textContent; // prefill dropdown
+      document.getElementById("status").value = row.children[6].textContent;
       editingId = id;
       addRecordForm.style.display = "block";
     }
   });
-        const countryButton = document.getElementById('countryButton');
-      const countryDropdown = document.getElementById('countryDropdown');
-      let selectedCode = '+63'; // Default PH
 
-      // Toggle dropdown
-      countryButton.addEventListener('click', () => {
-        countryDropdown.style.display = 
-          countryDropdown.style.display === 'block' ? 'none' : 'block';
-      });
-
-      // Handle selection
-      countryDropdown.querySelectorAll('li').forEach(item => {
-        item.addEventListener('click', () => {
-          const flag = item.dataset.flag;
-          const country = item.dataset.country;
-          const code = item.dataset.code;
-
-          selectedCode = code;
-          countryButton.innerHTML = `${flag} ${country} ${code} <span class="arrow">▼</span>`;
-          countryDropdown.style.display = 'none';
-        });
-      });
-
-      // Close dropdown when clicking outside
-      document.addEventListener('click', (event) => {
-        if (!countryButton.contains(event.target) && !countryDropdown.contains(event.target)) {
-          countryDropdown.style.display = 'none';
-        }
-      });
-
-      // Example: Get the full number when saving
-      function getFullNumber() {
-        const number = document.getElementById('contactNumber').value.trim();
-        return selectedCode + number;
-      }
-      
   /* -----------------------------
-   🚀 Initial load
+   🚀 Initial load (safe)
   ----------------------------- */
-  loadRecords();
+  async function init() {
+    await loadRecords();
+  }
+
+  init();
 });

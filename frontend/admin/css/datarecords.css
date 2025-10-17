@@ -1,0 +1,246 @@
+/* === DATA RECORDS PAGE === */
+.content {
+  padding: 20px;
+  color: #333;
+}
+/* ===================== */
+/* 🔍 Record Controls UI */
+/* ===================== */
+
+.record-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  padding: 12px 18px; 
+  margin: 8px 0 15px; 
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  gap: 12px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-bar input {
+  width: 300px;
+  height: 48px; /* 🟢 taller to match dropdowns */
+  padding: 0 15px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+  transition: 0.3s;
+}
+
+.search-bar input:focus {
+  border-color: #1b965a;
+  box-shadow: 0 0 0 3px rgba(27, 150, 90, 0.2);
+  outline: none;
+}
+
+
+/* 🧭 Filter bar styling */
+.filter-bar {
+  display: flex;
+  gap: 5px;
+}
+
+.filter-bar select,
+.filter-bar input[type="date"] {
+  padding: 10px 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.filter-bar select:hover,
+.filter-bar input[type="date"]:hover {
+  border-color: #1b965a;
+}
+/* Filter Container Styles */
+.filter-container {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-bottom: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 30px; 
+}
+
+.filter-container h3 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 15px;
+  margin: 0; 
+  white-space: nowrap; 
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 20px;
+  flex: 1;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+}
+
+.filter-group label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #444;
+}
+
+.filter-group select,
+.filter-group input[type="date"] {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* ➕ Add Record button */
+#addRecordBtn {
+  background: linear-gradient(135deg, #007b00, #127b00);
+  color: white;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#addRecordBtn:hover {
+  background: linear-gradient(135deg, #007b00, #127b00);
+  transform: scale(1.05);
+}
+
+/* ===================== */
+/* 📋 Filter Design */
+/* ===================== */
+.filter-bar select,
+.filter-bar input[type="date"],
+.search-bar input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  margin-right: 10px;
+  transition: 0.2s ease;
+}
+
+.filter-bar select:hover,
+.search-bar input:hover {
+  border-color: #666;
+}
+
+#addRecordBtn {
+  background-color: #1b965a;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+#addRecordBtn:hover {
+  background-color: #1b965a;
+}
+#recordForm select {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  margin-bottom: 10px;
+  width: 15%;
+}
+
+#recordForm select:focus {
+  border-color: #1b965a;
+  outline: none;
+}
+/* ===================== */
+/* 🧾 Add Record Form */
+/* ===================== */
+.add-record form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.add-record input,
+.add-record button {
+  padding: 12px;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+  font-size: 15px;
+  margin-bottom: 15px;
+}
+
+.add-record input:focus {
+  border-color: #1b965a;
+  outline: none;
+}
+
+.add-record button {
+  background: #1b965a;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.add-record button:hover {
+  background: #007b00;
+  transform: scale(1.03);
+}
+/* ===================== */
+/* 📋 Table Buttons */
+/* ===================== */
+.records-table button {
+  padding: 4px 14px;
+  margin: 6px 4px;
+  border-radius: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s;
+  width: 90%;
+}
+.records-table .edit {
+  background-color: #1b965a;
+  color: #fff;
+}
+
+.records-table .edit:hover {
+  background-color: #1b965a;
+}
+
+.records-table .delete {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.records-table .delete:hover {
+  background-color: #007b00;
+}

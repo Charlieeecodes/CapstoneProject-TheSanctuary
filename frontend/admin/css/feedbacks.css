@@ -1,0 +1,47 @@
+/* Feedback container grid */
+#feedback-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Individual feedback card */
+.feedback-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  padding: 15px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.feedback-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+/* Client info */
+.feedback-card .client-info h3 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+/* Ratings display (read-only) */
+.feedback-card .ratings p {
+  margin: 5px 0;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Feedback message */
+.feedback-card .message {
+  margin: 10px 0;
+  font-style: italic;
+  color: #555;
+}
+
+/* Date of submission */
+.feedback-card .date {
+  font-size: 0.8em;
+  color: #777;
+}

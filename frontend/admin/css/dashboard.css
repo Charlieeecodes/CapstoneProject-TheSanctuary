@@ -206,6 +206,49 @@ th {
   gap: 15px;
   flex: 3;
 }
+/* Table Styling */
+.recent-inquiries table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.recent-inquiries th,
+.recent-inquiries td {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.recent-inquiries th {
+  background-color: #1b965a;
+  color: white;
+  font-weight: normal;
+}
+
+.recent-inquiries tr:hover {
+  background-color: #f1f1f1;
+}
+.recent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+#viewAllBtn {
+  padding: 6px 12px;
+  background-color: #1b965a;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+#viewAllBtn:hover {
+  background-color: #1b965a;
+}
 
 /* === Stat Cards === */
 .stat-card {
@@ -266,409 +309,83 @@ th {
 
 /* === Right Panel (Recent Updates) === */
 .recent-updates {
-  background: #1b965a;
-  color: #fff;
-  flex: 1.3;
-  border-radius: 10px;
-  padding: 15px 20px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-.recent-updates h3 {
-  margin-top: 0;
-  font-size: 1rem;
-  font-weight: bold;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-  padding-bottom: 8px;
-}
-
-.update-item {
   background: #fff;
-  color: #000;
-  margin-top: 10px;
-  border-radius: 5px;
-  padding: 8px;
-  font-size: 0.9rem;
-  border: 1px solid #ddd;
-}
-
-.update-item p {
-  margin: 0;
-}
-/* === Recent Inquiries Section === */
-.recent-inquiries {
-  margin-top: 30px;
-  background: #fff;
-  border-radius: 10px;
+  border-radius: 15px;
   padding: 20px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #ccc;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+  /* Make scrollable */
+  max-height: 400px;      /* adjust height as needed */
+  overflow-y: auto;
 }
 
-.recent-inquiries h3 {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #1b965a;
-  margin-bottom: 15px;
-}
-
-/* Table Styling */
-.recent-inquiries table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.recent-inquiries th,
-.recent-inquiries td {
-  text-align: left;
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-}
-
-.recent-inquiries th {
-  background-color: #1b965a;
-  color: white;
-  font-weight: normal;
-}
-
-.recent-inquiries tr:hover {
-  background-color: #f1f1f1;
-}
-.recent-header {
+.updates-container {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+.recent-updates {
+  scroll-behavior: smooth;
 }
 
-#viewAllBtn {
-  padding: 6px 12px;
-  background-color: #1b965a;
-  color: white;
-  border: none;
-  border-radius: 5px;
+
+.update-card {
+  background: #f8f9fa;
+  padding: 12px 15px;
+  border-radius: 10px;
+  border-left: 5px solid #ccc;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s ease-in-out;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-#viewAllBtn:hover {
-  background-color: #1b965a;
+.update-card:hover {
+  transform: translateY(-3px);
+  background-color: #eefbf4;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
 }
 
-/* === DATA RECORDS PAGE === */
-.content {
-  padding: 20px;
+.update-card.inquiry {
+  border-left-color: #1b965a;
+}
+
+.update-card.feedback {
+  border-left-color: #007bff;
+}
+
+.update-card h4 {
+  margin: 0 0 5px;
+  font-size: 16px;
   color: #333;
 }
 
-/* 👇 add spacing below the topbar */
-/* ===================== */
-/* 🔍 Record Controls UI */
-/* ===================== */
-
-.record-controls {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  background: #ffffff;
-  padding: 15px 20px;
-  margin: 20px 0;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  gap: 15px;
-}
-
-.search-bar input {
-  width: 280px;
-  padding: 12px 15px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 15px;
-  transition: 0.3s;
-}
-
-.search-bar input:focus {
-  border-color: #1b965a;
-  box-shadow: 0 0 0 3px rgba(92, 124, 250, 0.2);
-  outline: none;
-}
-
-/* 🧭 Filter bar styling */
-.filter-bar {
-  display: flex;
-  gap: 10px;
-}
-
-.filter-bar select,
-.filter-bar input[type="date"] {
-  padding: 10px 12px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  background: #f9f9f9;
-  font-size: 15px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.filter-bar select:hover,
-.filter-bar input[type="date"]:hover {
-  border-color: #1b965a;
-}
-
-/* ➕ Add Record button */
-#addRecordBtn {
-  background: linear-gradient(135deg, #007b00, #127b00);
-  color: white;
-  border: none;
-  padding: 12px 22px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-#addRecordBtn:hover {
-  background: linear-gradient(135deg, #007b00, #127b00);
-  transform: scale(1.05);
-}
-
-/* ===================== */
-/* 🧾 Add Record Form */
-/* ===================== */
-.add-record form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.add-record input,
-.add-record button {
-  padding: 12px;
-  border-radius: 8px;
-  border: 2px solid #ddd;
-  font-size: 15px;
-  margin-bottom: 15px;
-}
-
-.add-record input:focus {
-  border-color: #1b965a;
-  outline: none;
-}
-
-.add-record button {
-  background: #1b965a;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.add-record button:hover {
-  background: #007b00;
-  transform: scale(1.03);
-}
-
-/* ===================== */
-/* 📋 Table Buttons */
-/* ===================== */
-.records-table button {
-  padding: 2px 14px;
-  margin: 0 4px;
-  border-radius: 12px;
+.update-card p {
+  margin: 2px 0;
   font-size: 14px;
-  cursor: pointer;
-  border: none;
-  transition: all 0.3s;
-}
-.records-table .edit {
-  background-color: #1b965a;
-  color: #fff;
+  color: #444;
 }
 
-.records-table .edit:hover {
-  background-color: #1b965a;
-}
-
-.records-table .delete {
-  background-color: #dc3545;
-  color: #fff;
-}
-
-.records-table .delete:hover {
-  background-color: #007b00;
-}
-/* ===================== */
-/* 📋 Filter Design */
-/* ===================== */
-.filter-bar select,
-.filter-bar input[type="date"],
-.search-bar input {
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  margin-right: 10px;
-  transition: 0.2s ease;
-}
-
-.filter-bar select:hover,
-.search-bar input:hover {
-  border-color: #666;
-}
-
-#addRecordBtn {
-  background-color: #1b965a;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: 0.2s ease;
-}
-
-#addRecordBtn:hover {
-  background-color: #1b965a;
-}
-#recordForm select {
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  margin-bottom: 10px;
-  width: 15%;
-}
-
-#recordForm select:focus {
-  border-color: #1b965a;
-  outline: none;
-}
-/* ===================== */
-/* 📋 Inquiries Design */
-/* ===================== */
-/* Container for the whole Inquiry system */
-.inquiry-system {
-  display: flex;
-  gap: 10px;
-  height: 600px; /* Adjust as needed */
-  border: 1px solid #ccc;
-  border-radius: 8px;
-}
-
-/* LEFT SIDEBAR */
-.inquiry-sidebar {
-  width: 300px; /* slightly narrower than previous 350px */
-  border-right: 1px solid #ddd;
-  padding: 10px;
-  overflow-y: auto;
-  background-color: #f9f9f9;
-}
-
-.inquiry-sidebar h2 {
-  margin-bottom: 10px;
-  font-size: 18px;
-}
-
-.inquiries-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.inquiry-card {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px;
-  background: #fff;
-  border-radius: 5px;
-  cursor: pointer;
-  border: 1px solid #ddd;
-}
-
-.inquiry-card:hover {
-  background-color: #e8f0fe;
-}
-
-.view-btn {
-  padding: 4px 8px;
-  border: none;
-  background-color: #1b965a;
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.view-btn:hover {
-  background-color: #1b965a;
-}
-
-/* RIGHT MAIN PANEL */
-.inquiry-detail {
-  flex: 1;
-  padding: 15px;
-  overflow-y: auto;
-}
-
-#inquiry-full-content {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 15px;
-}
-.message-box {
-  background-color: #f8f9fa;
-  padding: 12px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
+.update-card small {
+  display: block;
+  color: #666;
+  font-size: 13px;
   margin-top: 5px;
-  white-space: pre-line;
 }
 
-.delete-btn {
-  margin-top: 10px;
-  padding: 6px 10px;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
 
-.delete-btn:hover {
-  background-color: #b02a37;
-}
-/* ===================== */
-/* 📋 Inquiries SEnd Message Design */
-/* ===================== */
-.send-message-form {
-  margin-top: 20px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background-color: #f9f9f9;
-}
 
-.send-message-form h4 {
-  margin-top: 0;
-}
 
-#sendMessageBtn {
-  margin-top: 10px;
-  padding: 6px 12px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
 
-#sendMessageBtn:hover {
-  background-color: #218838;
-}
+
+
+
+
+
+
+
+
+
 
 
 

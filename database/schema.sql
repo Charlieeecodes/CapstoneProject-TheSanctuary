@@ -23,3 +23,18 @@ CREATE TABLE IF NOT EXISTS records (
   date DATE NOT NULL,
   status VARCHAR(50) DEFAULT 'Pending'
 );
+-- Feedback table
+CREATE TABLE IF NOT EXISTS feedbacks (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE feedbacks
+ADD COLUMN overall_rating INT DEFAULT 0,
+ADD COLUMN service_rating INT DEFAULT 0,
+ADD COLUMN satisfaction_rating INT DEFAULT 0,
+ADD COLUMN response_rating INT DEFAULT 0;
+
+

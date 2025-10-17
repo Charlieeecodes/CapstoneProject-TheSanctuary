@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Data Records | Admin Dashboard</title>
   <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/datarecords.css">
 </head>
 <body>
   <div class="admin-container">
@@ -53,43 +54,51 @@
             <input type="text" id="searchInput" placeholder="Search records...">
           </div>
 
-          <div class="filter-bar">
-            <select id="filterService">
-              <option value="">All Services</option>
+            <div class="filter-container">
+              <h3>Filter Records</h3>
+              <div class="filter-bar">
+                <div class="filter-group">
+                  <label for="filterService">Service:</label>
+                  <select id="filterService">
+                    <option value="">All Services</option>
 
-              <optgroup label="Columbarium">
-                <option value="Unit with perpetual care">Unit with perpetual care</option>
-                <option value="Interment service">Interment service</option>
-              </optgroup>
+                    <optgroup label="Columbarium">
+                      <option value="Unit with perpetual care">Unit with perpetual care</option>
+                      <option value="Interment service">Interment service</option>
+                    </optgroup>
 
-              <optgroup label="Cremation Services">
-                <option value="Adult cremation">Adult cremation</option>
-                <option value="Child cremation">Child cremation</option>
-                <option value="Baby cremation">Baby cremation</option>
-                <option value="Fetus cremation">Fetus cremation</option>
-                <option value="Bone cremation">Bone cremation</option>
-                <option value="Urns">Urns</option>
-                <option value="Keepsakes">Keepsakes</option>
-              </optgroup>
+                    <optgroup label="Cremation Services">
+                      <option value="Adult cremation">Adult cremation</option>
+                      <option value="Child cremation">Child cremation</option>
+                      <option value="Baby cremation">Baby cremation</option>
+                      <option value="Fetus cremation">Fetus cremation</option>
+                      <option value="Bone cremation">Bone cremation</option>
+                      <option value="Urns">Urns</option>
+                      <option value="Keepsakes">Keepsakes</option>
+                    </optgroup>
 
-              <optgroup label="Funeral Service">
-                <option value="Retrieval of cadaver">Retrieval of cadaver</option>
-                <option value="Embalming services">Embalming services</option>
-                <option value="Casket">Casket</option>
-                <option value="Chapel viewing">Chapel viewing</option>
-                <option value="House viewing or outside viewing">House viewing or outside viewing</option>
-                <option value="Hearse">Hearse</option>
-              </optgroup>
+                    <optgroup label="Funeral Service">
+                      <option value="Retrieval of cadaver">Retrieval of cadaver</option>
+                      <option value="Embalming services">Embalming services</option>
+                      <option value="Casket">Casket</option>
+                      <option value="Chapel viewing">Chapel viewing</option>
+                      <option value="House viewing or outside viewing">House viewing or outside viewing</option>
+                      <option value="Hearse">Hearse</option>
+                    </optgroup>
 
-              <optgroup label="Other Services">
-                <option value="Funeral Mass">Funeral Mass</option>
-                <option value="Function area">Function area</option>
-              </optgroup>
-            </select>
+                    <optgroup label="Other Services">
+                      <option value="Funeral Mass">Funeral Mass</option>
+                      <option value="Function area">Function area</option>
+                    </optgroup>
+                  </select>
+                </div>
 
-
-            <input type="date" id="filterDate">
-          </div>
+                <div class="filter-group">
+                  <label for="filterDate">Date:</label>
+                  <input type="date" id="filterDate">
+                </div>
+              </div>
+            </div>
 
           <button id="addRecordBtn">Add New Record</button>
         </div>

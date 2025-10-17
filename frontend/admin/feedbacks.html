@@ -2,56 +2,35 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Analytics | Admin Dashboard</title>
+  <title>Feedbacks | Admin Dashboard</title>
   <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/feedbacks.css">
+
 </head>
 <body>
-    <div class="admin-container">
+  <div class="admin-container">
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="logo">
         <img src="icons/logo.PNG" alt="The Sanctuary Logo" class="logo-img" />
       </div>
-        <nav>
-          <ul>
-            <li>
-              <a href="dashboard.html" >
-                <img src="icons/dashboard.jpg" alt="Dashboard Icon" class="nav-icon"> Dashboard
-              </a>
-            </li>
-            <li>
-              <a href="analytics.html">
-                <img src="icons/graph.jpg" alt="Analytics Icon" class="nav-icon"> Analytics
-              </a>
-            </li>
-            <li>
-              <a href="datarecords.html">
-                <img src="icons/folder.jpg" alt="Data Records Icon" class="nav-icon"> Data Records
-              </a>
-            </li>
-            <li>
-              <a href="inquiries.html" >
-                <img src="icons/paper.jpg" alt="Inquiries Icon" class="nav-icon"> Inquiries
-              </a>
-            </li>
-            <li>
-              <a href="feedbacks.html" class="active">
-                <img src="icons/feedback.jpg" alt="Feedbacks Icon" class="nav-icon"> Feedbacks
-              </a>
-            </li>
-            <li>
-              <a href="../index.html">
-                <img src="icons/logout.jpg" alt="Logout Icon" class="nav-icon"> Logout
-              </a>
-            </li>
-          </ul>
-        </nav>
-    </aside>  
-  <div class="admin-container">
+      <nav>
+        <ul>
+          <li><a href="dashboard.html"><img src="icons/dashboard.jpg" class="nav-icon"> Dashboard</a></li>
+          <li><a href="analytics.html"><img src="icons/graph.jpg" class="nav-icon"> Analytics</a></li>
+          <li><a href="datarecords.html"><img src="icons/folder.jpg" class="nav-icon"> Data Records</a></li>
+          <li><a href="inquiries.html"><img src="icons/paper.jpg" class="nav-icon"> Inquiries</a></li>
+          <li><a href="feedbacks.html" class="active"><img src="icons/feedback.jpg" class="nav-icon"> Feedbacks</a></li>
+          <li><a href="../index.html"><img src="icons/logout.jpg" class="nav-icon"> Logout</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main content -->
     <main class="main-content">
-                  <div class="topbar">
+      <div class="topbar">
         <div class="topbar-left">
-          <h2>Overview</h2>
+          <h2>Customer Feedbacks</h2>
         </div>
         <div class="topbar-right">
           <span id="currentDateTime"></span>
@@ -64,25 +43,24 @@
           </div>
         </div>
       </div>
+
+      <!-- Feedback cards container -->
+      <div id="feedback-container"></div>
     </main>
   </div>
-    </main>
-  </div>
+
+  <!-- External JS -->
+  <script src="js/feedbackadmin.js"></script>
   <script>
+    // Topbar date/time
     function updateDateTime() {
       const now = new Date();
-      const options = {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      };
-      document.getElementById("currentDateTime").textContent = now.toLocaleString("en-US", options)
-;                                                                                                      }
+      const options = { year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" };
+      document.getElementById("currentDateTime").textContent = now.toLocaleString("en-US", options);
+    }
 
     setInterval(updateDateTime, 1000);
     updateDateTime();
-    </script>
+  </script>
 </body>
 </html>

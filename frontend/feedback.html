@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feedback | The Sanctuary</title>
+  <link rel="stylesheet" href="assets/css/feedback.css" />
+</head>
+<body>
+  <div class="feedback-container">
+    <h2>We Value Your Feedback 💬</h2>
+    <p>Please share your thoughts and experiences with us.</p>
+
+    <form id="feedbackForm">
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" placeholder="Enter your full name" required />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="Enter your email" required />
+      </div>
+
+      <div class="form-group">
+        <label for="message">Your Feedback</label>
+        <textarea id="message" rows="6" placeholder="Write your feedback..." required></textarea>
+      </div>
+
+      <!-- Rating: Overall -->
+      <div class="rating-group">
+        <span>Overall:</span>
+        <div class="stars" id="overallRating">
+          <input type="radio" name="overall" id="overall5" value="5"><label for="overall5">★</label>
+          <input type="radio" name="overall" id="overall4" value="4"><label for="overall4">★</label>
+          <input type="radio" name="overall" id="overall3" value="3"><label for="overall3">★</label>
+          <input type="radio" name="overall" id="overall2" value="2"><label for="overall2">★</label>
+          <input type="radio" name="overall" id="overall1" value="1"><label for="overall1">★</label>
+        </div>
+      </div>
+
+      <!-- Rating: Service -->
+      <div class="rating-group">
+        <span>Service:</span>
+        <div class="stars" id="serviceRating">
+          <input type="radio" name="service" id="service5" value="5"><label for="service5">★</label>
+          <input type="radio" name="service" id="service4" value="4"><label for="service4">★</label>
+          <input type="radio" name="service" id="service3" value="3"><label for="service3">★</label>
+          <input type="radio" name="service" id="service2" value="2"><label for="service2">★</label>
+          <input type="radio" name="service" id="service1" value="1"><label for="service1">★</label>
+        </div>
+      </div>
+
+      <!-- Rating: Satisfaction -->
+      <div class="rating-group">
+        <span>Satisfaction:</span>
+        <div class="stars" id="satisfactionRating">
+          <input type="radio" name="satisfaction" id="satisfaction5" value="5"><label for="satisfaction5">★</label>
+          <input type="radio" name="satisfaction" id="satisfaction4" value="4"><label for="satisfaction4">★</label>
+          <input type="radio" name="satisfaction" id="satisfaction3" value="3"><label for="satisfaction3">★</label>
+          <input type="radio" name="satisfaction" id="satisfaction2" value="2"><label for="satisfaction2">★</label>
+          <input type="radio" name="satisfaction" id="satisfaction1" value="1"><label for="satisfaction1">★</label>
+        </div>
+      </div>
+
+      <button type="submit" id="submitFeedback">Submit Feedback</button>
+      <p id="responseMessage" class="response"></p>
+    </form>
+  </div>
+
+  <script src="assets/js/feedback.js"></script>
+</body>
+</html>
