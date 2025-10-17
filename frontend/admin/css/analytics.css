@@ -1,0 +1,131 @@
+/* ----------------------------- */
+/* Analytics Page Styles         */
+/* ----------------------------- */
+
+/* Analytics Overview Section */
+.analytics-overview {
+  padding: 20px;
+}
+.analytics-charts-side-by-side {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 20px;
+}
+
+.analytics-charts-side-by-side .chart-container {
+  flex: 1 1 45%; /* ~45% width per chart */
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.analytics-charts-side-by-side h3 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.analytics-charts-side-by-side canvas {
+  /* Let Chart.js control sizing */
+  width: 100% !important;
+  height: auto !important; /* automatic height based on aspect ratio */
+  max-width: 700px; /* container limit */
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-bottom: 40px;
+}
+
+/* KPI Card Styling */
+.stat-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.stat-card .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.stat-card .card-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.stat-card .card-header select {
+  padding: 3px 6px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: #f8f8f8;
+}
+
+.stat-card .card-content p {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.stat-card canvas {
+  width: 100% !important;
+  height: auto !important;
+  margin-top: 5px;
+}
+
+/* Mini chart sparkline tweaks */
+.stat-card canvas {
+  border-radius: 6px;
+}
+
+/* Main Charts Section */
+.analytics-charts {
+  padding: 0 20px 20px 20px;
+}
+
+.analytics-charts h3 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.analytics-charts canvas {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  padding: 10px;
+  width: 100% !important;
+  max-width: 800px;
+  margin-bottom: 30px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .analytics-charts canvas {
+    max-width: 100%;
+  }
+}

@@ -2,56 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Analytics | Admin Dashboard</title>
   <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/analytics.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-    <div class="admin-container">
+  <div class="admin-container">
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="logo">
         <img src="icons/logo.PNG" alt="The Sanctuary Logo" class="logo-img" />
       </div>
-        <nav>
-          <ul>
-            <li>
-              <a href="dashboard.html" >
-                <img src="icons/dashboard.jpg" alt="Dashboard Icon" class="nav-icon"> Dashboard
-              </a>
-            </li>
-            <li>
-              <a href="analytics.html" class="active">
-                <img src="icons/graph.jpg" alt="Analytics Icon" class="nav-icon"> Analytics
-              </a>
-            </li>
-            <li>
-              <a href="datarecords.html" >
-                <img src="icons/folder.jpg" alt="Data Records Icon" class="nav-icon"> Data Records
-              </a>
-            </li>
-            <li>
-              <a href="inquiries.html" >
-                <img src="icons/paper.jpg" alt="Inquiries Icon" class="nav-icon"> Inquiries
-              </a>
-            </li>
-            <li>
-              <a href="feedbacks.html">
-                <img src="icons/feedback.jpg" alt="Feedbacks Icon" class="nav-icon"> Feedbacks
-              </a>
-            </li>
-            <li>
-              <a href="../index.html">
-                <img src="icons/logout.jpg" alt="Logout Icon" class="nav-icon"> Logout
-              </a>
-            </li>
-          </ul>
-        </nav>
-    </aside>  
-  <div class="admin-container">
+      <nav>
+        <ul>
+          <li><a href="dashboard.html"><img src="icons/dashboard.jpg" class="nav-icon"> Dashboard</a></li>
+          <li><a href="analytics.html" class="active"><img src="icons/graph.jpg" class="nav-icon"> Analytics</a></li>
+          <li><a href="datarecords.html"><img src="icons/folder.jpg" class="nav-icon"> Data Records</a></li>
+          <li><a href="inquiries.html"><img src="icons/paper.jpg" class="nav-icon"> Inquiries</a></li>
+          <li><a href="feedbacks.html"><img src="icons/feedback.jpg" class="nav-icon"> Feedbacks</a></li>
+          <li><a href="../index.html"><img src="icons/logout.jpg" class="nav-icon"> Logout</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
     <main class="main-content">
-                  <div class="topbar">
+      <!-- Topbar -->
+      <div class="topbar">
         <div class="topbar-left">
-          <h2>Overview</h2>
+          <h2>Analytics Overview</h2>
         </div>
         <div class="topbar-right">
           <span id="currentDateTime"></span>
@@ -64,10 +45,75 @@
           </div>
         </div>
       </div>
-    </main>
-  </div>
-  </main>
-  </div>
+      
+
+      <!-- KPI Cards -->
+      <section class="analytics-overview">
+      <div class="stats-grid">
+        <!-- Total Inquiries -->
+        <div class="stat-card">
+          <div class="card-header">
+            <h3>Total Inquiries</h3>
+            <select id="inquiriesPeriod">
+              <option value="yearly">Year</option>
+              <option value="monthly">Month</option>
+              <option value="weekly">Week</option>
+            </select>
+          </div>
+          <div class="card-content">
+            <p><strong>Total Inquiries:</strong> <span id="kpiTotalInquiries">0</span></p>
+            <canvas id="inquiriesMiniChart" height="50"></canvas>
+          </div>
+        </div>
+
+        <!-- Total Feedbacks -->
+        <div class="stat-card">
+          <div class="card-header">
+            <h3>Total Feedbacks</h3>
+          </div>
+          <div class="card-content">
+            <p><strong>Total Feedbacks:</strong> <span id="kpiTotalFeedbacks">0</span></p>
+            <canvas id="feedbacksMiniChart" height="50"></canvas>
+          </div>
+        </div>
+
+        <!-- Total Services Availed -->
+        <div class="stat-card">
+          <div class="card-header">
+            <h3>Top Service</h3>
+          </div>
+          <div class="card-content">
+            <p><strong>Top Service:</strong> <span id="topServiceName">N/A</span></p>
+            <canvas id="servicesMiniChart" height="50"></canvas>
+          </div>
+        </div>
+
+        <!-- Average Growth -->
+        <div class="stat-card">
+          <div class="card-header">
+            <h3>Average Growth</h3>
+          </div>
+          <div class="card-content">
+            <p><strong>Growth:</strong> <span id="kpiGrowth">0%</span></p>
+            <canvas id="growthMiniChart" height="50"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <section class="analytics-charts-side-by-side">
+        <div class="chart-container">
+          <h3>Monthly Inquiries Trend</h3>
+          <canvas id="inquiriesTrendChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+          <h3>Feedback Ratings per Service</h3>
+          <canvas id="servicesBreakdownChart"></canvas>
+        </div>
+      </section>
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/analytics.js"></script>
   <script>
     function updateDateTime() {
       const now = new Date();
@@ -78,9 +124,8 @@
         hour: "numeric",
         minute: "2-digit",
       };
-      document.getElementById("currentDateTime").textContent = now.toLocaleString("en-US", options)
-;                                                                                                      }
-
+      document.getElementById("currentDateTime").textContent = now.toLocaleString("en-US", options);
+    }
     setInterval(updateDateTime, 1000);
     updateDateTime();
   </script>
