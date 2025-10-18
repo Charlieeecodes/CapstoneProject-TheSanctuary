@@ -23,5 +23,5 @@ const PORT = process.env.PORT || 5000;
 console.log("✅ Routes mounted successfully");
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-
 app.use('/api/analytics', analyticsRouter);
+console.log('✅ Analytics route registered at /api/analytics');

@@ -1,56 +1,77 @@
 /* ----------------------------- */
-/* Analytics Page Styles         */
+/* Main Content & Layout         */
 /* ----------------------------- */
-
-/* Analytics Overview Section */
-.analytics-overview {
-  padding: 20px;
-}
-.analytics-charts-side-by-side {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 20px;
-}
-
-.analytics-charts-side-by-side .chart-container {
-  flex: 1 1 45%; /* ~45% width per chart */
-  background-color: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+.main-content {
+  flex: 1; /* takes remaining space next to sidebar */
   display: flex;
   flex-direction: column;
-  align-items: center;
+  overflow-y: auto;
+  padding: 20px;
+  background-color: #f4f6f8;
 }
 
-.analytics-charts-side-by-side h3 {
-  text-align: center;
-  margin-bottom: 10px;
+/* Topbar */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.topbar-left h2 {
+  margin: 0;
+  font-size: 1.4rem;
   color: #333;
 }
 
-.analytics-charts-side-by-side canvas {
-  /* Let Chart.js control sizing */
-  width: 100% !important;
-  height: auto !important; /* automatic height based on aspect ratio */
-  max-width: 700px; /* container limit */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.topbar-right #currentDateTime {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-profile .profile-icon {
+  width: 35px;
+  border-radius: 50%;
+}
+
+.user-profile .user-info {
+  font-size: 0.8rem;
+  color: #333;
+}
+
+/* ----------------------------- */
+/* KPI Cards Section             */
+/* ----------------------------- */
+.analytics-overview {
+  margin-bottom: 30px;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
-  margin-bottom: 40px;
 }
 
-/* KPI Card Styling */
 .stat-card {
   background-color: #fff;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
 }
 
 .stat-card:hover {
@@ -62,7 +83,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 15px;
 }
 
 .stat-card .card-header h3 {
@@ -86,46 +107,64 @@
   color: #555;
 }
 
+/* Mini charts in KPI cards */
 .stat-card canvas {
   width: 100% !important;
-  height: auto !important;
+  height: 50px !important;
+  border-radius: 6px;
   margin-top: 5px;
 }
 
-/* Mini chart sparkline tweaks */
-.stat-card canvas {
-  border-radius: 6px;
+/* ----------------------------- */
+/* Main Charts Section           */
+/* ----------------------------- */
+.analytics-charts-side-by-side {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-/* Main Charts Section */
-.analytics-charts {
-  padding: 0 20px 20px 20px;
-}
-
-.analytics-charts h3 {
-  margin-top: 20px;
-  margin-bottom: 10px;
-  color: #333;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.analytics-charts canvas {
+.chart-container {
+  flex: 1 1 45%;
+  min-width: 300px;
+  height: 400px;
   background-color: #fff;
   border-radius: 12px;
+  padding: 20px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  padding: 10px;
-  width: 100% !important;
-  max-width: 800px;
-  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* Responsive adjustments */
+.chart-container h3 {
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ----------------------------- */
+/* Responsive Styles             */
+/* ----------------------------- */
+@media (max-width: 768px) {
+  .chart-container {
+    height: 300px;
+  }
+}
+
 @media (max-width: 600px) {
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  .analytics-charts canvas {
-    max-width: 100%;
+
+  .analytics-charts-side-by-side {
+    flex-direction: column;
   }
 }

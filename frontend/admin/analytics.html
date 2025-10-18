@@ -45,61 +45,62 @@
           </div>
         </div>
       </div>
-      
 
       <!-- KPI Cards -->
       <section class="analytics-overview">
-      <div class="stats-grid">
-        <!-- Total Inquiries -->
-        <div class="stat-card">
-          <div class="card-header">
-            <h3>Total Inquiries</h3>
-            <select id="inquiriesPeriod">
-              <option value="yearly">Year</option>
-              <option value="monthly">Month</option>
-              <option value="weekly">Week</option>
-            </select>
+        <div class="stats-grid">
+          <!-- Total Inquiries -->
+          <div class="stat-card">
+            <div class="card-header">
+              <h3>Total Inquiries</h3>
+              <select id="inquiriesPeriod">
+                <option value="yearly">Year</option>
+                <option value="monthly">Month</option>
+                <option value="weekly">Week</option>
+              </select>
+            </div>
+            <div class="card-content">
+              <p><strong>Total Inquiries:</strong> <span id="kpiTotalInquiries">0</span></p>
+              <canvas id="inquiriesMiniChart"></canvas>
+            </div>
           </div>
-          <div class="card-content">
-            <p><strong>Total Inquiries:</strong> <span id="kpiTotalInquiries">0</span></p>
-            <canvas id="inquiriesMiniChart" height="50"></canvas>
+
+          <!-- Total Feedbacks -->
+          <div class="stat-card">
+            <div class="card-header">
+              <h3>Total Feedbacks</h3>
+            </div>
+            <div class="card-content">
+              <p><strong>Total Feedbacks:</strong> <span id="kpiTotalFeedbacks">0</span></p>
+              <canvas id="feedbacksMiniChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Top Service -->
+          <div class="stat-card">
+            <div class="card-header">
+              <h3>Top Service</h3>
+            </div>
+            <div class="card-content">
+              <p><strong>Top Service:</strong> <span id="topServiceName">N/A</span></p>
+              <canvas id="servicesMiniChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Average Growth -->
+          <div class="stat-card">
+            <div class="card-header">
+              <h3>Average Growth</h3>
+            </div>
+            <div class="card-content">
+              <p><strong>Growth:</strong> <span id="kpiGrowth">0%</span></p>
+              <canvas id="growthMiniChart"></canvas>
+            </div>
           </div>
         </div>
+      </section>
 
-        <!-- Total Feedbacks -->
-        <div class="stat-card">
-          <div class="card-header">
-            <h3>Total Feedbacks</h3>
-          </div>
-          <div class="card-content">
-            <p><strong>Total Feedbacks:</strong> <span id="kpiTotalFeedbacks">0</span></p>
-            <canvas id="feedbacksMiniChart" height="50"></canvas>
-          </div>
-        </div>
-
-        <!-- Total Services Availed -->
-        <div class="stat-card">
-          <div class="card-header">
-            <h3>Top Service</h3>
-          </div>
-          <div class="card-content">
-            <p><strong>Top Service:</strong> <span id="topServiceName">N/A</span></p>
-            <canvas id="servicesMiniChart" height="50"></canvas>
-          </div>
-        </div>
-
-        <!-- Average Growth -->
-        <div class="stat-card">
-          <div class="card-header">
-            <h3>Average Growth</h3>
-          </div>
-          <div class="card-content">
-            <p><strong>Growth:</strong> <span id="kpiGrowth">0%</span></p>
-            <canvas id="growthMiniChart" height="50"></canvas>
-          </div>
-        </div>
-      </div>
-
+      <!-- Main Charts -->
       <section class="analytics-charts-side-by-side">
         <div class="chart-container">
           <h3>Monthly Inquiries Trend</h3>
@@ -111,19 +112,16 @@
           <canvas id="servicesBreakdownChart"></canvas>
         </div>
       </section>
+    </main>
+  </div>
+
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="js/analytics.js"></script>
   <script>
     function updateDateTime() {
       const now = new Date();
-      const options = {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      };
+      const options = { year:"numeric", month:"long", day:"numeric", hour:"numeric", minute:"2-digit" };
       document.getElementById("currentDateTime").textContent = now.toLocaleString("en-US", options);
     }
     setInterval(updateDateTime, 1000);
