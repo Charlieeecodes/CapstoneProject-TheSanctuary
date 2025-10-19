@@ -16,12 +16,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // ✅ API Routes
 app.use('/api/inquiries', inquiryRoutes);
-app.use('/api/records', recordRoutes); // ✅ NEW
-app.use('/api/feedbacks', feedbackRoutes); // ✅ NEW
+app.use('/api/records', recordRoutes);
+app.use('/api/feedbacks', feedbackRoutes);
+app.use('/api/analytics', analyticsRoutes); // ✅ MOVED ABOVE LISTEN()
+
+console.log('✅ Routes mounted successfully');
 
 const PORT = process.env.PORT || 5000;
-console.log("✅ Routes mounted successfully");
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-app.use('/api/analytics', analyticsRoutes);
-console.log('✅ Analytics route registered at /api/analytics');
