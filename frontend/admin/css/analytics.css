@@ -65,6 +65,7 @@
 }
 
 .stat-card {
+  flex: 1 1 50%;
   background-color: #fff;
   border-radius: 12px;
   padding: 20px;
@@ -88,14 +89,14 @@
 
 .stat-card .card-header h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.3rem;
   font-weight: 600;
   color: #333;
 }
 
 .stat-card .card-header select {
   padding: 3px 6px;
-  font-size: 0.85rem;
+  font-size: 1rem;
   border-radius: 6px;
   border: 1px solid #ccc;
   background-color: #f8f8f8;
@@ -110,7 +111,7 @@
 /* Mini charts in KPI cards */
 .stat-card canvas {
   width: 100% !important;
-  height: 50px !important;
+  height: 70px !important;
   border-radius: 6px;
   margin-top: 5px;
 }

@@ -120,7 +120,7 @@ header h1 {
 
 /* === Table === */
 table {
-  width: 98%;
+  width: 100%;
   border-collapse: collapse;
 }
 
@@ -284,7 +284,7 @@ th {
 /* === Card Content === */
 .card-content p {
   margin: 5px 0;
-  font-size: 0.9rem;
+  font-size: 1.6rem;
 }
 
 .value {
@@ -329,7 +329,6 @@ th {
 .recent-updates {
   scroll-behavior: smooth;
 }
-
 
 .update-card {
   background: #f8f9fa;

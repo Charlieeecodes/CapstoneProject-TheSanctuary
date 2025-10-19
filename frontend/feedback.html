@@ -27,9 +27,9 @@
         <textarea id="message" rows="6" placeholder="Write your feedback..." required></textarea>
       </div>
 
-      <!-- Rating: Overall -->
+      <!-- Rating Fields -->
       <div class="rating-group">
-        <span>Overall:</span>
+        <span>Overall Experience:</span>
         <div class="stars" id="overallRating">
           <input type="radio" name="overall" id="overall5" value="5"><label for="overall5">★</label>
           <input type="radio" name="overall" id="overall4" value="4"><label for="overall4">★</label>
@@ -39,9 +39,8 @@
         </div>
       </div>
 
-      <!-- Rating: Service -->
       <div class="rating-group">
-        <span>Service:</span>
+        <span>Service Quality:</span>
         <div class="stars" id="serviceRating">
           <input type="radio" name="service" id="service5" value="5"><label for="service5">★</label>
           <input type="radio" name="service" id="service4" value="4"><label for="service4">★</label>
@@ -51,7 +50,6 @@
         </div>
       </div>
 
-      <!-- Rating: Satisfaction -->
       <div class="rating-group">
         <span>Satisfaction:</span>
         <div class="stars" id="satisfactionRating">
@@ -63,8 +61,40 @@
         </div>
       </div>
 
+      <div class="rating-group">
+        <span>Professionalism:</span>
+        <div class="stars" id="professionalismRating">
+          <input type="radio" name="professionalism" id="professionalism5" value="5"><label for="professionalism5">★</label>
+          <input type="radio" name="professionalism" id="professionalism4" value="4"><label for="professionalism4">★</label>
+          <input type="radio" name="professionalism" id="professionalism3" value="3"><label for="professionalism3">★</label>
+          <input type="radio" name="professionalism" id="professionalism2" value="2"><label for="professionalism2">★</label>
+          <input type="radio" name="professionalism" id="professionalism1" value="1"><label for="professionalism1">★</label>
+        </div>
+      </div>
+
+      <div class="rating-group">
+        <span>Communication:</span>
+        <div class="stars" id="communicationRating">
+          <input type="radio" name="communication" id="communication5" value="5"><label for="communication5">★</label>
+          <input type="radio" name="communication" id="communication4" value="4"><label for="communication4">★</label>
+          <input type="radio" name="communication" id="communication3" value="3"><label for="communication3">★</label>
+          <input type="radio" name="communication" id="communication2" value="2"><label for="communication2">★</label>
+          <input type="radio" name="communication" id="communication1" value="1"><label for="communication1">★</label>
+        </div>
+      </div>
+
+      <div class="rating-group">
+        <span>Facility & Ambiance:</span>
+        <div class="stars" id="facilityRating">
+          <input type="radio" name="facility" id="facility5" value="5"><label for="facility5">★</label>
+          <input type="radio" name="facility" id="facility4" value="4"><label for="facility4">★</label>
+          <input type="radio" name="facility" id="facility3" value="3"><label for="facility3">★</label>
+          <input type="radio" name="facility" id="facility2" value="2"><label for="facility2">★</label>
+          <input type="radio" name="facility" id="facility1" value="1"><label for="facility1">★</label>
+        </div>
+      </div>
+
       <button type="submit" id="submitFeedback">Submit Feedback</button>
-      <p id="responseMessage" class="response"></p>
     </form>
   </div>
 

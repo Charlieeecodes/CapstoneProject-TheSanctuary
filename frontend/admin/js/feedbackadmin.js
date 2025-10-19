@@ -19,6 +19,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const overall = Number(fb.overall_rating) || 0;
         const service = Number(fb.service_rating) || 0;
         const satisfaction = Number(fb.satisfaction_rating) || 0;
+        const professionalism = Number(fb.professionalism_rating) || 0;
+        const communication = Number(fb.communication_rating) || 0;
+        const facility = Number(fb.facility_rating) || 0;
 
         const card = document.createElement("div");
         card.className = "feedback-card";
@@ -31,6 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <p>Overall: ${overall}/5</p>
             <p>Service: ${service}/5</p>
             <p>Satisfaction: ${satisfaction}/5</p>
+            <p>Professionalism: ${professionalism}/5</p>
+            <p>Communication: ${communication}/5</p>
+            <p>Facility & Ambiance: ${facility}/5</p>
           </div>
           <div class="message"><p>"${fb.message}"</p></div>
           <div class="date">Submitted on: ${new Date(fb.created_at).toLocaleDateString()}</div>

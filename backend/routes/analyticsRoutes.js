@@ -18,13 +18,15 @@ router.get('/kpis', async (req, res) => {
     // 2️⃣ Total Feedbacks
     const [fbRows] = await db.query('SELECT COUNT(*) AS totalFeedbacks FROM feedbacks');
 
-    // 3️⃣ Average Ratings
+    // 3️⃣ Average Ratings (all 6 categories)
     const [ratingRows] = await db.query(`
       SELECT 
         AVG(overall_rating) AS avgOverall,
         AVG(service_rating) AS avgService,
         AVG(satisfaction_rating) AS avgSatisfaction,
-        AVG(response_rating) AS avgResponse
+        AVG(professionalism_rating) AS avgProfessionalism,
+        AVG(communication_rating) AS avgCommunication,
+        AVG(facility_rating) AS avgFacility
       FROM feedbacks
     `);
 
@@ -54,7 +56,9 @@ router.get('/kpis', async (req, res) => {
         overall: parseFloat(ratingRows[0].avgOverall || 0).toFixed(2),
         service: parseFloat(ratingRows[0].avgService || 0).toFixed(2),
         satisfaction: parseFloat(ratingRows[0].avgSatisfaction || 0).toFixed(2),
-        response: parseFloat(ratingRows[0].avgResponse || 0).toFixed(2)
+        professionalism: parseFloat(ratingRows[0].avgProfessionalism || 0).toFixed(2),
+        communication: parseFloat(ratingRows[0].avgCommunication || 0).toFixed(2),
+        facility: parseFloat(ratingRows[0].avgFacility || 0).toFixed(2)
       },
       growth: parseFloat(growth)
     });
@@ -63,6 +67,7 @@ router.get('/kpis', async (req, res) => {
     res.status(500).json({ message: 'Database error', error: err.message });
   }
 });
+
 
 /**
  * 🟣 GET /api/analytics/inquiries
