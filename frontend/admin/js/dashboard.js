@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Fetch filtered inquiries count
   // ----------------------------
   async function fetchInquiriesByPeriod(period) {
-    const res = await fetch(`http://localhost:5000/api/analytics/inquiries?period=${period}`);
+    const res = await fetch(`http://localhost:5000/api/analytics/inquiries?period=${period}&mode=summary`);
     return await res.json();
   }
 
