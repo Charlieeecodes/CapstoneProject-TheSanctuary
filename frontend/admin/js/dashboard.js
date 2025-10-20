@@ -1,76 +1,84 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  const totalEl = document.getElementById('totalInquiries');
-  const growthEl = document.getElementById('inquiryGrowth');
+  console.log('📊 [Dashboard] Page Loaded');
+
+  // -----------------------------
+  // Element references
+  // -----------------------------
+  const totalInquiriesEl = document.getElementById('totalInquiries');
+  const inquiryGrowthEl = document.getElementById('inquiryGrowth');
+  const totalFeedbacksEl = document.querySelector('.stat-card:nth-child(2) .value');
+  const totalServicesEl = document.querySelector('.stat-card:nth-child(3) .value');
+  const topServiceEl = document.querySelector('.stat-card:nth-child(3) strong');
   const tableBody = document.querySelector('#inquiryTable tbody');
   const recentUpdatesContainer = document.getElementById('recentUpdates');
-  const inquiriesPeriodSelect = document.getElementById('inquiriesPeriod'); // ✅ dropdown
+  const inquiriesPeriodSelect = document.getElementById('inquiriesPeriod');
 
-  // ----------------------------
-  // Fetch inquiries from backend
-  // ----------------------------
+  // -----------------------------
+  // Fetch data helpers
+  // -----------------------------
   async function fetchInquiries() {
     const res = await fetch('http://localhost:5000/api/inquiries');
     return await res.json();
   }
 
-  // ----------------------------
-  // Fetch feedbacks from backend
-  // ----------------------------
   async function fetchFeedbacks() {
     const res = await fetch('http://localhost:5000/api/feedbacks');
     return await res.json();
   }
 
-  // ----------------------------
-  // Fetch filtered inquiries count
-  // ----------------------------
   async function fetchInquiriesByPeriod(period) {
-    const res = await fetch(`http://localhost:5000/api/analytics/inquiries?period=${period}&mode=summary`);
-    return await res.json();
-  }
-
-// ----------------------------
-// Load dashboard total inquiries (improved)
-// ----------------------------
-async function fetchInquiriesByPeriod(period) {
-  const url = `http://localhost:5000/api/analytics/inquiries?period=${encodeURIComponent(period)}&mode=summary`;
-  console.log('[dashboard] fetchInquiriesByPeriod ->', url);
-  try {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) {
-      const txt = await res.text();
-      console.error('[dashboard] fetchInquiriesByPeriod - non-OK response:', res.status, txt);
-      throw new Error('Network response was not ok');
+    const url = `http://localhost:5000/api/analytics/inquiries?period=${encodeURIComponent(period)}&mode=summary`;
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      const json = await res.json();
+      return json;
+    } catch (err) {
+      console.error('[dashboard] fetchInquiriesByPeriod error:', err);
+      return { total: 0 };
     }
-    const json = await res.json();
-    console.log('[dashboard] fetchInquiriesByPeriod result:', json);
-    return json;
-  } catch (err) {
-    console.error('[dashboard] fetchInquiriesByPeriod error:', err);
-    return { total: 0 };
   }
-}
 
-async function loadDashboardInquiries(period = 'month') {
-  try {
-    const data = await fetchInquiriesByPeriod(period);
-    // ensure numeric
-    const total = Number(data.total) || 0;
-    totalEl.textContent = total;
-    const lastValue = parseInt(localStorage.getItem(`lastInquiries_${period}`)) || 0;
-    const growth = lastValue ? (((total - lastValue) / lastValue) * 100).toFixed(1) : 0;
-    growthEl.textContent = `${growth >= 0 ? '+' : ''}${growth}%`;
-    localStorage.setItem(`lastInquiries_${period}`, total);
-  } catch (err) {
-    console.error('[dashboard] loadDashboardInquiries error:', err);
-    totalEl.textContent = 'Error';
+  // -----------------------------
+  // Load KPIs (from /api/analytics/kpis)
+  // -----------------------------
+  async function loadKPIs() {
+    try {
+      const res = await fetch('http://localhost:5000/api/analytics/kpis');
+      if (!res.ok) throw new Error('Failed to fetch KPIs');
+      const data = await res.json();
+
+      // Update KPI values
+      if (totalInquiriesEl) totalInquiriesEl.textContent = data.totalInquiries ?? 0;
+      if (totalFeedbacksEl) totalFeedbacksEl.textContent = data.totalFeedbacks ?? 0;
+      if (totalServicesEl) totalServicesEl.textContent = data.totalServices ?? 0;
+      if (topServiceEl) topServiceEl.textContent = `Top Services Availed: ${data.topService ?? 'N/A'}`;
+    } catch (err) {
+      console.error('❌ Error loading KPIs:', err);
+    }
   }
-}
 
+  // -----------------------------
+  // Inquiries growth tracking
+  // -----------------------------
+  async function loadDashboardInquiries(period = 'month') {
+    try {
+      const data = await fetchInquiriesByPeriod(period);
+      const total = Number(data.total) || 0;
+      totalInquiriesEl.textContent = total;
 
-  // ----------------------------
+      const lastValue = parseInt(localStorage.getItem(`lastInquiries_${period}`)) || 0;
+      const growth = lastValue ? (((total - lastValue) / lastValue) * 100).toFixed(1) : 0;
+      inquiryGrowthEl.textContent = `${growth >= 0 ? '+' : ''}${growth}%`;
+      localStorage.setItem(`lastInquiries_${period}`, total);
+    } catch (err) {
+      console.error('[dashboard] loadDashboardInquiries error:', err);
+      totalInquiriesEl.textContent = 'Error';
+    }
+  }
+
+  // -----------------------------
   // Load recent updates (Inquiries + Feedbacks)
-  // ----------------------------
+  // -----------------------------
   async function loadRecentUpdates() {
     try {
       const [inquiries, feedbacks] = await Promise.all([fetchInquiries(), fetchFeedbacks()]);
@@ -124,78 +132,50 @@ async function loadDashboardInquiries(period = 'month') {
     }
   }
 
-  // ----------------------------
-  // Handle inquiries period dropdown (Month / Week / Year)
-  // ----------------------------
+  // -----------------------------
+  // Load recent inquiries table
+  // -----------------------------
+  async function loadRecentInquiries() {
+    try {
+      const inquiries = await fetchInquiries();
+      if (!Array.isArray(inquiries) || inquiries.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center;">No recent inquiries</td></tr>`;
+        return;
+      }
+
+      const recent = inquiries.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 8);
+      tableBody.innerHTML = recent.map(i => `
+        <tr>
+          <td>${i.id}</td>
+          <td>${i.name || '—'}</td>
+          <td>${i.email || '—'}</td>
+          <td>${i.subject || '—'}</td>
+          <td>${i.message ? (i.message.length > 50 ? i.message.substring(0, 50) + '…' : i.message) : '—'}</td>
+          <td><span class="status ${i.status?.toLowerCase() || 'pending'}">${i.status || 'Pending'}</span></td>
+          <td>${new Date(i.created_at).toLocaleString()}</td>
+        </tr>
+      `).join('');
+    } catch (err) {
+      console.error('Error loading recent inquiries:', err);
+      tableBody.innerHTML = `<tr><td colspan="8" style="color:red;">Error loading recent inquiries</td></tr>`;
+    }
+  }
+
+  // -----------------------------
+  // Dropdown handler
+  // -----------------------------
   if (inquiriesPeriodSelect) {
     inquiriesPeriodSelect.addEventListener('change', async (e) => {
       const period = e.target.value;
-
-      // 🔹 Update Total Inquiries KPI
       await loadDashboardInquiries(period);
-
-      // 🔹 Update Inquiries Trend Chart (if function available)
-      if (window.updateInquiriesChart) {
-        window.updateInquiriesChart(period);
-      }
     });
-
-    // Auto-load current month on start
-    inquiriesPeriodSelect.value = 'month';
-    inquiriesPeriodSelect.dispatchEvent(new Event('change'));
   }
 
-  // ----------------------------
-  // Handle navigation + refresh
-  // ----------------------------
-  document.getElementById('viewAllBtn')?.addEventListener('click', () => {
-    window.location.href = 'inquiries.html';
-  });
-
-  window.addEventListener('focus', async () => {
-    if (localStorage.getItem('dashboardNeedsRefresh') === 'true') {
-      const currentPeriod = inquiriesPeriodSelect?.value || 'month';
-      await loadDashboardInquiries(currentPeriod);
-      await loadRecentUpdates();
-      localStorage.removeItem('dashboardNeedsRefresh');
-    }
-  });
-// -----------------------------
-// Load recent inquiries table
-// -----------------------------
-async function loadRecentInquiries() {
-  try {
-    const inquiries = await fetchInquiries();
-    if (!Array.isArray(inquiries) || inquiries.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center;">No recent inquiries</td></tr>`;
-      return;
-    }
-
-    // ✅ Sort newest first (just in case backend doesn’t)
-    const recent = inquiries.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 8);
-
-    // ✅ Render table rows
-    tableBody.innerHTML = recent.map(i => `
-      <tr>
-        <td>${i.id}</td>
-        <td>${i.name || '—'}</td>
-        <td>${i.email || '—'}</td>
-        <td>${i.subject || '—'}</td>
-        <td>${i.message ? (i.message.length > 50 ? i.message.substring(0, 50) + '…' : i.message) : '—'}</td>
-        <td><span class="status ${i.status?.toLowerCase() || 'pending'}">${i.status || 'Pending'}</span></td>
-        <td>${new Date(i.created_at).toLocaleString()}</td>
-      </tr>
-    `).join('');
-  } catch (err) {
-    console.error('Error loading recent inquiries:', err);
-    tableBody.innerHTML = `<tr><td colspan="8" style="color:red;">Error loading recent inquiries</td></tr>`;
-  }
-}
-  // ----------------------------
-  // Initial load
-  // ----------------------------
+  // -----------------------------
+  // Initial Load
+  // -----------------------------
+  await loadKPIs();
   await loadDashboardInquiries('month');
   await loadRecentUpdates();
-  await loadRecentInquiries(); 
+  await loadRecentInquiries();
 });
-

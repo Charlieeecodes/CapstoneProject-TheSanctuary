@@ -81,5 +81,32 @@ router.get('/inquiries', async (req, res) => {
     res.status(500).json({ message: 'Database error', error: err.message });
   }
 });
+router.get('/services', async (req, res) => {
+  try {
+    // Top services availed (Completed only)
+    const [topServices] = await db.query(`
+      SELECT service AS name, COUNT(*) AS total
+      FROM datarecords
+      WHERE status = 'Completed'
+      GROUP BY service
+      ORDER BY total DESC
+      LIMIT 5
+    `);
+
+    // Trend: total completed per month
+    const [trend] = await db.query(`
+      SELECT DATE_FORMAT(created_at, '%b %Y') AS month, COUNT(*) AS total
+      FROM datarecords
+      WHERE status = 'Completed'
+      GROUP BY YEAR(created_at), MONTH(created_at)
+      ORDER BY YEAR(created_at), MONTH(created_at)
+    `);
+
+    res.json({ topServices, trend });
+  } catch (err) {
+    console.error('❌ Error fetching services analytics:', err);
+    res.status(500).json({ message: 'Database error', error: err.message });
+  }
+});
 
 module.exports = router;

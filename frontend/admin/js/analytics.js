@@ -7,11 +7,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   const totalInquiriesEl = document.getElementById('kpiTotalInquiries');
   const totalFeedbacksEl = document.getElementById('kpiTotalFeedbacks');
   const topServiceNameEl = document.getElementById('topServiceName');
-  const growthEl = document.getElementById('kpiGrowth');
+  const totalServicesEl = document.getElementById('kpiTotalServices');
   const inquiriesMiniEl = document.getElementById('inquiriesMiniChart');
   const inquiriesTrendCanvas = document.getElementById('inquiriesTrendChart');
-  const servicesBreakdownCanvas = document.getElementById('servicesBreakdownChart');
+  const feedbackBreakdownCanvas = document.getElementById('servicesBreakdownChart');
   const inquiriesPeriodSelect = document.getElementById('inquiriesPeriod');
+
+  // New chart containers
+  let topServicesChartCanvas;
+  let serviceTrendChartCanvas;
+
+  // Create new chart section dynamically (below existing charts)
+  function appendNewCharts() {
+    const mainSection = document.querySelector('.analytics-charts-side-by-side');
+    if (!mainSection) return;
+
+    const newSection = document.createElement('section');
+    newSection.className = 'analytics-charts-side-by-side';
+    newSection.innerHTML = `
+      <div class="chart-container">
+        <h3>Top Services Availed</h3>
+        <canvas id="topServicesChart"></canvas>
+      </div>
+      <div class="chart-container">
+        <h3>Total Services Availed Trend</h3>
+        <canvas id="servicesTrendChart"></canvas>
+      </div>
+    `;
+    mainSection.insertAdjacentElement('afterend', newSection);
+
+    topServicesChartCanvas = document.getElementById('topServicesChart');
+    serviceTrendChartCanvas = document.getElementById('servicesTrendChart');
+  }
+
+  appendNewCharts();
 
   // -----------------------------
   // Helper: Update Inquiries KPI mini chart
@@ -66,17 +95,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       totalInquiriesEl.textContent = data.totalInquiries ?? 0;
       totalFeedbacksEl.textContent = data.totalFeedbacks ?? 0;
-      growthEl.textContent = `${data.growth >= 0 ? '+' : ''}${data.growth ?? 0}%`;
+      totalServicesEl.textContent = data.totalServices ?? 0;
       topServiceNameEl.textContent = data.topService ?? 'N/A';
 
       // -----------------------------
-      // Ratings Bar Chart (all 6 categories)
+      // Feedback Ratings Bar Chart
       // -----------------------------
-      if (servicesBreakdownCanvas && data.avgRatings) {
-        new Chart(servicesBreakdownCanvas, {
+      if (feedbackBreakdownCanvas && data.avgRatings) {
+        new Chart(feedbackBreakdownCanvas, {
           type: 'bar',
           data: {
-            labels: ['Overall', 'Service', 'Satisfaction', 'Professionalism', 'Communication', 'Facility & Ambiance'],
+            labels: [
+              'Overall', 'Service', 'Satisfaction',
+              'Professionalism', 'Communication', 'Facility & Ambiance'
+            ],
             datasets: [{
               label: 'Average Rating',
               data: [
@@ -104,7 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('❌ KPI Load Error:', err);
       totalInquiriesEl.textContent = 'Error';
       totalFeedbacksEl.textContent = 'Error';
-      growthEl.textContent = 'Error';
+      totalServicesEl.textContent = 'Error';
       topServiceNameEl.textContent = 'Error';
     }
   }
@@ -113,10 +145,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Helper: Update inquiries trend chart
   // -----------------------------
   async function updateInquiriesChart(period = 'month') {
-    const titleEl = document.querySelector('.chart-container h3');
-    if (titleEl) {
-      titleEl.textContent = `${period.charAt(0).toUpperCase() + period.slice(1)} Inquiries Trend`;
-    }
     try {
       const url = `http://localhost:5000/api/analytics/inquiries?period=${encodeURIComponent(period)}&mode=trend`;
       const res = await fetch(url, { cache: 'no-store' });
@@ -152,10 +180,87 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // -----------------------------
+  // 🟣 Top Services Chart
+  // -----------------------------
+  async function loadTopServicesChart() {
+    try {
+      const res = await fetch('http://localhost:5000/api/analytics/services/top', { cache: 'no-store' });
+      const data = await res.json();
+
+      const labels = data.map(d => d.name);
+      const values = data.map(d => d.total);
+
+      if (window.topServicesChartInstance) window.topServicesChartInstance.destroy();
+
+      const ctx = topServicesChartCanvas.getContext('2d');
+      window.topServicesChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Total Completed',
+            data: values,
+            backgroundColor: '#673AB7'
+          }]
+        },
+        options: {
+          indexAxis: 'y', // horizontal
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { x: { beginAtZero: true } }
+        }
+      });
+    } catch (err) {
+      console.error('❌ Error loading Top Services chart:', err);
+    }
+  }
+
+  // -----------------------------
+  // 🟣 Total Services Availed Trend
+  // -----------------------------
+  async function loadServiceTrendChart() {
+    try {
+      const res = await fetch('http://localhost:5000/api/analytics/services/trend', { cache: 'no-store' });
+      const data = await res.json();
+
+      const labels = data.map(d => d.label);
+      const counts = data.map(d => Number(d.count));
+
+      if (window.serviceTrendChartInstance) window.serviceTrendChartInstance.destroy();
+
+      const ctx = serviceTrendChartCanvas.getContext('2d');
+      window.serviceTrendChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Total Services Availed',
+            data: counts,
+            borderColor: '#4CAF50',
+            backgroundColor: 'rgba(76,175,80,0.2)',
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    } catch (err) {
+      console.error('❌ Error loading service trend chart:', err);
+    }
+  }
+
+  // -----------------------------
   // Initialize Analytics Page
   // -----------------------------
   await loadKPIs();
   await updateInquiriesChart('month');
+  await loadTopServicesChart();
+  await loadServiceTrendChart();
 
   // -----------------------------
   // Period dropdown listener
@@ -164,7 +269,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     inquiriesPeriodSelect.addEventListener('change', async e => {
       const periodMap = { weekly: 'week', monthly: 'month', yearly: 'year' };
       const period = periodMap[e.target.value] || e.target.value;
-
       await updateInquiriesChart(period);
       await updateInquiriesKPI(period);
     });
