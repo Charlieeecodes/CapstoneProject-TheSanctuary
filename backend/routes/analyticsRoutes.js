@@ -3,29 +3,29 @@ const router = express.Router();
 const db = require('../models/db');
 
 /* ========================================
-   📊 ANALYTICS CONTROLLER
+   📊 ANALYTICS CONTROLLER (FULL FIX)
 ======================================== */
 
 /**
  * 🟣 GET /api/analytics/kpis
- * Returns dashboard key performance indicators
+ * Returns dashboard KPIs: inquiries, feedbacks, services, top service, ratings
  */
 router.get('/kpis', async (req, res) => {
   try {
-    // 1️⃣ Total Inquiries
+    // Total Inquiries
     const [inqRows] = await db.query('SELECT COUNT(*) AS totalInquiries FROM inquiries');
 
-    // 2️⃣ Total Feedbacks
+    // Total Feedbacks
     const [fbRows] = await db.query('SELECT COUNT(*) AS totalFeedbacks FROM feedbacks');
 
-    // 3️⃣ Total Services Availed (Completed)
+    // Total Services Availed (Completed only)
     const [svcRows] = await db.query(`
       SELECT COUNT(*) AS totalServices
       FROM records
       WHERE status = 'Completed'
     `);
 
-    // 4️⃣ Top Service Availed (Completed)
+    // Top Service Availed
     const [topServiceRow] = await db.query(`
       SELECT service, COUNT(*) AS total
       FROM records
@@ -36,7 +36,7 @@ router.get('/kpis', async (req, res) => {
     `);
     const topService = topServiceRow.length ? topServiceRow[0].service : 'N/A';
 
-    // 5️⃣ Average Ratings (6 categories)
+    // Average Ratings (6 categories)
     const [ratingRows] = await db.query(`
       SELECT 
         AVG(overall_rating) AS avgOverall,
@@ -74,14 +74,10 @@ router.get('/kpis', async (req, res) => {
  */
 router.get('/inquiries', async (req, res) => {
   const { period = 'month', mode = 'summary' } = req.query;
+
   try {
     if (mode === 'summary') {
-      let sql = 'SELECT COUNT(*) AS total FROM inquiries';
-      if (period === 'week') sql += ' WHERE YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)';
-      else if (period === 'month') sql += ' WHERE MONTH(created_at)=MONTH(CURDATE()) AND YEAR(created_at)=YEAR(CURDATE())';
-      else if (period === 'year') sql += ' WHERE YEAR(created_at)=YEAR(CURDATE())';
-
-      const [rows] = await db.query(sql);
+      const [rows] = await db.query('SELECT COUNT(*) AS total FROM inquiries');
       return res.json({ total: rows[0].total });
     }
 
@@ -91,7 +87,7 @@ router.get('/inquiries', async (req, res) => {
       trendQuery = `
         SELECT DAYNAME(created_at) AS label, COUNT(*) AS count
         FROM inquiries
-        WHERE YEARWEEK(created_at, 1)=YEARWEEK(CURDATE(), 1)
+        WHERE YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)
         GROUP BY DAYOFWEEK(created_at)
         ORDER BY DAYOFWEEK(created_at);
       `;
@@ -99,7 +95,7 @@ router.get('/inquiries', async (req, res) => {
       trendQuery = `
         SELECT DATE_FORMAT(created_at, '%e %b') AS label, COUNT(*) AS count
         FROM inquiries
-        WHERE MONTH(created_at)=MONTH(CURDATE()) AND YEAR(created_at)=YEAR(CURDATE())
+        WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())
         GROUP BY DAY(created_at)
         ORDER BY DAY(created_at);
       `;
@@ -111,6 +107,7 @@ router.get('/inquiries', async (req, res) => {
         ORDER BY YEAR(created_at), MONTH(created_at);
       `;
     }
+
     const [trendRows] = await db.query(trendQuery);
     res.json(trendRows);
   } catch (err) {
@@ -119,50 +116,44 @@ router.get('/inquiries', async (req, res) => {
   }
 });
 
-/* ========================================
-   🟣 SERVICES ANALYTICS ROUTES
-======================================== */
-
-// ✅ Top services (Horizontal Bar Chart)
+/**
+ * 🟣 GET /api/analytics/services/top
+ * Returns top availed services (Completed only)
+ */
 router.get('/services/top', async (req, res) => {
   try {
     const [rows] = await db.query(`
-      SELECT 
-        CASE
-          WHEN service LIKE 'Columbarium%' THEN 'Columbarium'
-          WHEN service LIKE 'Cremation Services%' THEN 'Cremation Services'
-          WHEN service LIKE 'Funeral Service%' THEN 'Funeral Service'
-          WHEN service LIKE 'Other Services%' THEN 'Other Services'
-          ELSE 'Uncategorized'
-        END AS category,
-        COUNT(*) AS total
-      FROM datarecords
+      SELECT service AS name, COUNT(*) AS total
+      FROM records
       WHERE status = 'Completed'
-      GROUP BY category
-      ORDER BY total DESC;
+      GROUP BY service
+      ORDER BY total DESC
+      LIMIT 5
     `);
-    res.json(rows);
+    res.json(Array.isArray(rows) ? rows : []); // ensure array
   } catch (err) {
     console.error('❌ Error fetching top services:', err);
-    res.status(500).json({ message: 'Database error', error: err.message });
+    res.json([]); // return empty array to prevent frontend crash
   }
 });
 
-
-// ✅ Total services availed trend (Line Chart)
+/**
+ * 🟣 GET /api/analytics/services/trend
+ * Returns monthly trend of completed services
+ */
 router.get('/services/trend', async (req, res) => {
   try {
     const [rows] = await db.query(`
-      SELECT DATE_FORMAT(created_at, '%b %Y') AS month, COUNT(*) AS total
+      SELECT DATE_FORMAT(date, '%b %Y') AS label, COUNT(*) AS count
       FROM records
       WHERE status = 'Completed'
-      GROUP BY YEAR(created_at), MONTH(created_at)
-      ORDER BY YEAR(created_at), MONTH(created_at);
+      GROUP BY YEAR(date), MONTH(date)
+      ORDER BY YEAR(date), MONTH(date);
     `);
-    res.json(rows);
+    res.json(Array.isArray(rows) ? rows : []); // ensure array
   } catch (err) {
     console.error('❌ Error fetching service trend:', err);
-    res.status(500).json({ message: 'Database error', error: err.message });
+    res.json([]); // return empty array to prevent frontend crash
   }
 });
 

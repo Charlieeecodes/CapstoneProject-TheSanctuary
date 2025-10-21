@@ -187,6 +187,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       const res = await fetch('http://localhost:5000/api/analytics/services/top', { cache: 'no-store' });
       const data = await res.json();
 
+      if (!Array.isArray(data)) {
+      console.error('Top Services data is not an array:', data);
+      return;
+}
       const labels = data.map(d => d.name);
       const values = data.map(d => d.total);
 
@@ -223,6 +227,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const res = await fetch('http://localhost:5000/api/analytics/services/trend', { cache: 'no-store' });
       const data = await res.json();
+
+      if (!Array.isArray(data)) {
+      console.error('Service Trend data is not an array:', data);
+      return;
+}
 
       const labels = data.map(d => d.label);
       const counts = data.map(d => Number(d.count));
