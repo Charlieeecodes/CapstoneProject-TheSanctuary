@@ -135,6 +135,25 @@
 /* ===================== */
 /* 📋 Filter Design */
 /* ===================== */
+.filter-bar {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.filter-group {
+  display: flex;
+  align-items: flex-start;
+}
+
+.filter-group label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
 .filter-bar select,
 .filter-bar input[type="date"],
 .search-bar input {
@@ -142,8 +161,8 @@
   border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 14px;
-  margin-right: 10px;
   transition: 0.2s ease;
+  min-width: 170px;
 }
 
 .filter-bar select:hover,
@@ -163,8 +182,9 @@
 }
 
 #addRecordBtn:hover {
-  background-color: #1b965a;
+  background-color: #17854f;
 }
+
 #recordForm select {
   padding: 10px;
   border-radius: 6px;
@@ -178,6 +198,7 @@
   border-color: #1b965a;
   outline: none;
 }
+
 /* ===================== */
 /* 🧾 Add Record Form */
 /* ===================== */

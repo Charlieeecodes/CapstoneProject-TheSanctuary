@@ -76,31 +76,35 @@ router.get('/inquiries', async (req, res) => {
   const { period = 'month', mode = 'summary' } = req.query;
 
   try {
+    // ✅ SUMMARY MODE
     if (mode === 'summary') {
       let summaryQuery = 'SELECT COUNT(*) AS total FROM inquiries';
-    
+      let dateCondition = '';
+
       if (period === 'week') {
-        summaryQuery += ' WHERE YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)';
+        // past 7 days including today
+        dateCondition = 'WHERE DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)';
       } else if (period === 'month') {
-        summaryQuery += ' WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())';
+        // current month
+        dateCondition = 'WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())';
       } else if (period === 'year') {
-        summaryQuery += ' WHERE YEAR(created_at) = YEAR(CURDATE())';
+        // current year
+        dateCondition = 'WHERE YEAR(created_at) = YEAR(CURDATE())';
       }
-    
-      const [rows] = await db.query(summaryQuery);
+
+      const [rows] = await db.query(`${summaryQuery} ${dateCondition}`);
       return res.json({ total: rows[0].total });
     }
-    
 
-    // Trend mode (keep your existing code)
+    // ✅ TREND MODE
     let trendQuery = '';
     if (period === 'week') {
       trendQuery = `
-        SELECT DAYNAME(created_at) AS label, COUNT(*) AS count
+        SELECT DATE_FORMAT(created_at, '%a') AS label, COUNT(*) AS count
         FROM inquiries
-        WHERE YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)
-        GROUP BY DAYOFWEEK(created_at)
-        ORDER BY DAYOFWEEK(created_at);
+        WHERE DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        GROUP BY DAYNAME(created_at)
+        ORDER BY DATE(created_at);
       `;
     } else if (period === 'month') {
       trendQuery = `
@@ -114,19 +118,20 @@ router.get('/inquiries', async (req, res) => {
       trendQuery = `
         SELECT DATE_FORMAT(created_at, '%b %Y') AS label, COUNT(*) AS count
         FROM inquiries
-        GROUP BY YEAR(created_at), MONTH(created_at)
-        ORDER BY YEAR(created_at), MONTH(created_at);
+        WHERE YEAR(created_at) = YEAR(CURDATE())
+        GROUP BY MONTH(created_at)
+        ORDER BY MONTH(created_at);
       `;
     }
 
     const [trendRows] = await db.query(trendQuery);
     res.json(trendRows);
-
   } catch (err) {
     console.error('❌ Error fetching inquiries analytics:', err);
     res.status(500).json({ message: 'Database error', error: err.message });
   }
 });
+
 
 
 /**

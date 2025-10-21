@@ -92,15 +92,15 @@
                     </optgroup>
                   </select>
                 </div>
-                
-                <label for="filterStatus">Status:</label>
-                <select id="filterStatus">
-                  <option value="">All</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Ongoing">Ongoing</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
+                <div class="filter-group">
+                  <label for="filterStatus">Status:</label>
+                  <select id="filterStatus">
+                    <option value="">All</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
 
                 <div class="filter-group">
                   <label for="filterDate">Date:</label>
@@ -108,10 +108,9 @@
                 </div>
               </div>
             </div>
-
           <button id="addRecordBtn">Add New Record</button>
         </div>
-
+        
         <!-- ✅ Only ONE Add New Record Form -->
         <div class="add-record" id="addRecordForm" style="display: none;">
           <h2>Add New Record</h2>
@@ -123,16 +122,8 @@
               <input type="text" id="serviceAvailed" placeholder="Service Availed" required>
               <input type="date" id="recordDate" required>
 
-              <!-- 🟢 New Status Dropdown -->
-              <select id="status" required>
-                <option value="Pending">Pending</option>
-                <option value="Ongoing">Ongoing</option>
-                <option value="Completed">Completed</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-
               <button type="submit">Save Record</button>
-            </form>
+            </form> 
         </div>
         <!-- 📋 Records Table -->
         <table class="records-table">

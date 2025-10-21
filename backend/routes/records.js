@@ -25,28 +25,30 @@ router.post('/', async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 });
-// -----------------------------
-// Filter Records by Status
-// -----------------------------
-router.get('/filterByService', async (req, res) => {
+/* ========================================
+   ✅ Filter records by STATUS
+   Example: /api/records/filterByStatus?status=Completed
+======================================== */
+router.get('/filterByStatus', async (req, res) => {
   try {
-    const { service } = req.query;
+    const { status } = req.query;
 
-    if (!service) {
-      return res.status(400).json({ message: "Service query parameter is required" });
+    if (!status) {
+      return res.status(400).json({ message: "Status query parameter is required" });
     }
 
     const [rows] = await db.query(
-      `SELECT * FROM records WHERE status = ? ORDER BY status DESC`,
-      [service]
+      `SELECT * FROM records WHERE status = ? ORDER BY date DESC`,
+      [status]
     );
 
-    res.json({ message: "Records retrieved", data: rows });
+    res.json(rows);
   } catch (err) {
-    console.error('Error fetching filtered records by service:', err);
+    console.error('❌ Error filtering records by status:', err);
     res.status(500).json({ message: "Database error", error: err });
   }
 });
+
 
 /* ========================================
    📤 Get all records

@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const inquiryGrowthEl = document.getElementById('inquiryGrowth');
   const totalFeedbacksEl = document.querySelector('.stat-card:nth-child(2) .value');
   const totalServicesEl = document.querySelector('.stat-card:nth-child(3) .value');
-  const topServiceEl = document.querySelector('.stat-card:nth-child(3) strong');
+  const topServiceEl = document.querySelector('.stat-card:nth-child(4) .value');
   const tableBody = document.querySelector('#inquiryTable tbody');
   const recentUpdatesContainer = document.getElementById('recentUpdates');
   const inquiriesPeriodSelect = document.getElementById('inquiriesPeriod');
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (totalInquiriesEl) totalInquiriesEl.textContent = data.totalInquiries ?? 0;
       if (totalFeedbacksEl) totalFeedbacksEl.textContent = data.totalFeedbacks ?? 0;
       if (totalServicesEl) totalServicesEl.textContent = data.totalServices ?? 0;
-      if (topServiceEl) topServiceEl.textContent = `Top Services Availed: ${data.topService ?? 'N/A'}`;
+      if (topServiceEl) topServiceEl.textContent =  data.topService ?? 'N/A';
     } catch (err) {
       console.error('❌ Error loading KPIs:', err);
     }
