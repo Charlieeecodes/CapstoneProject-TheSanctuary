@@ -37,7 +37,7 @@ router.get('/filterByService', async (req, res) => {
     }
 
     const [rows] = await db.query(
-      `SELECT * FROM records WHERE service = ? ORDER BY date DESC`,
+      `SELECT * FROM records WHERE status = ? ORDER BY status DESC`,
       [service]
     );
 
