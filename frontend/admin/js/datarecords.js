@@ -156,6 +156,27 @@ document.getElementById("searchInput").addEventListener("input", async (e) => {
       recordTableBody.innerHTML = "<tr><td colspan='8'>Error while filtering records.</td></tr>";
     }
   });
+  /* -----------------------------
+🧩 Filter by Status
+----------------------------- */
+document.getElementById("filterStatus").addEventListener("change", async (e) => {
+  const selectedStatus = e.target.value;
+
+  if (!selectedStatus) {
+    await loadRecords(); // reload all if no filter
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/filterByStatus?status=${encodeURIComponent(selectedStatus)}`);
+    const records = await res.json();
+    displayRecords(records);
+  } catch (err) {
+    console.error("Filter by status failed:", err);
+    recordTableBody.innerHTML = "<tr><td colspan='8'>Error while filtering by status.</td></tr>";
+  }
+});
+
     /* -----------------------------
   📅 Filter by Date (Fixed)
   ----------------------------- */

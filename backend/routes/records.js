@@ -25,6 +25,28 @@ router.post('/', async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 });
+// -----------------------------
+// Filter Records by Status
+// -----------------------------
+router.get('/filterByService', async (req, res) => {
+  try {
+    const { service } = req.query;
+
+    if (!service) {
+      return res.status(400).json({ message: "Service query parameter is required" });
+    }
+
+    const [rows] = await db.query(
+      `SELECT * FROM records WHERE service = ? ORDER BY date DESC`,
+      [service]
+    );
+
+    res.json({ message: "Records retrieved", data: rows });
+  } catch (err) {
+    console.error('Error fetching filtered records by service:', err);
+    res.status(500).json({ message: "Database error", error: err });
+  }
+});
 
 /* ========================================
    📤 Get all records
@@ -127,5 +149,6 @@ router.get('/filterByDate', async (req, res) => {
     res.status(500).json({ message: "Error filtering by date", error: err });
   }
 });
+
 
 module.exports = router;

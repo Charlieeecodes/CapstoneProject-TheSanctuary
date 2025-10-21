@@ -77,11 +77,22 @@ router.get('/inquiries', async (req, res) => {
 
   try {
     if (mode === 'summary') {
-      const [rows] = await db.query('SELECT COUNT(*) AS total FROM inquiries');
+      let summaryQuery = 'SELECT COUNT(*) AS total FROM inquiries';
+    
+      if (period === 'week') {
+        summaryQuery += ' WHERE YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)';
+      } else if (period === 'month') {
+        summaryQuery += ' WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())';
+      } else if (period === 'year') {
+        summaryQuery += ' WHERE YEAR(created_at) = YEAR(CURDATE())';
+      }
+    
+      const [rows] = await db.query(summaryQuery);
       return res.json({ total: rows[0].total });
     }
+    
 
-    // Trend mode
+    // Trend mode (keep your existing code)
     let trendQuery = '';
     if (period === 'week') {
       trendQuery = `
@@ -110,11 +121,13 @@ router.get('/inquiries', async (req, res) => {
 
     const [trendRows] = await db.query(trendQuery);
     res.json(trendRows);
+
   } catch (err) {
     console.error('❌ Error fetching inquiries analytics:', err);
     res.status(500).json({ message: 'Database error', error: err.message });
   }
 });
+
 
 /**
  * 🟣 GET /api/analytics/services/top
