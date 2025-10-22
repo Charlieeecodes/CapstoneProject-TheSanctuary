@@ -151,6 +151,35 @@ router.get('/filterByDate', async (req, res) => {
     res.status(500).json({ message: "Error filtering by date", error: err });
   }
 });
+router.post('/upload-csv', async (req, res) => {
+  try {
+    const { records } = req.body;
+
+    if (!records || records.length === 0) {
+      return res.status(400).json({ message: 'No data received.' });
+    }
+
+    // Assuming your table is named `datarecords`
+    const insertPromises = records.map(r => {
+      return new Promise((resolve, reject) => {
+        const sql = `
+          INSERT INTO datarecords (name, service, date, status)
+          VALUES (?, ?, ?, ?)
+        `;
+        db.query(sql, [r.name, r.service, r.date, r.status], (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        });
+      });
+    });
+
+    await Promise.all(insertPromises);
+    res.json({ message: '✅ CSV data successfully inserted into database!' });
+  } catch (error) {
+    console.error('Error processing CSV upload:', error);
+    res.status(500).json({ message: 'Server error during CSV upload.' });
+  }
+});
 
 
 module.exports = router;

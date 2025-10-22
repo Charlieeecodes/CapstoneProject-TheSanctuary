@@ -49,67 +49,103 @@
         <h1>Data Records</h1>
 
         <!-- 🔍 Search & Filter Bars -->
-        <div class="record-controls">
+      <div class="record-controls">
+
+        <!-- Wrap everything in a flex row -->
+        <div class="record-toolbar">
+          
+          <!-- 🔍 Search -->
           <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Search records...">
           </div>
 
-            <div class="filter-container">
-              <h3>Filter Records</h3>
-              <div class="filter-bar">
-                <div class="filter-group">
-                  <label for="filterService">Service:</label>
-                  <select id="filterService">
-                    <option value="">All Services</option>
+          <!-- 📁 CSV Upload -->
+          <div class="csv-upload-container">
+            <div class="csv-header">
+              <h3>Import Data from CSV</h3>
+              <button id="previewCsvBtn">Preview CSV</button>
+            </div>
 
-                    <optgroup label="Columbarium">
-                      <option value="Unit with perpetual care">Unit with perpetual care</option>
-                      <option value="Interment service">Interment service</option>
-                    </optgroup>
+            <div class="csv-file-row">
+              <input type="file" id="csvFileInput" accept=".csv">
+            </div>
 
-                    <optgroup label="Cremation Services">
-                      <option value="Adult cremation">Adult cremation</option>
-                      <option value="Child cremation">Child cremation</option>
-                      <option value="Baby cremation">Baby cremation</option>
-                      <option value="Fetus cremation">Fetus cremation</option>
-                      <option value="Bone cremation">Bone cremation</option>
-                      <option value="Urns">Urns</option>
-                      <option value="Keepsakes">Keepsakes</option>
-                    </optgroup>
+            <div class="csv-buttons">
+              <button id="confirmUploadBtn" style="display:none;">Confirm Upload</button>
+            </div>
+          </div>
+          <!-- 🎚️ Filter -->
+          <div class="filter-container">
+            <h3>Filter Records</h3>
+            <div class="filter-bar">
+              <div class="filter-group">
+                <label for="filterService">Service:</label>
+                <select id="filterService">
+                  <option value="">All Services</option>
 
-                    <optgroup label="Funeral Service">
-                      <option value="Retrieval of cadaver">Retrieval of cadaver</option>
-                      <option value="Embalming services">Embalming services</option>
-                      <option value="Casket">Casket</option>
-                      <option value="Chapel viewing">Chapel viewing</option>
-                      <option value="House viewing or outside viewing">House viewing or outside viewing</option>
-                      <option value="Hearse">Hearse</option>
-                    </optgroup>
+                  <optgroup label="Columbarium">
+                    <option value="Unit with perpetual care">Unit with perpetual care</option>
+                    <option value="Interment service">Interment service</option>
+                  </optgroup>
 
-                    <optgroup label="Other Services">
-                      <option value="Funeral Mass">Funeral Mass</option>
-                      <option value="Function area">Function area</option>
-                    </optgroup>
-                  </select>
-                </div>
-                <div class="filter-group">
-                  <label for="filterStatus">Status:</label>
-                  <select id="filterStatus">
-                    <option value="">All</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
-                </div>
+                  <optgroup label="Cremation Services">
+                    <option value="Adult cremation">Adult cremation</option>
+                    <option value="Child cremation">Child cremation</option>
+                    <option value="Baby cremation">Baby cremation</option>
+                    <option value="Fetus cremation">Fetus cremation</option>
+                    <option value="Bone cremation">Bone cremation</option>
+                    <option value="Urns">Urns</option>
+                    <option value="Keepsakes">Keepsakes</option>
+                  </optgroup>
 
-                <div class="filter-group">
-                  <label for="filterDate">Date:</label>
-                  <input type="date" id="filterDate">
-                </div>
+                  <optgroup label="Funeral Service">
+                    <option value="Retrieval of cadaver">Retrieval of cadaver</option>
+                    <option value="Embalming services">Embalming services</option>
+                    <option value="Casket">Casket</option>
+                    <option value="Chapel viewing">Chapel viewing</option>
+                    <option value="House viewing or outside viewing">House viewing or outside viewing</option>
+                    <option value="Hearse">Hearse</option>
+                  </optgroup>
+
+                  <optgroup label="Other Services">
+                    <option value="Funeral Mass">Funeral Mass</option>
+                    <option value="Function area">Function area</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label for="filterStatus">Status:</label>
+                <select id="filterStatus">
+                  <option value="">All</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label for="filterDate">Date:</label>
+                <input type="date" id="filterDate">
               </div>
             </div>
+          </div>
+
+          <!-- ➕ Add Record -->
           <button id="addRecordBtn">Add New Record</button>
+
         </div>
+
+        <!-- 📋 CSV Preview Table (below toolbar) -->
+        <div id="csvPreviewContainer" class="csv-preview">
+          <table id="csvPreviewTable">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+      </div>
+
         
         <!-- ✅ Only ONE Add New Record Form -->
         <div class="add-record" id="addRecordForm" style="display: none;">

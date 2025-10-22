@@ -290,3 +290,68 @@ document.getElementById("filterStatus").addEventListener("change", async (e) => 
 
   init();
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  const csvInput = document.getElementById("csvFileInput");
+  const previewBtn = document.getElementById("previewCsvBtn");
+  const confirmBtn = document.getElementById("confirmUploadBtn");
+  const previewTable = document.getElementById("csvPreviewTable");
+  const previewContainer = document.getElementById("csvPreviewContainer");
+
+  let parsedData = [];
+
+  // 🟣 Step 1: Preview CSV
+  previewBtn.addEventListener("click", () => {
+    const file = csvInput.files[0];
+    if (!file) {
+      alert("Please select a CSV file first!");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      const rows = text.split("\n").map(row => row.split(","));
+      const headers = rows[0];
+      const dataRows = rows.slice(1).filter(r => r.join("").trim() !== "");
+
+      // Build table preview
+      previewTable.querySelector("thead").innerHTML = "<tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
+      previewTable.querySelector("tbody").innerHTML = dataRows.map(r => "<tr>" + r.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
+
+      // Store parsed data for later upload
+      parsedData = dataRows.map(r => {
+        const obj = {};
+        headers.forEach((h, i) => obj[h.trim()] = r[i]?.trim());
+        return obj;
+      });
+
+      confirmBtn.style.display = "inline-block";
+    };
+    reader.readAsText(file);
+  });
+
+  // 🟢 Step 2: Confirm Upload to Backend
+  confirmBtn.addEventListener("click", async () => {
+    if (parsedData.length === 0) {
+      alert("No data to upload!");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/records/upload-csv", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ records: parsedData }),
+      });
+
+      const result = await res.json();
+      alert(result.message || "Upload complete!");
+      confirmBtn.style.display = "none";
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Failed to upload CSV data.");
+    }
+  });
+});
+
