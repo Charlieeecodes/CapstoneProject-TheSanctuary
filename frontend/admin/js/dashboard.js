@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Element references
   // -----------------------------
   const totalInquiriesEl = document.getElementById('totalInquiries');
-  const inquiryGrowthEl = document.getElementById('inquiryGrowth');
   const totalFeedbacksEl = document.querySelector('.stat-card:nth-child(2) .value');
   const totalServicesEl = document.querySelector('.stat-card:nth-child(3) .value');
   const topServiceEl = document.querySelector('.stat-card:nth-child(4) .value');
@@ -39,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // -----------------------------
-  // Load KPIs (from /api/analytics/kpis)
+  // Load KPIs
   // -----------------------------
   async function loadKPIs() {
     try {
@@ -47,29 +46,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!res.ok) throw new Error('Failed to fetch KPIs');
       const data = await res.json();
 
-      // Update KPI values
       if (totalInquiriesEl) totalInquiriesEl.textContent = data.totalInquiries ?? 0;
       if (totalFeedbacksEl) totalFeedbacksEl.textContent = data.totalFeedbacks ?? 0;
       if (totalServicesEl) totalServicesEl.textContent = data.totalServices ?? 0;
-      if (topServiceEl) topServiceEl.textContent =  data.topService ?? 'N/A';
+      if (topServiceEl) topServiceEl.textContent = data.topService ?? 'N/A';
     } catch (err) {
       console.error('❌ Error loading KPIs:', err);
     }
   }
 
   // -----------------------------
-  // Inquiries growth tracking
+  // Inquiries tracking (total only)
   // -----------------------------
   async function loadDashboardInquiries(period = 'month') {
     try {
       const data = await fetchInquiriesByPeriod(period);
       const total = Number(data.total) || 0;
       totalInquiriesEl.textContent = total;
-
-      const lastValue = parseInt(localStorage.getItem(`lastInquiries_${period}`)) || 0;
-      const growth = lastValue ? (((total - lastValue) / lastValue) * 100).toFixed(1) : 0;
-      inquiryGrowthEl.textContent = `${growth >= 0 ? '+' : ''}${growth}%`;
-      localStorage.setItem(`lastInquiries_${period}`, total);
     } catch (err) {
       console.error('[dashboard] loadDashboardInquiries error:', err);
       totalInquiriesEl.textContent = 'Error';
@@ -77,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // -----------------------------
-  // Load recent updates (Inquiries + Feedbacks)
+  // Load recent updates
   // -----------------------------
   async function loadRecentUpdates() {
     try {
@@ -125,7 +118,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         });
       });
-
     } catch (err) {
       console.error('Error loading updates:', err);
       recentUpdatesContainer.innerHTML = `<p style="color:red;">Error loading updates.</p>`;

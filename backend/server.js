@@ -13,12 +13,15 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static("public"));
+
 
 // ✅ API Routes
 app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/records', recordRoutes);
 app.use('/api/feedbacks', feedbackRoutes);
 app.use('/api/analytics', analyticsRoutes); // ✅ MOVED ABOVE LISTEN()
+
 
 console.log('✅ Routes mounted successfully');
 

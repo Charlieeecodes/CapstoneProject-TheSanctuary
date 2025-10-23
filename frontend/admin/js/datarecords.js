@@ -297,61 +297,115 @@ document.addEventListener("DOMContentLoaded", () => {
   const confirmBtn = document.getElementById("confirmUploadBtn");
   const previewTable = document.getElementById("csvPreviewTable");
   const previewContainer = document.getElementById("csvPreviewContainer");
+  const fileInput = document.getElementById("csvFileInput");
+  const fileNameLabel = document.getElementById("fileNameLabel");
 
   let parsedData = [];
+  fileInput.addEventListener("change", () => {
+  fileNameLabel.textContent = fileInput.files.length
+    ? fileInput.files[0].name
+    : "No file chosen";
+  });
 
-  // 🟣 Step 1: Preview CSV
-  previewBtn.addEventListener("click", () => {
-    const file = csvInput.files[0];
-    if (!file) {
-      alert("Please select a CSV file first!");
-      return;
-    }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target.result;
-      const rows = text.split("\n").map(row => row.split(","));
-      const headers = rows[0];
-      const dataRows = rows.slice(1).filter(r => r.join("").trim() !== "");
+// 🟣 Step 1: Preview CSV
+previewBtn.addEventListener("click", () => {
+  const file = csvInput.files[0];
+  if (!file) {
+    alert("Please select a CSV file first!");
+    return;
+  }
 
-      // Build table preview
-      previewTable.querySelector("thead").innerHTML = "<tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
-      previewTable.querySelector("tbody").innerHTML = dataRows.map(r => "<tr>" + r.map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
+  Papa.parse(file, {
+    header: true, // auto-reads column headers
+    skipEmptyLines: true,
+    complete: (results) => {
+      const data = results.data;
 
-      // Store parsed data for later upload
-      parsedData = dataRows.map(r => {
-        const obj = {};
-        headers.forEach((h, i) => obj[h.trim()] = r[i]?.trim());
-        return obj;
-      });
+      // Automatically detect if there's an "id" column and skip it
+      const previewColumns = Object.keys(data[0]).filter(h => h.toLowerCase() !== "id");
+
+      // ✅ Build preview table
+      previewTable.querySelector("thead").innerHTML =
+        "<tr>" + previewColumns.map(h => `<th>${h}</th>`).join("") + "</tr>";
+
+      previewTable.querySelector("tbody").innerHTML = data
+        .map(row => {
+          const filtered = previewColumns.map(h => `<td>${row[h] || ""}</td>`).join("");
+          return `<tr>${filtered}</tr>`;
+        })
+        .join("");
+
+      // ✅ Build parsedData (for upload)
+      parsedData = data.map(row => ({
+        client_name: row.client_name?.trim() || null,
+        email: row.email?.trim() || null,
+        contact: row.contact?.trim() || null,
+        address: row.address?.trim() || null,
+        service: row.service?.trim() || null,
+        date: row.date?.trim() || null,
+        status: row.status?.trim() || "Pending",
+      }));
 
       confirmBtn.style.display = "inline-block";
-    };
-    reader.readAsText(file);
+    },
+    error: (err) => {
+      console.error("CSV parse error:", err);
+      alert("Failed to parse CSV file. Please check the format.");
+    },
   });
+});
+// 🟢 Step 2: Confirm Upload to Backend
+confirmBtn.addEventListener("click", async () => {
+  if (parsedData.length === 0) {
+    alert("No data to upload!");
+    return;
+  }
 
-  // 🟢 Step 2: Confirm Upload to Backend
-  confirmBtn.addEventListener("click", async () => {
-    if (parsedData.length === 0) {
-      alert("No data to upload!");
-      return;
-    }
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = "Uploading...";
+
+  try {
+    const res = await fetch("http://localhost:5000/api/records/upload-csv", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ records: parsedData }),
+    });
+
+    // ✅ Always read text safely first
+    const text = await res.text();
+    let result;
 
     try {
-      const res = await fetch("/api/records/upload-csv", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ records: parsedData }),
-      });
-
-      const result = await res.json();
-      alert(result.message || "Upload complete!");
-      confirmBtn.style.display = "none";
-    } catch (err) {
-      console.error("Upload failed:", err);
-      alert("Failed to upload CSV data.");
+      result = JSON.parse(text);
+    } catch {
+      throw new Error("Invalid response from server");
     }
-  });
+
+    if (!res.ok || !result.success) {
+      throw new Error(result.message || "Upload failed");
+    }
+
+    // ✅ Show confirmation
+    showUploadNotification(result.message || "✅ Upload complete!");
+    confirmBtn.style.display = "none";
+  } catch (err) {
+    console.error("Upload failed:", err);
+    alert("❌ " + err.message);
+  } finally {
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = "Confirm Upload";
+  }
+});
+function showUploadNotification(message) {
+  const popup = document.getElementById("uploadNotification");
+  popup.textContent = message;
+  popup.classList.add("show");
+
+  // Hide after 3 seconds
+  setTimeout(() => {
+    popup.classList.remove("show");
+  }, 3000);
+}
 });
 

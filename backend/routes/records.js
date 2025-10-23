@@ -25,30 +25,6 @@ router.post('/', async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 });
-/* ========================================
-   ✅ Filter records by STATUS
-   Example: /api/records/filterByStatus?status=Completed
-======================================== */
-router.get('/filterByStatus', async (req, res) => {
-  try {
-    const { status } = req.query;
-
-    if (!status) {
-      return res.status(400).json({ message: "Status query parameter is required" });
-    }
-
-    const [rows] = await db.query(
-      `SELECT * FROM records WHERE status = ? ORDER BY date DESC`,
-      [status]
-    );
-
-    res.json(rows);
-  } catch (err) {
-    console.error('❌ Error filtering records by status:', err);
-    res.status(500).json({ message: "Database error", error: err });
-  }
-});
-
 
 /* ========================================
    📤 Get all records
@@ -112,7 +88,6 @@ router.delete('/:id', async (req, res) => {
 ======================================== */
 router.get('/search', async (req, res) => {
   const { query } = req.query;
-
   if (!query) return res.status(400).json({ message: 'Search query is required' });
 
   const sql = `
@@ -135,7 +110,30 @@ router.get('/search', async (req, res) => {
 });
 
 /* ========================================
-   ✅ Filter records by date
+   ✅ Filter records by STATUS
+======================================== */
+router.get('/filterByStatus', async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    if (!status) {
+      return res.status(400).json({ message: "Status query parameter is required" });
+    }
+
+    const [rows] = await db.query(
+      `SELECT * FROM records WHERE status = ? ORDER BY date DESC`,
+      [status]
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error('❌ Error filtering records by status:', err);
+    res.status(500).json({ message: "Database error", error: err });
+  }
+});
+
+/* ========================================
+   ✅ Filter records by DATE
 ======================================== */
 router.get('/filterByDate', async (req, res) => {
   const { date } = req.query;
@@ -151,35 +149,50 @@ router.get('/filterByDate', async (req, res) => {
     res.status(500).json({ message: "Error filtering by date", error: err });
   }
 });
+
+/* ========================================
+   📂 Upload CSV to Database
+======================================== */
 router.post('/upload-csv', async (req, res) => {
   try {
     const { records } = req.body;
 
     if (!records || records.length === 0) {
-      return res.status(400).json({ message: 'No data received.' });
+      return res.status(400).json({
+        success: false,
+        message: '⚠️ No data received. Please upload a valid CSV file.',
+      });
     }
 
-    // Assuming your table is named `datarecords`
-    const insertPromises = records.map(r => {
-      return new Promise((resolve, reject) => {
-        const sql = `
-          INSERT INTO datarecords (name, service, date, status)
-          VALUES (?, ?, ?, ?)
-        `;
-        db.query(sql, [r.name, r.service, r.date, r.status], (err, result) => {
-          if (err) reject(err);
-          else resolve(result);
-        });
-      });
-    });
+    const insertSQL = `
+      INSERT INTO records (client_name, email, contact, address, service, date, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
 
-    await Promise.all(insertPromises);
-    res.json({ message: '✅ CSV data successfully inserted into database!' });
+    for (const r of records) {
+      await db.query(insertSQL, [
+        r.client_name || null,
+        r.email || null,
+        r.contact || null,
+        r.address || null,
+        r.service || null,
+        r.date || null,
+        r.status || 'Pending',
+      ]);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `✅ Upload complete! ${records.length} record(s) successfully added.`,
+    });
   } catch (error) {
-    console.error('Error processing CSV upload:', error);
-    res.status(500).json({ message: 'Server error during CSV upload.' });
+    console.error('❌ Error processing CSV upload:', error);
+    return res.status(500).json({
+      success: false,
+      message: '🚨 Server error during CSV upload.',
+      error: error.message,
+    });
   }
 });
-
 
 module.exports = router;

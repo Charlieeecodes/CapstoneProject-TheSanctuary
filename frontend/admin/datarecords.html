@@ -65,11 +65,9 @@
               <h3>Import Data from CSV</h3>
               <button id="previewCsvBtn">Preview CSV</button>
             </div>
-
             <div class="csv-file-row">
               <input type="file" id="csvFileInput" accept=".csv">
             </div>
-
             <div class="csv-buttons">
               <button id="confirmUploadBtn" style="display:none;">Confirm Upload</button>
             </div>
@@ -158,6 +156,12 @@
               <input type="text" id="serviceAvailed" placeholder="Service Availed" required>
               <input type="date" id="recordDate" required>
 
+              <select id="status" required>
+                <option value="Pending" selected>Pending</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+
               <button type="submit">Save Record</button>
             </form> 
         </div>
@@ -184,6 +188,8 @@
       </div>
     </main>
   </div>
+  <div id="uploadNotification" class="notification-popup"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="js/datarecords.js"></script>
 </body>
 </html>
