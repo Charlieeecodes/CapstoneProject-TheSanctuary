@@ -174,5 +174,56 @@ router.get('/services/trend', async (req, res) => {
     res.json([]); // return empty array to prevent frontend crash
   }
 });
+/**
+ * 🧠 GET /api/analytics/predictive
+ * Predicts future inquiry or service counts (simple trend-based projection)
+ * Query: ?type=inquiries|services
+ */
+router.get('/predictive', async (req, res) => {
+  const { type = 'inquiries' } = req.query;
+
+  try {
+    let baseQuery = '';
+    if (type === 'inquiries') {
+      baseQuery = `
+        SELECT DATE_FORMAT(created_at, '%b %Y') AS label, COUNT(*) AS count
+        FROM inquiries
+        GROUP BY YEAR(created_at), MONTH(created_at)
+        ORDER BY YEAR(created_at), MONTH(created_at)
+        LIMIT 6;
+      `;
+    } else if (type === 'services') {
+      baseQuery = `
+        SELECT DATE_FORMAT(date, '%b %Y') AS label, COUNT(*) AS count
+        FROM records
+        WHERE status = 'Completed'
+        GROUP BY YEAR(date), MONTH(date)
+        ORDER BY YEAR(date), MONTH(date)
+        LIMIT 6;
+      `;
+    } else {
+      return res.status(400).json({ message: 'Invalid type parameter' });
+    }
+
+    const [rows] = await db.query(baseQuery);
+    if (!rows.length) return res.json({ forecast: 0, growthRate: 0 });
+
+    const counts = rows.map(r => Number(r.count));
+    const avgGrowth = counts.length > 1
+      ? ((counts[counts.length - 1] - counts[0]) / counts[0]) * 100
+      : 0;
+    const forecast = Math.round(counts[counts.length - 1] * (1 + avgGrowth / 100));
+
+    res.json({
+      lastPeriod: counts[counts.length - 1],
+      forecast,
+      growthRate: avgGrowth.toFixed(2),
+      dataset: rows
+    });
+  } catch (err) {
+    console.error('❌ Predictive analytics error:', err);
+    res.status(500).json({ message: 'Database error', error: err.message });
+  }
+});
 
 module.exports = router;

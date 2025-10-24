@@ -53,11 +53,11 @@
           <div class="stat-card">
             <div class="card-header">
               <h3>Total Inquiries</h3>
-                <select id="inquiriesPeriod">
-                  <option value="week">Week</option>
-                  <option value="month" selected>Month</option>
-                  <option value="year">Year</option>
-                </select>
+              <select id="inquiriesPeriod">
+                <option value="week">Week</option>
+                <option value="month" selected>Month</option>
+                <option value="year">Year</option>
+              </select>
             </div>
             <div class="card-content">
               <p><strong>Total Inquiries:</strong> <span id="kpiTotalInquiries">0</span></p>
@@ -87,7 +87,7 @@
             </div>
           </div>
 
-          <!-- Average Growth -->
+          <!-- Total Services Availed -->
           <div class="stat-card">
             <div class="card-header">
               <h3>Total Services Availed</h3>
@@ -97,23 +97,46 @@
               <canvas id="servicesMiniChart"></canvas>
             </div>
           </div>
+        </div>
       </section>
 
       <!-- Main Charts -->
       <section class="analytics-charts-side-by-side">
         <div class="chart-container">
           <h3>Monthly Inquiries Trend</h3>
+          <button class="view-insights-btn" data-chart="inquiriesTrend">View Insights</button>
           <canvas id="inquiriesTrendChart"></canvas>
         </div>
 
         <div class="chart-container">
           <h3>Feedback Ratings per Service</h3>
+          <button class="view-insights-btn" data-chart="feedbackRatings">View Insights</button>
           <canvas id="servicesBreakdownChart"></canvas>
         </div>
       </section>
+
+      <!-- Additional Charts (added dynamically by JS) -->
     </main>
   </div>
 
+  <!-- 🧠 Insights Modal -->
+  <div id="insightsModal" class="insights-modal hidden">
+    <div class="modal-content">
+      <span class="close-btn">&times;</span>
+      <h2 id="insightTitle">Chart Insights</h2>
+      <div class="modal-body">
+        <!-- Enlarged Chart -->
+        <canvas id="insightsChart"></canvas>
+
+        <!-- Predictive / Prescriptive -->
+        <h3>Predictive Analysis</h3>
+        <p id="predictiveText">Analyzing trend...</p>
+
+        <h3>Prescriptive Insights</h3>
+        <p id="prescriptiveText">Generating recommendations...</p>
+      </div>
+    </div>
+  </div>
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="js/analytics.js"></script>
