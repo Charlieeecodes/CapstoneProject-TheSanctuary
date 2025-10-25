@@ -213,6 +213,14 @@
 #predictiveText, #prescriptiveText {
   transition: color 0.3s;
 }
+{
+  label: 'Forecast Range',
+  data: forecastLabels.map((_, i) => i === forecastLabels.length - 1 ? [lowerBound, upperBound] : [null, null]),
+  type: 'line',
+  borderColor: 'rgba(255,165,0,0)',
+  backgroundColor: 'rgba(255,165,0,0.15)',
+  fill: true,
+}
 
 /* ----------------------------- */
 /* Responsive Styles             */

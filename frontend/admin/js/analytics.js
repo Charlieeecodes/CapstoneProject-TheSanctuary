@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // New chart containers
   let topServicesChartCanvas;
   let serviceTrendChartCanvas;
+  let currentInquiriesPeriod = 'month';
+
 
   // Create new chart section dynamically (below existing charts)
   function appendNewCharts() {
@@ -280,12 +282,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (inquiriesPeriodSelect) {
     inquiriesPeriodSelect.addEventListener('change', async e => {
       const periodMap = { weekly: 'week', monthly: 'month', yearly: 'year' };
-      const period = periodMap[e.target.value] || e.target.value;
-      await updateInquiriesChart(period);
-      await updateInquiriesKPI(period);
+      currentInquiriesPeriod = periodMap[e.target.value] || e.target.value; 
+      await updateInquiriesChart(currentInquiriesPeriod);
+      await updateInquiriesKPI(currentInquiriesPeriod);
     });
 
     inquiriesPeriodSelect.value = 'month';
+    currentInquiriesPeriod = 'month';
     await updateInquiriesChart('month');
     await updateInquiriesKPI('month');
   }
@@ -303,13 +306,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!insightsModal) return;
 
     // 🧹 Always destroy any existing modal chart first
+    // 🧹 Ensure no old Chart.js instance is active on the canvas
     if (window.insightsChartInstance) {
       try {
         window.insightsChartInstance.destroy();
+        window.insightsChartInstance = null;
+        console.log('🧹 Destroyed previous insights chart before creating a new one');
       } catch (err) {
-        console.warn('[InsightsModal] Chart destroy on close error:', err);
+        console.warn('[InsightsModal] Chart destroy error:', err);
       }
-      window.insightsChartInstance = null;
     }
 
     const canvas = document.getElementById('insightsChart');
@@ -378,10 +383,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (chartType === 'feedbackRatings') {
       insightTitle.textContent = 'Feedback Ratings Insights';
 
-      const avgRatings = window.kpiData?.avgRatings || {
-        overall: 4.5, service: 4.3, satisfaction: 4.1,
-        professionalism: 4.7, communication: 3.9, facility: 4.0
-      };
+      // 🧠 Always fetch fresh KPI data before displaying insights
+      let avgRatings = null;
+      try {
+        const res = await fetch('http://localhost:5000/api/analytics/kpis', { cache: 'no-store' });
+        const data = await res.json();
+        avgRatings = data.avgRatings;
+        window.kpiData = data; // 🔁 update global cache for next time
+      } catch (err) {
+        console.error('❌ Failed to refresh feedback KPI data:', err);
+      }
+
+      // 🧩 Fallback if fetch fails
+      if (!avgRatings) {
+        avgRatings = {
+          overall: 4.5, service: 4.3, satisfaction: 4.1,
+          professionalism: 4.7, communication: 3.9, facility: 4.0
+        };
+      }
 
       const categories = Object.keys(avgRatings);
       const values = Object.values(avgRatings).map(Number);
@@ -395,7 +414,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       prescriptiveText.textContent =
         values[weakestIndex] < 4
           ? `📉 Focus on improving ${categories[weakestIndex]} through training or quality adjustments.`
-          : `✅ Ratings are consistently high across all aspects — maintain service quality and responsiveness.`;
+          : `✅ Ratings are consistently high across all aspects ; maintain service quality and responsiveness.`;
 
       window.insightsChartInstance = new Chart(ctx, {
         type: 'bar',
@@ -454,19 +473,57 @@ document.addEventListener('DOMContentLoaded', async () => {
       prescriptiveText.textContent = 'Please ensure recent records exist for this period.';
       return;
     }
-    const predictedNext = linearRegressionForecast(counts);
-    const lastValue = counts[counts.length - 1] || 0;
+    // ==============================
+    // 🧠 Enhanced Predictive & Prescriptive Logic
+    // ==============================
+
+    // Step 1: Smooth data with 3-point moving average to reduce spikes
+    const smoothed = counts.map((_, i, arr) => {
+      const prev = arr[i - 1] ?? arr[i];
+      const next = arr[i + 1] ?? arr[i];
+      return Math.round((prev + arr[i] + next) / 3);
+    });
+
+    // Step 2: Forecast using smoothed data
+    const predictedNext = linearRegressionForecast(smoothed);
+    const lastValue = smoothed[smoothed.length - 1] || 0;
     const growthRate = lastValue ? ((predictedNext - lastValue) / lastValue) * 100 : 0;
 
+    // Step 3: Compute forecast range for realism
+    const lowerBound = Math.round(predictedNext * 0.9);
+    const upperBound = Math.round(predictedNext * 1.1);
+
+    // Step 4: Context-aware predictive analysis
+    let timeframeContext = '';
+    if (period === 'week') timeframeContext = 'this week';
+    else if (period === 'month') timeframeContext = 'this month';
+    else if (period === 'year') timeframeContext = 'this year';
+
     predictiveText.textContent =
-      `Last period: ${lastValue}. Forecast next: ${predictedNext} (${growthRate.toFixed(2)}% change).`;
-    prescriptiveText.textContent =
-      growthRate > 15
-        ? '📈 High growth! Allocate more staff/resources.'
-        : growthRate < -5
-        ? '📉 Decreasing trend detected. Review operations.'
-        : '→ Trend is stable. Maintain current operations.';
-    predictiveText.className = growthRate > 0 ? 'high' : 'low';
+      `Inquiries last ${timeframeContext}: ${lastValue}. Forecast for next ${period}: ${predictedNext} (${growthRate.toFixed(1)}% change, range ${lowerBound}-${upperBound}).`;
+
+    // Step 5: Smarter prescriptive text based on chartType and growth
+    if (chartType === 'inquiriesTrend') {
+      if (growthRate > 10) {
+        prescriptiveText.textContent = '📈 Inquiries are trending upward ; prepare additional staff and support for higher demand.';
+      } else if (growthRate < -5) {
+        prescriptiveText.textContent = '📉 Decline detected ; review communication and marketing channels to re-engage clients.';
+      } else {
+        prescriptiveText.textContent = '→ Stable inquiries trend ; maintain current outreach and monitor performance.';
+      }
+    } else if (chartType === 'serviceTrend') {
+      if (growthRate > 10) {
+        prescriptiveText.textContent = ' More services are being availed ; ensure inventory and capacity can meet demand.';
+      } else if (growthRate < -5) {
+        prescriptiveText.textContent = ' Fewer services completed ; investigate possible causes (e.g., scheduling or supply issues).';
+      } else {
+        prescriptiveText.textContent = ' Service trends are steady ; keep operational efficiency consistent.';
+      }
+    }
+
+    // Step 6: Optional color styling
+    predictiveText.className = growthRate > 10 ? 'high' : growthRate < -5 ? 'low' : 'neutral';
+
 
     insightTitle.textContent =
       chartType === 'inquiriesTrend'
@@ -516,9 +573,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 document.querySelectorAll('.view-insights-btn').forEach(btn => {
   btn.addEventListener('click', e => {
     const chartType = e.target.getAttribute('data-chart');
-    openInsightsModal(chartType);
+
+    // 🧩 If viewing inquiries trend, pass current period dynamically
+    if (chartType === 'inquiriesTrend') {
+      openInsightsModal(chartType, currentInquiriesPeriod);
+    } else {
+      openInsightsModal(chartType);
+    }
   });
 });
+
 
 function closeInsightsModal() {
   insightsModal.classList.add('hidden');
