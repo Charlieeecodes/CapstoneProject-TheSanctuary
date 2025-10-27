@@ -1,57 +1,155 @@
+/* ------------------------------
+   Global Styles
+------------------------------ */
 body {
   font-family: 'Arial', sans-serif;
-  background-color: #f9f9f9;
+  background-color: #ffffff;
   margin: 0;
   padding: 0;
+}
+/* ------------------------------
+   Header Design (Right Half, Left Edge Diagonal)
+------------------------------ */
+.main-header {
+  display: flex;             /* ✅ side-by-side layout */
+  height: 100px;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+.header-image {
+  width: 50%;
+  height: 80%; /* or any height you like */
+  overflow: hidden;
+}
+
+.header-image img {
+  width:80%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  margin-top: 175px;
+}
+/* ------------------------------
+   Logo Placement (Top-Left)
+------------------------------ */
+.logo {
+  position: absolute;
+  top: 15px;     /* distance from top */
+  left: 40px;    /* distance from left edge */
+  z-index: 10;   /* sits above the background */
+}
+
+.logo img {
+  width: 38%;   /* adjust size as needed */
+  height: auto;
+  object-fit: contain;
+}
+
+
+
+/* Right-side header with diagonal left edge */
+.header-bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 60%;                            /* covers right half */
+  height: 100%;
+  background-color: #1b965a;
+  clip-path: polygon(0% 0, 100% 0, 100% 100%, 20% 100%);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;             /* ✅ push links all the way right */
+  padding-right: 100px;                   /* ✅ spacing from the right edge */
+  box-shadow: -5px 0 10px rgba(0, 0, 0, 0.2);
+  z-index: 5;
+}
+
+/* Navigation Links */
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 45px; /* 🔹 increase this value for more spacing (default was 25px) */
+  margin: 0;
+  padding: 0;
+}
+
+
+.nav-links li a {
+  text-decoration: none;
+  color: #ecf0f1;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: color 0.3s, transform 0.2s;
+}
+
+.nav-links li a:hover {
+  color: #1abc9c;
+  transform: scale(1.1);
+}
+
+.nav-links li a.active {
+  color: #1aebc1;
+}
+
+/* ------------------------------
+   Homepage Content
+------------------------------ */
+.homepage-content {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: calc(100vh - 100px);
+  text-align: center;
+  padding: 20px;
 }
 
-.maintenance-container {
-  text-align: center;
+.welcome-container {
   background-color: #fff;
-  padding: 40px;
+  padding: 40px 60px;
   border-radius: 15px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  max-width: 500px;
+  max-width: 600px;
 }
 
-.maintenance-container h1 {
-  font-size: 1rem;
-  color: #ff6b6b;
-  margin-bottom: 20px;
+.welcome-container h2 {
+  color: #2c3e50;
+  margin-bottom: 10px;
 }
 
-.maintenance-container p {
-  font-size: 1.1rem;
+.welcome-container p {
   color: #555;
-  margin-bottom: 30px;
-}
-
-.nav-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
   margin-bottom: 20px;
-}
-
-.nav-buttons a {
-  text-decoration: none;
-  background-color: #4CAF50;
-  color: white;
-  padding: 12px 25px;
-  border-radius: 8px;
-  font-size: 20px;
-  transition: background-color 0.3s;
-}
-
-.nav-buttons a:hover {
-  background-color: #45a049;
 }
 
 .footer-note {
   font-size: 0.9rem;
   color: #999;
+}
+
+/* ------------------------------
+   Responsive Adjustments
+------------------------------ */
+@media (max-width: 900px) {
+  .header-bar {
+    width: 100%;
+    transform: none;
+    flex-direction: column;
+    padding: 15px 10px;
+  }
+
+  .main-header::after {
+    display: none;
+  }
+
+  .site-title, .nav-links {
+    transform: none;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+  }
 }
