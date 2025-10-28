@@ -1,15 +1,17 @@
 document.addEventListener("DOMContentLoaded", async () => {
+  /* ========================================
+     🧩 ELEMENT REFERENCES
+  ======================================== */
   const addRecordBtn = document.getElementById("addRecordBtn");
   const addRecordForm = document.getElementById("addRecordForm");
   const recordForm = document.getElementById("recordForm");
   const recordTableBody = document.getElementById("recordTableBody");
-
   const API_URL = "http://localhost:5000/api/records";
   let editingId = null;
 
-  /* -----------------------------
-   🕒 Update topbar date and time
-  ----------------------------- */
+  /* ========================================
+     🕒 TOPBAR DATE & TIME
+  ======================================== */
   function updateDateTime() {
     const now = new Date();
     const options = {
@@ -25,48 +27,54 @@ document.addEventListener("DOMContentLoaded", async () => {
   setInterval(updateDateTime, 1000);
   updateDateTime();
 
-  /* -----------------------------
-   🔄 Load all records from backend
-  ----------------------------- */
+  /* ========================================
+     📥 LOAD RECORDS
+  ======================================== */
   async function loadRecords() {
     recordTableBody.innerHTML = "<tr><td colspan='8'>Loading...</td></tr>";
     try {
       const res = await fetch(API_URL);
       const records = await res.json();
-
-      if (!records || records.length === 0) {
-        recordTableBody.innerHTML = "<tr><td colspan='8'>No records found.</td></tr>";
-        return;
-      }
-
-      recordTableBody.innerHTML = records
-        .map(
-          (record) => `
-          <tr>
-            <td>${record.client_name}</td>
-            <td>${record.email}</td>
-            <td>${record.contact}</td>
-            <td>${record.address}</td>
-            <td>${record.service}</td>
-            <td>${record.date}</td>
-            <td>${record.status}</td>
-            <td>
-              <button class="edit" data-id="${record.id}">Edit</button>
-              <button class="delete" data-id="${record.id}">Delete</button>
-            </td>
-          </tr>
-        `
-        )
-        .join("");
+      displayRecords(records);
     } catch (err) {
-      console.error("Error loading records:", err);
+      console.error("❌ Error loading records:", err);
       recordTableBody.innerHTML = "<tr><td colspan='8'>Failed to load records.</td></tr>";
     }
   }
 
-  /* -----------------------------
-   ➕ Add or Update record
-  ----------------------------- */
+  /* ========================================
+     🧾 DISPLAY RECORDS
+  ======================================== */
+  function displayRecords(records) {
+    recordTableBody.innerHTML = "";
+
+    if (!records || records.length === 0) {
+      recordTableBody.innerHTML = "<tr><td colspan='8'>No records found.</td></tr>";
+      return;
+    }
+
+    records.forEach((record) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${record.client_name}</td>
+        <td>${record.email}</td>
+        <td>${record.contact}</td>
+        <td>${record.address}</td>
+        <td>${record.service}</td>
+        <td>${record.date}</td>
+        <td>${record.status}</td>
+        <td>
+          <button class="edit" data-id="${record.id}">Edit</button>
+          <button class="delete" data-id="${record.id}">Delete</button>
+        </td>
+      `;
+      recordTableBody.appendChild(row);
+    });
+  }
+
+  /* ========================================
+     ➕ ADD / UPDATE RECORD
+  ======================================== */
   recordForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -110,163 +118,100 @@ document.addEventListener("DOMContentLoaded", async () => {
         alert("Failed to save record.");
       }
     } catch (err) {
-      console.error("Error saving record:", err);
+      console.error("❌ Error saving record:", err);
     }
   });
-  /* -----------------------------
- 🔍 Search Function (Fixed)
------------------------------ */
-document.getElementById("searchInput").addEventListener("input", async (e) => {
-  const query = e.target.value.trim();
 
-  if (!query) {
-    await loadRecords(); // reload all if empty
-    return;
-  }
+  /* ========================================
+     🔍 SEARCH
+  ======================================== */
+  document.getElementById("searchInput").addEventListener("input", async (e) => {
+    const query = e.target.value.trim();
 
-  try {
-    const res = await fetch(`${API_URL}/search?query=${encodeURIComponent(query)}`);
-    const records = await res.json();
-
-    displayRecords(records);
-  } catch (err) {
-    console.error("Search failed:", err);
-    recordTableBody.innerHTML = "<tr><td colspan='8'>Error while searching records.</td></tr>";
-  }
-});
-
-  /* -----------------------------
-  🧮 Filter by Service (Fixed)
-  ----------------------------- */
-  document.getElementById("filterService").addEventListener("change", async (e) => {
-    const selectedService = e.target.value;
-
-    if (!selectedService) {
-      await loadRecords(); // reload all if no filter
+    if (!query) {
+      await loadRecords();
       return;
     }
 
     try {
-      const res = await fetch(`${API_URL}/search?query=${encodeURIComponent(selectedService)}`);
+      const res = await fetch(`${API_URL}/search?query=${encodeURIComponent(query)}`);
       const records = await res.json();
-
       displayRecords(records);
     } catch (err) {
-      console.error("Filter failed:", err);
+      console.error("❌ Search failed:", err);
+      recordTableBody.innerHTML = "<tr><td colspan='8'>Error while searching records.</td></tr>";
+    }
+  });
+
+  /* ========================================
+     🧮 FILTERS
+  ======================================== */
+  const filters = { service: "", status: "", date: "" };
+
+  async function applyFilters() {
+    try {
+      const queryParams = new URLSearchParams();
+      if (filters.service) queryParams.append("service", filters.service);
+      if (filters.status) queryParams.append("status", filters.status);
+      if (filters.date) queryParams.append("date", filters.date);
+
+      console.log("🔎 Applying filters:", `${API_URL}?${queryParams.toString()}`);
+
+      const res = await fetch(`${API_URL}?${queryParams.toString()}`);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const records = await res.json();
+      displayRecords(records);
+    } catch (err) {
+      console.error("❌ Failed to apply filters:", err);
       recordTableBody.innerHTML = "<tr><td colspan='8'>Error while filtering records.</td></tr>";
     }
+  }
+
+  document.getElementById("filterService").addEventListener("change", (e) => {
+    filters.service = e.target.value;
+    applyFilters();
   });
-  /* -----------------------------
-🧩 Filter by Status
------------------------------ */
-document.getElementById("filterStatus").addEventListener("change", async (e) => {
-  const selectedStatus = e.target.value;
 
-  if (!selectedStatus) {
-    await loadRecords(); // reload all if no filter
-    return;
-  }
-
-  try {
-    const res = await fetch(`${API_URL}/filterByStatus?status=${encodeURIComponent(selectedStatus)}`);
-    const records = await res.json();
-    displayRecords(records);
-  } catch (err) {
-    console.error("Filter by status failed:", err);
-    recordTableBody.innerHTML = "<tr><td colspan='8'>Error while filtering by status.</td></tr>";
-  }
-});
-
-    /* -----------------------------
-  📅 Filter by Date (Fixed)
-  ----------------------------- */
-  document.getElementById("filterDate").addEventListener("change", async (e) => {
-    const selectedDate = e.target.value;
-
-    if (!selectedDate) {
-      await loadRecords(); // reload all if cleared
-      return;
-    }
-
-    try {
-      // Backend expects "YYYY-MM-DD" format, which is what input[type=date] gives.
-      const res = await fetch(`${API_URL}/filterByDate?date=${encodeURIComponent(selectedDate)}`);
-      const records = await res.json();
-
-      displayRecords(records);
-    } catch (err) {
-      console.error("Filter by date failed:", err);
-      recordTableBody.innerHTML = "<tr><td colspan='8'>Error while filtering by date.</td></tr>";
-    }
+  document.getElementById("filterStatus").addEventListener("change", (e) => {
+    filters.status = e.target.value;
+    applyFilters();
   });
-  
-  /* -----------------------------
-  🧩 Helper: Display Records
-  ----------------------------- */
-  function displayRecords(records) {
-    recordTableBody.innerHTML = "";
 
-    if (!records || records.length === 0) {
-      recordTableBody.innerHTML = "<tr><td colspan='8'>No records found.</td></tr>";
-      return;
-    }
+  document.getElementById("filterDate").addEventListener("change", (e) => {
+    filters.date = e.target.value;
+    applyFilters();
+  });
 
-    records.forEach(record => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${record.client_name}</td>
-        <td>${record.email}</td>
-        <td>${record.contact}</td>
-        <td>${record.address}</td>
-        <td>${record.service}</td>
-        <td>${record.date}</td>
-        <td>${record.status}</td>
-        <td>
-          <button class="edit" data-id="${record.id}">Edit</button>
-          <button class="delete" data-id="${record.id}">Delete</button>
-        </td>
-      `;
-      recordTableBody.appendChild(row);
-    });
-  }
-
-
-  /* -----------------------------
-   🟣 Toggle form visibility
-  ----------------------------- */
+  /* ========================================
+     🟣 TOGGLE ADD FORM
+  ======================================== */
   addRecordBtn.addEventListener("click", () => {
     addRecordForm.style.display =
       addRecordForm.style.display === "none" ? "block" : "none";
   });
 
-  /* -----------------------------
-   🗑️ Delete & ✏️ Edit actions (fixed)
-  ----------------------------- */
+  /* ========================================
+     🗑️ DELETE / ✏️ EDIT
+  ======================================== */
   recordTableBody.addEventListener("click", async (e) => {
     const btn = e.target.closest("button");
-    if (!btn) return; // Prevent table row clicks
-    e.stopPropagation();
+    if (!btn) return;
 
     const id = btn.dataset.id;
     if (!id) return;
 
-    // 🗑️ DELETE
     if (btn.classList.contains("delete")) {
       if (confirm("Delete this record?")) {
         try {
           const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-          if (res.ok) {
-            await loadRecords();
-          } else {
-            alert("Failed to delete record.");
-          }
+          if (res.ok) await loadRecords();
+          else alert("Failed to delete record.");
         } catch (err) {
-          console.error("Error deleting record:", err);
+          console.error("❌ Error deleting record:", err);
         }
       }
     }
 
-    // ✏️ EDIT
     if (btn.classList.contains("edit")) {
       const row = btn.closest("tr");
       document.getElementById("clientName").value = row.children[0].textContent;
@@ -281,131 +226,119 @@ document.getElementById("filterStatus").addEventListener("change", async (e) => 
     }
   });
 
-  /* -----------------------------
-   🚀 Initial load (safe)
-  ----------------------------- */
-  async function init() {
-    await loadRecords();
-  }
-
-  init();
-});
-
-document.addEventListener("DOMContentLoaded", () => {
+  /* ========================================
+     📤 CSV UPLOAD & PREVIEW
+  ======================================== */
   const csvInput = document.getElementById("csvFileInput");
   const previewBtn = document.getElementById("previewCsvBtn");
   const confirmBtn = document.getElementById("confirmUploadBtn");
   const previewTable = document.getElementById("csvPreviewTable");
-  const previewContainer = document.getElementById("csvPreviewContainer");
-  const fileInput = document.getElementById("csvFileInput");
   const fileNameLabel = document.getElementById("fileNameLabel");
-
   let parsedData = [];
-  fileInput.addEventListener("change", () => {
-  fileNameLabel.textContent = fileInput.files.length
-    ? fileInput.files[0].name
-    : "No file chosen";
+
+  csvInput.addEventListener("change", () => {
+    fileNameLabel.textContent = csvInput.files.length
+      ? csvInput.files[0].name
+      : "No file chosen";
   });
 
+  previewBtn.addEventListener("click", () => {
+    const file = csvInput.files[0];
+    if (!file) {
+      alert("Please select a CSV file first!");
+      return;
+    }
 
-// 🟣 Step 1: Preview CSV
-previewBtn.addEventListener("click", () => {
-  const file = csvInput.files[0];
-  if (!file) {
-    alert("Please select a CSV file first!");
-    return;
-  }
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const data = results.data;
+        const previewColumns = Object.keys(data[0]).filter(
+          (h) => h.toLowerCase() !== "id"
+        );
 
-  Papa.parse(file, {
-    header: true, // auto-reads column headers
-    skipEmptyLines: true,
-    complete: (results) => {
-      const data = results.data;
+        previewTable.querySelector("thead").innerHTML =
+          "<tr>" + previewColumns.map((h) => `<th>${h}</th>`).join("") + "</tr>";
 
-      // Automatically detect if there's an "id" column and skip it
-      const previewColumns = Object.keys(data[0]).filter(h => h.toLowerCase() !== "id");
+        previewTable.querySelector("tbody").innerHTML = data
+          .map((row) => {
+            const filtered = previewColumns
+              .map((h) => `<td>${row[h] || ""}</td>`)
+              .join("");
+            return `<tr>${filtered}</tr>`;
+          })
+          .join("");
 
-      // ✅ Build preview table
-      previewTable.querySelector("thead").innerHTML =
-        "<tr>" + previewColumns.map(h => `<th>${h}</th>`).join("") + "</tr>";
+        parsedData = data.map((row) => ({
+          client_name: row.client_name?.trim() || null,
+          email: row.email?.trim() || null,
+          contact: row.contact?.trim() || null,
+          address: row.address?.trim() || null,
+          service: row.service?.trim() || null,
+          date: row.date?.trim() || null,
+          status: row.status?.trim() || "Pending",
+        }));
 
-      previewTable.querySelector("tbody").innerHTML = data
-        .map(row => {
-          const filtered = previewColumns.map(h => `<td>${row[h] || ""}</td>`).join("");
-          return `<tr>${filtered}</tr>`;
-        })
-        .join("");
-
-      // ✅ Build parsedData (for upload)
-      parsedData = data.map(row => ({
-        client_name: row.client_name?.trim() || null,
-        email: row.email?.trim() || null,
-        contact: row.contact?.trim() || null,
-        address: row.address?.trim() || null,
-        service: row.service?.trim() || null,
-        date: row.date?.trim() || null,
-        status: row.status?.trim() || "Pending",
-      }));
-
-      confirmBtn.style.display = "inline-block";
-    },
-    error: (err) => {
-      console.error("CSV parse error:", err);
-      alert("Failed to parse CSV file. Please check the format.");
-    },
-  });
-});
-// 🟢 Step 2: Confirm Upload to Backend
-confirmBtn.addEventListener("click", async () => {
-  if (parsedData.length === 0) {
-    alert("No data to upload!");
-    return;
-  }
-
-  confirmBtn.disabled = true;
-  confirmBtn.textContent = "Uploading...";
-
-  try {
-    const res = await fetch("http://localhost:5000/api/records/upload-csv", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ records: parsedData }),
+        confirmBtn.style.display = "inline-block";
+      },
+      error: (err) => {
+        console.error("CSV parse error:", err);
+        alert("Failed to parse CSV file. Please check the format.");
+      },
     });
+  });
 
-    // ✅ Always read text safely first
-    const text = await res.text();
-    let result;
+  confirmBtn.addEventListener("click", async () => {
+    if (parsedData.length === 0) {
+      alert("No data to upload!");
+      return;
+    }
+
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = "Uploading...";
 
     try {
-      result = JSON.parse(text);
-    } catch {
-      throw new Error("Invalid response from server");
-    }
+      const res = await fetch(`${API_URL}/upload-csv`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ records: parsedData }),
+      });
 
-    if (!res.ok || !result.success) {
-      throw new Error(result.message || "Upload failed");
-    }
+      const text = await res.text();
+      let result;
 
-    // ✅ Show confirmation
-    showUploadNotification(result.message || "✅ Upload complete!");
-    confirmBtn.style.display = "none";
-  } catch (err) {
-    console.error("Upload failed:", err);
-    alert("❌ " + err.message);
-  } finally {
-    confirmBtn.disabled = false;
-    confirmBtn.textContent = "Confirm Upload";
+      try {
+        result = JSON.parse(text);
+      } catch {
+        throw new Error("Invalid response from server");
+      }
+
+      if (!res.ok || !result.success) {
+        throw new Error(result.message || "Upload failed");
+      }
+
+      showUploadNotification(result.message || "✅ Upload complete!");
+      confirmBtn.style.display = "none";
+      await loadRecords(); // reload after upload
+    } catch (err) {
+      console.error("❌ Upload failed:", err);
+      alert("❌ " + err.message);
+    } finally {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = "Confirm Upload";
+    }
+  });
+
+  function showUploadNotification(message) {
+    const popup = document.getElementById("uploadNotification");
+    popup.textContent = message;
+    popup.classList.add("show");
+    setTimeout(() => popup.classList.remove("show"), 3000);
   }
-});
-function showUploadNotification(message) {
-  const popup = document.getElementById("uploadNotification");
-  popup.textContent = message;
-  popup.classList.add("show");
 
-  // Hide after 3 seconds
-  setTimeout(() => {
-    popup.classList.remove("show");
-  }, 3000);
-}
+  /* ========================================
+     🚀 INITIALIZE PAGE
+  ======================================== */
+  await loadRecords();
 });
-

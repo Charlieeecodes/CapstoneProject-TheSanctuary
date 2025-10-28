@@ -25,21 +25,6 @@ router.post('/', async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 });
-
-/* ========================================
-   📤 Get all records
-======================================== */
-router.get('/', async (req, res) => {
-  const sql = 'SELECT * FROM records ORDER BY id DESC';
-  try {
-    const [results] = await db.query(sql);
-    res.json(results);
-  } catch (err) {
-    console.error('❌ Error fetching records:', err);
-    res.status(500).json({ error: 'Database error' });
-  }
-});
-
 /* ========================================
    ✏️ Update a record
 ======================================== */
@@ -110,45 +95,47 @@ router.get('/search', async (req, res) => {
 });
 
 /* ========================================
-   ✅ Filter records by STATUS
+   📤 Get all records + Combined filters (Fixed)
 ======================================== */
-router.get('/filterByStatus', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const { status } = req.query;
+    const { service, status, date } = req.query;
 
-    if (!status) {
-      return res.status(400).json({ message: "Status query parameter is required" });
+    let sql = "SELECT * FROM records";
+    const params = [];
+    const conditions = [];
+
+    // Case-insensitive matching using LOWER()
+    if (service) 
+      { conditions.push("service LIKE ?"); 
+      params.push(`%${service}%`); 
     }
 
-    const [rows] = await db.query(
-      `SELECT * FROM records WHERE status = ? ORDER BY date DESC`,
-      [status]
-    );
+    if (status) {
+      conditions.push("LOWER(status) = LOWER(?)");
+      params.push(status);
+    }
+
+    // Ensure date matches even with timezones
+    if (date) {
+      conditions.push("DATE(date) = DATE(?)");
+      params.push(date);
+    }
+
+    if (conditions.length > 0) {
+      sql += " WHERE " + conditions.join(" AND ");
+    }
+
+    sql += " ORDER BY id DESC";
+    const [rows] = await db.query(sql, params);
 
     res.json(rows);
   } catch (err) {
-    console.error('❌ Error filtering records by status:', err);
+    console.error('❌ Error fetching records with filters:', err);
     res.status(500).json({ message: "Database error", error: err });
   }
 });
 
-/* ========================================
-   ✅ Filter records by DATE
-======================================== */
-router.get('/filterByDate', async (req, res) => {
-  const { date } = req.query;
-  if (!date) return res.status(400).json({ message: "Date is required" });
-
-  const sql = "SELECT * FROM records WHERE DATE(date) = ?";
-
-  try {
-    const [results] = await db.query(sql, [date]);
-    res.json(results);
-  } catch (err) {
-    console.error('❌ Error filtering records by date:', err);
-    res.status(500).json({ message: "Error filtering by date", error: err });
-  }
-});
 
 /* ========================================
    📂 Upload CSV to Database

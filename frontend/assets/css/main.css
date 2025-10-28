@@ -11,16 +11,22 @@ body {
    Header Design (Right Half, Left Edge Diagonal)
 ------------------------------ */
 .main-header {
-  display: flex;             /* ✅ side-by-side layout */
+  position: relative;
   height: 100px;
   width: 100%;
-  overflow: hidden;
-  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  background: transparent; /* ✅ no background so image is visible */
+  z-index: 10; /* ✅ ensures header floats above the banner */
 }
 .header-image {
+  position: relative;
   width: 50%;
-  height: 80%; /* or any height you like */
+  height: 100%; /* adjust banner height */
   overflow: hidden;
+  margin-top: 91px; /* ✅ pulls image up so logo overlaps naturally */
+  z-index: 1;
 }
 
 .header-image img {
@@ -35,13 +41,13 @@ body {
 ------------------------------ */
 .logo {
   position: absolute;
-  top: 15px;     /* distance from top */
-  left: 40px;    /* distance from left edge */
-  z-index: 10;   /* sits above the background */
+  top: 40px;
+  left: 60px;
+  z-index: 20; /* ✅ higher than the image */
 }
 
 .logo img {
-  width: 38%;   /* adjust size as needed */
+  width: 50%;   /* adjust size as needed */
   height: auto;
   object-fit: contain;
 }
@@ -69,7 +75,7 @@ body {
 .nav-links {
   list-style: none;
   display: flex;
-  gap: 45px; /* 🔹 increase this value for more spacing (default was 25px) */
+  gap: 70px; /* 🔹 increase this value for more spacing (default was 25px) */
   margin: 0;
   padding: 0;
 }
@@ -79,7 +85,7 @@ body {
   text-decoration: none;
   color: #ecf0f1;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.1rem;
   transition: color 0.3s, transform 0.2s;
 }
 
