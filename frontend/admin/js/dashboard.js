@@ -152,7 +152,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       tableBody.innerHTML = `<tr><td colspan="8" style="color:red;">Error loading recent inquiries</td></tr>`;
     }
   }
-
+  const viewAllBtn = document.getElementById("viewAllBtn");
+  if (viewAllBtn) {
+    viewAllBtn.addEventListener("click", () => {
+      // 🔗 Redirect to the full Inquiries page
+      window.location.href = "inquiries.html";
+    });
+  }
   // -----------------------------
   // Dropdown handler
   // -----------------------------
