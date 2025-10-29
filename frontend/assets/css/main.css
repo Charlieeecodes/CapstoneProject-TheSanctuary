@@ -1,161 +1,185 @@
-/* ------------------------------
-   Global Styles
------------------------------- */
+/* ------------------------------ */
+/* Global Styles */
+/* ------------------------------ */
 body {
-  font-family: 'Arial', sans-serif;
-  background-color: #ffffff;
+  font-family: 'Poppins', sans-serif;
   margin: 0;
   padding: 0;
+  color: #fff;
+  background: url('../images/sanctuary.png') no-repeat center center/cover;
+  height: 100vh;
+  background-size: 105%;
 }
-/* ------------------------------
-   Header Design (Right Half, Left Edge Diagonal)
------------------------------- */
+
+/* ------------------------------ */
+/* Header Styles */
+/* ------------------------------ */
 .main-header {
-  position: relative;
-  height: 100px;
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  background: transparent; /* ✅ no background so image is visible */
-  z-index: 10; /* ✅ ensures header floats above the banner */
-}
-.header-image {
-  position: relative;
-  width: 50%;
-  height: 100%; /* adjust banner height */
-  overflow: hidden;
-  margin-top: 91px; /* ✅ pulls image up so logo overlaps naturally */
-  z-index: 1;
-}
-
-.header-image img {
-  width:80%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  margin-top: 175px;
-}
-/* ------------------------------
-   Logo Placement (Top-Left)
------------------------------- */
-.logo {
-  position: absolute;
-  top: 40px;
-  left: 60px;
-  z-index: 20; /* ✅ higher than the image */
-}
-
-.logo img {
-  width: 50%;   /* adjust size as needed */
-  height: auto;
-  object-fit: contain;
-}
-
-
-
-/* Right-side header with diagonal left edge */
-.header-bar {
-  position: absolute;
+  position: fixed;
   top: 0;
-  right: 0;
-  width: 60%;                            /* covers right half */
-  height: 100%;
-  background-color: #1b965a;
-  clip-path: polygon(0% 0, 100% 0, 100% 100%, 20% 100%);
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;             /* ✅ push links all the way right */
-  padding-right: 100px;                   /* ✅ spacing from the right edge */
-  box-shadow: -5px 0 10px rgba(0, 0, 0, 0.2);
-  z-index: 5;
-}
-
-/* Navigation Links */
-.nav-links {
-  list-style: none;
-  display: flex;
-  gap: 70px; /* 🔹 increase this value for more spacing (default was 25px) */
-  margin: 0;
-  padding: 0;
-}
-
-
-.nav-links li a {
-  text-decoration: none;
-  color: #ecf0f1;
-  font-weight: 600;
-  font-size: 1.1rem;
-  transition: color 0.3s, transform 0.2s;
-}
-
-.nav-links li a:hover {
-  color: #1abc9c;
-  transform: scale(1.1);
-}
-
-.nav-links li a.active {
-  color: #1aebc1;
-}
-
-/* ------------------------------
-   Homepage Content
------------------------------- */
-.homepage-content {
+  left: 0;
+  width: 100%;
+  background: rgba(7, 40, 20, 0.512); /* transparent dark header */
   display: flex;
   justify-content: center;
   align-items: center;
-  height: calc(100vh - 100px);
+  padding: 15px 0;
+  z-index: 100;
+  backdrop-filter: blur(15px);
+}
+
+.container {
+  width: 80%;
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Logo & Title */
+.logo-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-title img {
+  height: 50px;
+  width: auto;
+}
+
+.logo-title h1 {
+  font-size: 1.4rem;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 1px;
+}
+.logo-right img {
+  height: 50px;
+  width: auto;
+  margin-left: 50px;
+}
+
+
+/* Navigation */
+.nav-bar ul {
+  list-style: none;
+  display: flex;
+  gap: 30px;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-bar a {
+  color: #f5f5f5;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.nav-bar a:hover,
+.nav-bar a.active {
+  color: #00d4a9;
+}
+
+/* ------------------------------ */
+/* Hero Section */
+/* ------------------------------ */
+.hero {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   text-align: center;
+  background: url('assets/sanctuary.png') no-repeat center center/cover;
+}
+
+.hero .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* dark overlay for readability */
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
   padding: 20px;
 }
 
-.welcome-container {
-  background-color: #fff;
-  padding: 40px 60px;
-  border-radius: 15px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  max-width: 600px;
+.hero-content h2 {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
 }
 
-.welcome-container h2 {
-  color: #2c3e50;
-  margin-bottom: 10px;
+.hero-content p {
+  font-size: 1.1rem;
+  margin-bottom: 25px;
 }
-
-.welcome-container p {
-  color: #555;
-  margin-bottom: 20px;
-}
-
-.footer-note {
-  font-size: 0.9rem;
-  color: #999;
-}
-
-/* ------------------------------
-   Responsive Adjustments
------------------------------- */
-@media (max-width: 900px) {
-  .header-bar {
-    width: 100%;
-    transform: none;
+/* ------------------------------ */
+/* Responsive Design */
+/* ------------------------------ */
+@media (max-width: 768px) {
+  .container {
     flex-direction: column;
-    padding: 15px 10px;
+    gap: 15px;
   }
 
-  .main-header::after {
-    display: none;
-  }
-
-  .site-title, .nav-links {
-    transform: none;
-  }
-
-  .nav-links {
+  .nav-bar ul {
     flex-wrap: wrap;
     justify-content: center;
     gap: 15px;
-    margin-top: 10px;
+  }
+
+  .logo-right img {
+    height: 40px;
   }
 }
+/* ------------------------------ */
+/* Button Styles (Unified Design) */
+/* ------------------------------ */
+.btn-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  flex-wrap: wrap;
+}
+
+/* Unified Button Style */
+.btn-primary,
+.btn-secondary {
+  background: #00d4a9;
+  color: #fff;
+  padding: 12px 36px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 212, 169, 0.3);
+}
+
+.btn-primary:hover,
+.btn-secondary:hover {
+  background: #00b38f;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 212, 169, 0.4);
+}
+
+/* Responsive stacking */
+@media (max-width: 600px) {
+  .btn-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+}
+
+
