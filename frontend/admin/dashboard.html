@@ -10,46 +10,20 @@
 <body>
   <div class="admin-container">
     <!-- Sidebar -->
-    <!-- Sidebar -->
     <aside class="sidebar">
-     <div class="logo">
-       <img src="icons/logo.PNG" alt="The Sanctuary Logo" class="logo-img" />
+      <div class="logo">
+        <img src="icons/logo.PNG" alt="The Sanctuary Logo" class="logo-img" />
       </div>
-        <nav>
-          <ul>
-            <li>
-              <a href="dashboard.html" class="active">
-                <img src="icons/dashboard.jpg" alt="Dashboard Icon" class="nav-icon"> Dashboard
-              </a>
-            </li>
-            <li>
-              <a href="analytics.html">
-                <img src="icons/graph.jpg" alt="Analytics Icon" class="nav-icon"> Analytics
-              </a>
-            </li>
-            <li>
-              <a href="datarecords.html">
-                <img src="icons/folder.jpg" alt="Data Records Icon" class="nav-icon"> Data Records
-              </a>
-            </li>
-            <li>
-              <a href="inquiries.html">
-                <img src="icons/paper.jpg" alt="Inquiries Icon" class="nav-icon"> Inquiries
-              </a>
-            </li>
-            <li>
-              <a href="feedbacks.html">
-                <img src="icons/feedback.jpg" alt="Feedbacks Icon" class="nav-icon"> Feedbacks
-              </a>
-            </li>
-            <li>
-              <a href="../index.html">
-                <img src="icons/logout.jpg" alt="Logout Icon" class="nav-icon"> Logout
-              </a>
-            </li>
-          </ul>
-        </nav>
-
+      <nav>
+        <ul>
+          <li><a href="dashboard.html" class="active"><img src="icons/dashboard.jpg" class="nav-icon"> Dashboard</a></li>
+          <li><a href="analytics.html"><img src="icons/graph.jpg" class="nav-icon"> Analytics</a></li>
+          <li><a href="datarecords.html"><img src="icons/folder.jpg" class="nav-icon"> Data Records</a></li>
+          <li><a href="inquiries.html"><img src="icons/paper.jpg" class="nav-icon"> Inquiries</a></li>
+          <li><a href="feedbacks.html"><img src="icons/feedback.jpg" class="nav-icon"> Feedbacks</a></li>
+          <li><a href="../index.html"><img src="icons/logout.jpg" class="nav-icon"> Logout</a></li>
+        </ul>
+      </nav>
     </aside>
 
     <!-- Main Content -->
@@ -61,7 +35,7 @@
         <div class="topbar-right">
           <span id="currentDateTime"></span>
           <div class="user-profile">
-            <img src="../assets/user.png" alt="User" class="profile-icon">
+            <img src="../assets/images/user.png" alt="User" class="profile-icon">
             <div class="user-info">
               <strong>Maria Osana</strong><br>
               <small>Head Management</small>
@@ -155,7 +129,6 @@
         </section>
     </main>
   </div>
-  <script src="js/fetchInquiries.js"></script>
   <script src="js/dashboard.js"></script>
   <script>
 function updateDateTime() {
@@ -169,7 +142,6 @@ function updateDateTime() {
   };
   document.getElementById("currentDateTime").textContent = now.toLocaleString("en-US", options);
 }
-
 setInterval(updateDateTime, 1000);
 updateDateTime();
 </script>
