@@ -213,14 +213,65 @@
 #predictiveText, #prescriptiveText {
   transition: color 0.3s;
 }
-{
-  label: 'Forecast Range',
-  data: forecastLabels.map((_, i) => i === forecastLabels.length - 1 ? [lowerBound, upperBound] : [null, null]),
-  type: 'line',
-  borderColor: 'rgba(255,165,0,0)',
-  backgroundColor: 'rgba(255,165,0,0.15)',
-  fill: true,
+/* ============================== */
+/* 🔮 INSIGHTS MODAL STYLING      */
+/* ============================== */
+.insight-section {
+  margin-top: 1.4rem;
 }
+
+.insight-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  color: #0e0909;
+  margin-bottom: 0.6rem;
+}
+
+.insight-section .icon {
+  font-size: 1.3rem;
+}
+
+/* 🧩 Insight Cards (Predictive / Prescriptive) */
+.insight-card {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-left: 5px solid #9c27b0; /* default accent */
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  color: #110a0a;
+  line-height: 1.6;
+  font-size: 0.95rem;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: fadeInInsight 0.4s ease;
+}
+
+.insight-card.predictive {
+  border-left-color: #0f1010; /* cyan */
+}
+
+.insight-card.prescriptive {
+  border-left-color: #ffca28; /* amber */
+}
+
+.insight-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s ease;
+}
+
+@keyframes fadeInInsight {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 💡 Optional mood states for prescriptive box */
+.prescriptive-up { border-left-color: #00e676 !important; }    /* growth */
+.prescriptive-down { border-left-color: #ff5252 !important; }  /* decline */
+.prescriptive-stable { border-left-color: #ffc107 !important; } /* stable */
+
 
 /* ----------------------------- */
 /* Responsive Styles             */
@@ -230,6 +281,7 @@
     height: 300px;
   }
 }
+
 
 @media (max-width: 600px) {
   .stats-grid {

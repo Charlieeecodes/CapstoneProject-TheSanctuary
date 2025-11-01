@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const inquiriesTrendCanvas = document.getElementById('inquiriesTrendChart');
   const feedbackBreakdownCanvas = document.getElementById('servicesBreakdownChart');
   const inquiriesPeriodSelect = document.getElementById('inquiriesPeriod');
+  
 
   // New chart containers
   let topServicesChartCanvas;
@@ -351,10 +352,61 @@ document.addEventListener('DOMContentLoaded', async () => {
       predictiveText.textContent =
         `The most availed service is ${labels[maxIndex]} with ${shares[maxIndex].toFixed(1)}% of total completed services.`;
 
-      prescriptiveText.textContent =
-        shares[maxIndex] > 50
-          ? `📈 Strong preference for ${labels[maxIndex]} — ensure capacity and consider bundling related services.`
-          : `📊 Demand is distributed among multiple services. Consider focused marketing on ${labels[minIndex]} to boost interest.`;
+      function generatePrescriptiveInsight(labels, shares) {
+        const totalServices = labels.length;
+        const maxIndex = shares.indexOf(Math.max(...shares));
+        const minIndex = shares.indexOf(Math.min(...shares));
+        const avgShare = shares.reduce((a, b) => a + b, 0) / totalServices;
+        const diversity = shares.filter(s => s > avgShare * 1.1).length;
+
+        const topService = labels[maxIndex];
+        const topShare = shares[maxIndex];
+        const lowService = labels[minIndex];
+        const lowShare = shares[minIndex];
+
+        let recommendation = '';
+
+        // 🔹 Case 1: Dominant top service
+        if (topShare >= 60) {
+          recommendation = `🔥 ${topService} is dominating inquiries (${topShare.toFixed(1)}%). Ensure operational readiness, maintain service quality, and explore complementary offerings to sustain interest.`;
+        }
+
+        // 🔹 Case 2: Balanced but skewed demand
+        else if (topShare >= 35 && diversity <= 2) {
+          recommendation = `📈 ${topService} leads with ${topShare.toFixed(1)}%, but other services are showing traction. Consider promotional bundles or referral tie-ins with ${lowService} to balance demand.`;
+        }
+
+        // 🔹 Case 3: Evenly distributed demand
+        else if (topShare < 35 && diversity >= totalServices / 2) {
+          recommendation = `⚖️ Demand is evenly distributed among most services. Maintain balanced resource allocation and track for emerging preferences next week.`;
+        }
+
+        // 🔹 Case 4: Weak engagement overall
+        else if (Math.max(...shares) < 20) {
+          recommendation = `📉 Low overall engagement detected. Consider targeted outreach, seasonal campaigns, or community events to boost inquiries.`;
+        }
+
+        // 🔹 Case 5: Underserved service
+        else {
+          recommendation = `🎯 ${lowService} has the lowest engagement (${lowShare.toFixed(1)}%). Evaluate pricing, visibility, or consider limited-time promos to improve awareness.`;
+        }
+
+        // 🔹 Bonus: rotating motivational tip
+        const tips = [
+          '✅ Monitor weekly trends to stay ahead of client needs.',
+          '💡 Use social posts to highlight testimonials and success stories.',
+          '📊 Compare this data with feedback ratings for deeper insight.',
+          '🕒 Revisit underperforming services each quarter for strategy updates.',
+        ];
+
+        const randomTip = tips[Math.floor(Math.random() * tips.length)];
+
+        return `${recommendation}\n\n${randomTip}`;
+      }
+
+      // 👇 Call it like this (where you set the prescriptive text)
+      prescriptiveText.textContent = generatePrescriptiveInsight(labels, shares);
+
 
       // 🔹 Rebuild chart manually to avoid config conflicts
       window.insightsChartInstance = new Chart(ctx, {
@@ -504,22 +556,60 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Step 5: Smarter prescriptive text based on chartType and growth
     if (chartType === 'inquiriesTrend') {
-      if (growthRate > 10) {
-        prescriptiveText.textContent = '📈 Inquiries are trending upward ; prepare additional staff and support for higher demand.';
-      } else if (growthRate < -5) {
-        prescriptiveText.textContent = '📉 Decline detected ; review communication and marketing channels to re-engage clients.';
-      } else {
-        prescriptiveText.textContent = '→ Stable inquiries trend ; maintain current outreach and monitor performance.';
-      }
-    } else if (chartType === 'serviceTrend') {
-      if (growthRate > 10) {
-        prescriptiveText.textContent = ' More services are being availed ; ensure inventory and capacity can meet demand.';
-      } else if (growthRate < -5) {
-        prescriptiveText.textContent = ' Fewer services completed ; investigate possible causes (e.g., scheduling or supply issues).';
-      } else {
-        prescriptiveText.textContent = ' Service trends are steady ; keep operational efficiency consistent.';
+      if (growthRate > 20) {
+        prescriptiveText.textContent =
+          `🚀 Inquiries surged by ${growthRate.toFixed(1)}%. This strong growth suggests rising community awareness. 
+          Consider expanding staff capacity and promoting related services to sustain momentum.`;
+      } 
+      else if (growthRate > 10) {
+        prescriptiveText.textContent =
+          `📈 Inquiries are trending upward (+${growthRate.toFixed(1)}%). Maintain communication speed and ensure follow-ups are timely to convert inquiries into bookings.`;
+      } 
+      else if (growthRate > 0) {
+        prescriptiveText.textContent =
+          `🟢 Slight increase in inquiries (+${growthRate.toFixed(1)}%). Continue consistent outreach; monitor which channels are performing best this week.`;
+      } 
+      else if (growthRate < -15) {
+        prescriptiveText.textContent =
+          `🔻 Sharp decline detected (${growthRate.toFixed(1)}%). Investigate cause — possibly reduced visibility or service delays. Consider reactivating past clients via reminders.`;
+      } 
+      else if (growthRate < -5) {
+        prescriptiveText.textContent =
+          `📉 Moderate decline (${growthRate.toFixed(1)}%). Review messaging tone and online presence to re-engage potential inquirers.`;
+      } 
+      else {
+        prescriptiveText.textContent =
+          `🟦 Inquiries are stable (${growthRate.toFixed(1)}%). Maintain steady operations, but look for small engagement opportunities (social updates, testimonials).`;
       }
     }
+
+    else if (chartType === 'serviceTrend') {
+      if (growthRate > 20) {
+        prescriptiveText.textContent =
+          `💼 Service completion rate spiked by ${growthRate.toFixed(1)}%! Great momentum — evaluate resource load and ensure quality remains consistent.`;
+      } 
+      else if (growthRate > 10) {
+        prescriptiveText.textContent =
+          `📊 More services are being availed (+${growthRate.toFixed(1)}%). Keep optimizing scheduling and ensure supplies match client volume.`;
+      } 
+      else if (growthRate > 0) {
+        prescriptiveText.textContent =
+          `🟢 Slight growth in service demand (+${growthRate.toFixed(1)}%). Sustain the pace; consider staff training or incentive programs to maintain morale.`;
+      } 
+      else if (growthRate < -15) {
+        prescriptiveText.textContent =
+          `⚠️ Major drop in completed services (${growthRate.toFixed(1)}%). Review recent cancellations, staff schedules, or supply chain issues. Plan recovery actions for next week.`;
+      } 
+      else if (growthRate < -5) {
+        prescriptiveText.textContent =
+          `📉 Slight dip (${growthRate.toFixed(1)}%). Investigate customer satisfaction and identify any bottlenecks affecting service delivery.`;
+      } 
+      else {
+        prescriptiveText.textContent =
+          `🟦 Service trends are stable (${growthRate.toFixed(1)}%). Maintain operational consistency and prepare for potential seasonal fluctuations.`;
+      }
+    }
+
 
     // Step 6: Optional color styling
     predictiveText.className = growthRate > 10 ? 'high' : growthRate < -5 ? 'low' : 'neutral';

@@ -146,7 +146,7 @@ router.get('/services/top', async (req, res) => {
       WHERE status = 'Completed'
       GROUP BY service
       ORDER BY total DESC
-      LIMIT 5
+      LIMIT 10
     `);
     res.json(Array.isArray(rows) ? rows : []); // ensure array
   } catch (err) {

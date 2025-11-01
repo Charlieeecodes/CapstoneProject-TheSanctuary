@@ -124,16 +124,26 @@
     <div class="modal-content">
       <span class="close-btn">&times;</span>
       <h2 id="insightTitle">Chart Insights</h2>
+
       <div class="modal-body">
         <!-- Enlarged Chart -->
         <canvas id="insightsChart"></canvas>
 
-        <!-- Predictive / Prescriptive -->
-        <h3>Predictive Analysis</h3>
-        <p id="predictiveText">Analyzing trend...</p>
+        <!-- Predictive Analysis -->
+        <div class="insight-section">
+          <h3><span class="icon"></span> Predictive Analysis</h3>
+          <div class="insight-card predictive">
+            <p id="predictiveText">Analyzing trend...</p>
+          </div>
+        </div>
 
-        <h3>Prescriptive Insights</h3>
-        <p id="prescriptiveText">Generating recommendations...</p>
+        <!-- Prescriptive Insights -->
+        <div class="insight-section">
+          <h3><span class="icon"></span> Prescriptive Insights</h3>
+          <div id="prescriptiveContainer" class="insight-card prescriptive">
+            <p id="prescriptiveText">Generating recommendations...</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
