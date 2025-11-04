@@ -82,8 +82,9 @@ router.get('/inquiries', async (req, res) => {
       let dateCondition = '';
 
       if (period === 'week') {
-        // past 7 days including today
-        dateCondition = 'WHERE DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)';
+        // last 7 days including today
+        dateCondition =
+          'WHERE DATE(created_at) BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND CURDATE()';
       } else if (period === 'month') {
         // current month
         dateCondition = 'WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())';
@@ -100,11 +101,19 @@ router.get('/inquiries', async (req, res) => {
     let trendQuery = '';
     if (period === 'week') {
       trendQuery = `
-        SELECT DATE_FORMAT(created_at, '%a') AS label, COUNT(*) AS count
-        FROM inquiries
-        WHERE DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-        GROUP BY DAYNAME(created_at)
-        ORDER BY DATE(created_at);
+        SELECT 
+          DATE_FORMAT(d, '%a') AS label,
+          COALESCE(COUNT(i.id), 0) AS count
+        FROM (
+          SELECT CURDATE() - INTERVAL n DAY AS d
+          FROM (
+            SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL 
+                  SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6
+          ) AS x
+        ) days
+        LEFT JOIN inquiries i ON DATE(i.created_at) = days.d
+        GROUP BY d
+        ORDER BY d;
       `;
     } else if (period === 'month') {
       trendQuery = `
@@ -131,9 +140,6 @@ router.get('/inquiries', async (req, res) => {
     res.status(500).json({ message: 'Database error', error: err.message });
   }
 });
-
-
-
 /**
  * 🟣 GET /api/analytics/services/top
  * Returns top availed services (Completed only)
