@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const tableBody = document.querySelector('#inquiryTable tbody');
   const recentUpdatesContainer = document.getElementById('recentUpdates');
   const inquiriesPeriodSelect = document.getElementById('inquiriesPeriod');
-
   // -----------------------------
   // Fetch data helpers
   // -----------------------------
@@ -19,7 +18,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const res = await fetch('http://localhost:5000/api/inquiries');
     return await res.json();
   }
-
   async function fetchFeedbacks() {
     const res = await fetch('http://localhost:5000/api/feedbacks');
     return await res.json();
@@ -36,7 +34,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       return { total: 0 };
     }
   }
-
   // -----------------------------
   // Load KPIs
   // -----------------------------
