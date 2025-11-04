@@ -57,16 +57,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (totalInquiriesEl) totalInquiriesEl.textContent = data.total ?? 0;
 
       // Mini chart for visual feedback
+      // ✅ Mini chart using real trend data instead of random values
       if (inquiriesMiniEl) {
         const ctx = inquiriesMiniEl.getContext('2d');
         if (window.miniInquiriesChart) window.miniInquiriesChart.destroy();
-        const randomTrend = Array.from({ length: 6 }, () => Math.floor(Math.random() * (data.total / 2 + 1)));
+
+        // Fetch small trend data from backend
+        const trendRes = await fetch(`http://localhost:5000/api/analytics/inquiries?period=${period}&mode=trend`);
+        const trendData = await trendRes.json();
+
+        const labels = trendData.map(d => d.label);
+        const values = trendData.map(d => Number(d.count));
+
         window.miniInquiriesChart = new Chart(ctx, {
           type: 'line',
           data: {
-            labels: randomTrend.map((_, i) => i + 1),
+            labels,
             datasets: [{
-              data: randomTrend,
+              data: values,
               borderColor: '#673AB7',
               backgroundColor: 'rgba(103,58,183,0.2)',
               fill: true,
