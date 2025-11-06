@@ -1,116 +1,255 @@
-body {
-  font-family: 'Poppins', sans-serif;
-  background-color: #f4f7f6;
-  display: flex;
+/* ------------------------------
+   Feedback Page Styles - Glassmorphism
+------------------------------ */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: auto;
+  font-family: 'Poppins', Arial, sans-serif;
+  color: #fff;
+  background: url('../images/Sanctuary2.png') no-repeat center center fixed;
+  background-size: cover;
+  display:block;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  position: relative;
+  background-size: 105%;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  backdrop-filter: blur(8px);
+  background-color: rgba(0,0,0,0.4);
+  z-index: 1;
 }
 
 .feedback-container {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 2; /* Above overlay */
+  background: rgba(62, 54, 54, 0.2);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 500px;
+  max-width: 1000px;
+  padding: 25px 40px;
   text-align: center;
+  color: #ffffff;
+  position: relative;
+  top: 100px;
 }
 
 .feedback-container h2 {
-  color: #1b965a;
+  color: #fff;
+  font-size: 24px;
   margin-bottom: 10px;
 }
 
 .feedback-container p {
   font-size: 14px;
-  color: #666;
+  color: #e0e0e0;
+  margin-bottom: 20px;
 }
 
+/* User Status & Guest/Logged-in Toggle */
+.user-status, .welcome-message {
+  margin-bottom: 15px;
+  padding: 12px 20px; /* taller and wider */
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 14px;
+  height: auto;
+  display: inline-block;    /* shrink to fit text */
+  min-width: 200px;         /* optional: ensures it’s not too narrow */
+  text-align: center;       /* center text inside */
+}
+.user-mode-toggle {
+  text-align: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.user-mode-toggle button {
+  margin: 0 10px;
+  padding: 8px 14px;
+  border: 1px solid #fff;
+  border-radius: 6px;
+  background-color: transparent;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-mode-toggle button:hover {
+  background-color: #289d47fb;
+  color: #fff;
+}
+
+/* Feedback main container: left (inputs) and right (ratings + submit) */
+/* Feedback main container: flex row */
+.feedback-main {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  flex-wrap: nowrap; /* Keep left and right side-by-side */
+}
+
+/* Left column (inputs) */
+.feedback-left {
+  flex: 2;
+  min-width: 250px;
+}
+
+/* Right column (ratings + submit) */
+.feedback-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column; /* keep vertical stacking of groups */
+  gap: 12px;
+  min-width: 200px;
+  margin-top: 30px;       /* ensure enough space for stars beside label */
+}
+/* Align submit button at the bottom of right column */
+.feedback-right #submitFeedback {
+  margin-top: auto;
+  width: 100%;
+  padding: 12px;
+}
+
+/* Inut Styles */
+/* Increase input height */
 .form-group {
   margin: 15px 0;
   text-align: left;
+}
+.form-group input,
+.form-group textarea {
+  padding: 20px; /* more padding vertically */
+  font-size: 16px; /* slightly larger text */
+  border-radius: 10px; /* optional: softer corners */
+  width: 90%;
 }
 
 label {
   font-weight: 600;
   display: block;
   margin-bottom: 5px;
+  color: #fff;
 }
 
 input, textarea {
   width: 100%;
   padding: 10px;
   border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 15px;
-}
-
-button {
-  background-color: #1b965a;
-  color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
+  font-size: 15px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
   transition: 0.3s;
 }
 
-button:hover {
-  background-color: #157c4a;
+input::placeholder,
+textarea::placeholder {
+  color: #e0e0e0;
 }
 
-.response {
+input:focus, textarea:focus {
+  background: rgba(255, 255, 255, 0.25);
+}
+/* Rating group layout: label + stars on same line */
+.rating-group {
+  display: flex;               /* flex container for label + stars */
+  align-items: center;         /* vertically center stars and label */
+  gap: 10px;                   /* space between label and stars */
+  flex-wrap: nowrap;           /* prevent wrapping */
+}
+
+.rating-group span {
+  white-space: nowrap;         /* prevent label from wrapping */
+  flex-shrink: 0;              /* don't let label shrink */          
+}
+
+/* Stars container */
+.stars {
+  display: flex;               
+  flex-direction: row-reverse;          /* normal left-to-right stars */
+  gap: 5px;                     /* spacing between stars */
+}
+
+/* Hide radio inputs */
+.stars input {
+  display: none;
+}
+
+/* Star labels */
+.stars label {
+  font-size: 24px;
+  cursor: pointer;
+  color: #ccc;
+  transition: color 0.2s;
+}
+
+/* Hover & checked states */
+.stars input:checked ~ label,
+.stars label:hover,
+.stars label:hover ~ label {
+  color: #ffc107;
+}
+/* Submit Button */
+button#submitFeedback {
+  padding: 12px 20px;
+  background-color: #289d47fb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+
+button#submitFeedback:hover {
+  background-color: #289d47fb;
+  color: #fff;
+}
+
+/* Response message */
+#responseMessage {
   margin-top: 15px;
   font-weight: 600;
+  text-align: center;
+  font-size: 15px;
 }
-    /* Star rating inputs */
-    .rating-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
 
-    .stars {
-      display: flex;
-      flex-direction: row-reverse;
-      gap: 5px;
-    }
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .feedback-main {
+    flex-direction: column;
+  }
+  .feedback-right {
+    width: 100%;
+  }
+  button#submitFeedback {
+    align-self: center;
+    width: 100%;
+  }
+}
 
-    .stars input {
-      display: none;
-    }
+@media (max-width: 480px) {
+  .feedback-container {
+    padding: 25px 20px;
+  }
 
-    .stars label {
-      font-size: 24px;
-      cursor: pointer;
-      color: #ccc;
-      transition: color 0.2s;
-    }
-
-    .stars input:checked ~ label,
-    .stars label:hover,
-    .stars label:hover ~ label {
-      color: #ffc107;
-    }
-
-    button#submitFeedback {
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    button#submitFeedback:hover {
-      background-color: #45a049;
-    }
-
-    .response {
-      margin-top: 10px;
-      font-weight: bold;
-      color: #007bff;
-    }
+  h2 {
+    font-size: 20px;
+  }
+}

@@ -1,61 +1,190 @@
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
+/* -----------------------------------
+   Inquiry Form Page Styles
+----------------------------------- */
 
-    .inquiry-container {
-      background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      width: 400px;
-    }
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Poppins', Arial, sans-serif;
+  color: #fff;
+  background: url('../images/Sanctuary2.png') no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+  background-size: 105%;
+}
 
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #333;
-    }
+body::before {
+  content: "";
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  backdrop-filter: blur(8px);
+  background-color: rgba(0,0,0,0.4);
+  z-index: 0;
+}
 
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
-      color: #333;
-    }
 
-    input, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
+/* ------------------------------ */
+/* Container Box */
+/* ------------------------------ */
+.inquiry-container {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 500px;
+  padding: 35px 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  backdrop-filter: blur(10px);
+  text-align: left;
+  position: relative;
+  top: 100px; /* push down */
+}
 
-    button {
-      margin-top: 15px;
-      width: 100%;
-      padding: 10px;
-      background-color: #2b6cb0;
-      border: none;
-      border-radius: 5px;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
+h2 {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #fff;
+}
 
-    button:hover {
-      background-color: #2c5282;
-    }
+.inquiry-description {
+  text-align: center;
+  font-size: 14px;
+  color: #fffefe;
+  margin-bottom: 20px;
+}
+.login-link {
+  color: #289d47fb;      /* custom color for just this link */    /* optional bold */
+  text-decoration: underline; /* optional */
+}
 
-    #responseMessage {
-      margin-top: 15px;
-      text-align: center;
-      font-weight: bold;
-    }
+.login-link:hover {
+  color: #1bdd2f;         /* hover color */
+  text-decoration: none;
+}
+
+
+/* ------------------------------ */
+/* User Status (Guest/Login Info) */
+/* ------------------------------ */
+.user-status {
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: rgba(228, 217, 217, 0.2);
+  color: #fff;
+}
+.user-mode-toggle {
+  display: flex;
+  justify-content: center; /* center the group horizontally */
+  gap: 15px; /* space between the two buttons */
+  margin-bottom: 15px;
+}
+
+
+/* ------------------------------ */
+/* Form Elements */
+/* ------------------------------ */
+label {
+  display: block;
+  margin-top: 12px;
+  font-weight: 500;
+  color: #ede1e1;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 1rem;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  background: rgba(234, 226, 226, 0.3);
+}
+
+
+/* ------------------------------ */
+/* reCAPTCHA Styling */
+/* ------------------------------ */
+.g-recaptcha {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+/* ------------------------------ */
+/* Button Styles */
+/* ------------------------------ */
+button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  background-color: #289d47fb; 
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.user-mode-toggle button {
+  margin: 0 5px;
+  padding: 6px 12px;
+  border: 1px solid #289d47fb;
+  border-radius: 8px;
+  background-color: rgba(255,255,255,0.2);
+  color: #fff;
+  font-weight: 500;
+}
+
+.user-mode-toggle button:hover {
+  background-color: #289d47fb;
+  color: #fff;
+}
+
+/* ------------------------------ */
+/* Response Message */
+/* ------------------------------ */
+#responseMessage {
+  margin-top: 15px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* ------------------------------ */
+/* Responsive Adjustments */
+/* ------------------------------ */
+@media (max-width: 480px) {
+  .inquiry-container {
+    padding: 25px;
+    width: 95%;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+}

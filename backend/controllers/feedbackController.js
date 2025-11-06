@@ -1,7 +1,9 @@
-const db = require('../models/db'); // your database connection
+const db = require('../models/db'); // make sure this is mysql2/promise
 
-// Add feedback
 const addFeedback = async (req, res) => {
+  // 1️⃣ Log incoming data for debugging
+  console.log('📩 Feedback received:', req.body);
+
   let {
     name,
     email,
@@ -11,10 +13,11 @@ const addFeedback = async (req, res) => {
     satisfaction_rating = 0,
     professionalism_rating = 0,
     communication_rating = 0,
-    facility_rating = 0
+    facility_rating = 0,
+    userId = null
   } = req.body;
 
-  // Ensure ratings are numeric and between 0-5
+  // 2️⃣ Clamp ratings to 0-5 and ensure numbers
   overall_rating = Math.min(Math.max(Number(overall_rating) || 0, 0), 5);
   service_rating = Math.min(Math.max(Number(service_rating) || 0, 0), 5);
   satisfaction_rating = Math.min(Math.max(Number(satisfaction_rating) || 0, 0), 5);
@@ -22,20 +25,52 @@ const addFeedback = async (req, res) => {
   communication_rating = Math.min(Math.max(Number(communication_rating) || 0, 0), 5);
   facility_rating = Math.min(Math.max(Number(facility_rating) || 0, 0), 5);
 
+  // 3️⃣ Validate required fields
+  if (!message) {
+    console.warn('⚠️ Feedback message missing');
+    return res.status(400).json({ success: false, message: 'Feedback message is required.' });
+  }
+
+  if (!userId && (!name || !email)) {
+    console.warn('⚠️ Guest submission missing name/email');
+    return res.status(400).json({ success: false, message: 'Name and email are required for guest feedback.' });
+  }
+
+  // 4️⃣ Prepare SQL safely
+  const sql = `
+    INSERT INTO feedbacks
+    (name, email, message, overall_rating, service_rating, satisfaction_rating, professionalism_rating, communication_rating, facility_rating, user_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const values = [
+    name, email, message,
+    overall_rating, service_rating, satisfaction_rating,
+    professionalism_rating, communication_rating, facility_rating,
+    userId
+  ];
+
+  console.log('🔹 Executing SQL:', sql);
+  console.log('🔹 With values:', values);
+
+  // 5️⃣ Try inserting feedback
   try {
-    const [result] = await db.query(
-      `INSERT INTO feedbacks
-      (name, email, message, overall_rating, service_rating, satisfaction_rating, professionalism_rating, communication_rating, facility_rating)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [name, email, message, overall_rating, service_rating, satisfaction_rating, professionalism_rating, communication_rating, facility_rating]
-    );
-    res.status(201).json({ message: 'Feedback added', id: result.insertId });
+    const [result] = await db.query(sql, values);
+    console.log('✅ Feedback inserted:', result);
+
+    return res.status(201).json({
+      success: true,
+      message: 'Feedback submitted successfully!',
+      id: result.insertId
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('❌ Error inserting feedback into DB:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while submitting feedback. Check server logs.'
+    });
   }
 };
-
 // Get all feedbacks
 const getAllFeedbacks = async (req, res) => {
   try {

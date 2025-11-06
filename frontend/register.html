@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register | The Sanctuary</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/register.css" />
+</head>
+<body>
+<header class="main-header">
+  <div class="container">
+    <div class="logo-title">
+      <img src="assets/images/logo.png" alt="Sanctuary Logo">
+    </div>
+    <nav class="nav-bar">
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Services</a></li>
+        <li><a href="#">Gallery</a></li>
+        <li><a href="#">About Us</a></li>
+        <li><a href="inquiry.html" class="active">Submit Inquiry</a></li>
+        <li><a href="feedback.html">Feedback</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+  <div class="auth-container">
+    <h2>Registration</h2>
+
+    <!-- Registration Form -->
+    <form id="registerForm">
+      <input type="text" id="regName" placeholder="Full Name" required />
+      <input type="email" id="regEmail" placeholder="Email" required />
+      <input type="password" id="regPassword" placeholder="Password" required />
+      <label>
+        <input type="checkbox" id="showPassword" /> Show Password
+      </label>
+      <button type="submit">Register</button>
+    </form>
+    <p id="regMessage"></p>
+
+    <!-- Verification Form (hidden initially) -->
+    <form id="verifyForm" style="display: none; margin-top: 20px;">
+      <h3>Email Verification</h3>
+      <input type="email" id="verifyEmail" placeholder="Email" readonly />
+      <input type="text" id="verifyCode" placeholder="Verification Code" required />
+      <button type="submit">Verify Email</button>
+    </form>
+    <button type="button" id="resendCode" style="display: none; margin-top: 10px;">Resend Code</button>
+    <p id="verifyMessage"></p>
+
+    <p>Already have an account? <a href="login.html">Login here</a></p>
+  </div>
+
+  <script src="assets/js/register.js"></script>
+</body>
+</html>

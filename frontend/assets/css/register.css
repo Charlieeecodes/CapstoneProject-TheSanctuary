@@ -1,0 +1,111 @@
+/* assets/css/register.css */
+
+/* Global Styles */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+  background: url('../images/Sanctuary2.png') no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+  background-size: 105%;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  backdrop-filter: blur(8px);
+  background-color: rgba(0,0,0,0.4);
+  z-index: 0;
+}
+
+/* Form Container */
+.auth-container {
+  position: relative;
+  z-index: 1;
+  max-width: 400px;
+  margin: 5% auto;
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  backdrop-filter: blur(10px);
+  text-align: center;
+}
+
+/* Headings */
+.auth-container h2 {
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+/* Inputs and Textareas */
+input, textarea {
+  width: 90%;
+  padding: 12px 15px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 1rem;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255,255,255,0.7);
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  background: rgba(255,255,255,0.3);
+}
+
+/* Buttons */
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 10px;
+  background: #289d47fb;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Messages */
+#regMessage, #verifyMessage {
+  margin-top: 10px;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+/* Links */
+a {
+  color: #289d47fb;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .auth-container {
+    margin: 10% auto;
+    padding: 20px;
+  }
+}
