@@ -2,10 +2,6 @@ const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
 
-/* ========================================
-   📊 ANALYTICS CONTROLLER (FULL FIX)
-======================================== */
-
 /**
  * 🟣 GET /api/analytics/kpis
  * Returns dashboard KPIs: inquiries, feedbacks, services, top service, ratings
@@ -71,43 +67,44 @@ router.get('/kpis', async (req, res) => {
 /**
  * 🟣 GET /api/analytics/inquiries
  * Returns inquiry analytics (summary + trend)
+ * Supports ?period=week|month|year|custom&start=YYYY-MM-DD&end=YYYY-MM-DD
  */
 router.get('/inquiries', async (req, res) => {
-  const { period = 'month', mode = 'summary' } = req.query;
+  const { period = 'month', mode = 'summary', start, end } = req.query;
 
   try {
     // ✅ SUMMARY MODE
     if (mode === 'summary') {
       let summaryQuery = 'SELECT COUNT(*) AS total FROM inquiries';
-      let dateCondition = '';
+      let condition = '';
+      const params = [];
 
       if (period === 'week') {
-        // last 7 days including today
-        dateCondition =
-          'WHERE DATE(created_at) BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND CURDATE()';
+        condition = 'WHERE DATE(created_at) BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND CURDATE()';
       } else if (period === 'month') {
-        // current month
-        dateCondition = 'WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())';
+        condition = 'WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())';
       } else if (period === 'year') {
-        // current year
-        dateCondition = 'WHERE YEAR(created_at) = YEAR(CURDATE())';
+        condition = 'WHERE YEAR(created_at) = YEAR(CURDATE())';
+      } else if (period === 'custom' && start && end) {
+        condition = 'WHERE DATE(created_at) BETWEEN ? AND ?';
+        params.push(start, end);
       }
 
-      const [rows] = await db.query(`${summaryQuery} ${dateCondition}`);
-      return res.json({ total: rows[0].total });
+      const [rows] = await db.query(`${summaryQuery} ${condition}`, params);
+      return res.json({ total: rows[0]?.total ?? 0 });
     }
 
     // ✅ TREND MODE
     let trendQuery = '';
+    let params = [];
+
     if (period === 'week') {
       trendQuery = `
-        SELECT 
-          DATE_FORMAT(d, '%a') AS label,
-          COALESCE(COUNT(i.id), 0) AS count
+        SELECT DATE_FORMAT(d, '%a') AS label, COALESCE(COUNT(i.id), 0) AS count
         FROM (
           SELECT CURDATE() - INTERVAL n DAY AS d
           FROM (
-            SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL 
+            SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL
                   SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6
           ) AS x
         ) days
@@ -131,15 +128,25 @@ router.get('/inquiries', async (req, res) => {
         GROUP BY MONTH(created_at)
         ORDER BY MONTH(created_at);
       `;
+    } else if (period === 'custom' && start && end) {
+      trendQuery = `
+        SELECT DATE_FORMAT(created_at, '%e %b %Y') AS label, COUNT(*) AS count
+        FROM inquiries
+        WHERE DATE(created_at) BETWEEN ? AND ?
+        GROUP BY DATE(created_at)
+        ORDER BY DATE(created_at);
+      `;
+      params = [start, end];
     }
 
-    const [trendRows] = await db.query(trendQuery);
+    const [trendRows] = await db.query(trendQuery, params);
     res.json(trendRows);
   } catch (err) {
     console.error('❌ Error fetching inquiries analytics:', err);
     res.status(500).json({ message: 'Database error', error: err.message });
   }
 });
+
 /**
  * 🟣 GET /api/analytics/services/top
  * Returns top availed services (Completed only)

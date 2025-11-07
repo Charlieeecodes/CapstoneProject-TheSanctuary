@@ -19,7 +19,7 @@
         <ul>
           <li><a href="dashboard.html"><img src="icons/dashboard.jpg" class="nav-icon"> Dashboard</a></li>
           <li><a href="analytics.html" class="active"><img src="icons/graph.jpg" class="nav-icon"> Analytics</a></li>
-          <li><a href="datarecords.html"><img src="icons/folder.jpg" class="nav-icon"> Data Records</a></li>
+          <li><a href="datarecords.html"><img src="icons/folder.jpg" class="nav-icon"> Service Records</a></li>
           <li><a href="inquiries.html"><img src="icons/paper.jpg" class="nav-icon"> Inquiries</a></li>
           <li><a href="feedbacks.html"><img src="icons/feedback.jpg" class="nav-icon"> Feedbacks</a></li>
           <li><a href="../index.html"><img src="icons/logout.jpg" class="nav-icon"> Logout</a></li>
@@ -100,6 +100,49 @@
         </div>
       </section>
 
+      <!-- 📤 Export Report Panel -->
+      <section class="export-report-section insight-card">
+        <h3>Export Analytics Report</h3>
+        <p class="export-desc">Select which analytics you want to include and choose a date range for your report.</p>
+
+        <div class="export-controls">
+          <!-- Chart/Data Selection -->
+          <div class="chart-options">
+            <label><input type="checkbox" id="exportInquiries"> Inquiries Trend</label>
+            <label><input type="checkbox" id="exportServices"> Top Services</label>
+            <label><input type="checkbox" id="exportTotalServices"> Total Services Availed</label>
+            <label><input type="checkbox" id="exportFeedbacks"> Feedback Ratings</label>
+          </div>
+
+          <!-- Date Range Selection -->
+          <div class="date-options">
+            <label for="exportRange">Range:</label>
+            <select id="exportRange">
+              <option value="week">This Week</option>
+              <option value="month" selected>This Month</option>
+              <option value="year">This Year</option>
+              <option value="custom">Custom Range</option>
+            </select>
+
+            <div id="customDateInputs" class="custom-range hidden">
+              <input type="date" id="startDate">
+              <span>to</span>
+              <input type="date" id="endDate">
+            </div>
+          </div>
+
+          <!-- Export Buttons -->
+          <div class="export-buttons">
+            <button id="generatePreviewBtn" class="btn-preview">
+              <i class="fa-solid fa-eye"></i> Preview
+            </button>
+            <button id="exportPdfBtn" class="btn-export">
+              <i class="fa-solid fa-file-pdf"></i> Export PDF
+            </button>
+          </div>
+        </div>
+      </section>
+
       <!-- Main Charts -->
       <section class="analytics-charts-side-by-side">
         <div class="chart-container">
@@ -148,6 +191,9 @@
     </div>
   </div>
   <!-- Scripts -->
+   <!-- 🧾 PDF Export Dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="js/analytics.js"></script>
   <script>

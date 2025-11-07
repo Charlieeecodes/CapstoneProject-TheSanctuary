@@ -232,6 +232,69 @@
 .insight-section .icon {
   font-size: 1.3rem;
 }
+/* ============================== */
+/* Export Report      */
+/* ============================== */
+.export-report-section {
+  margin: 1.5rem 0;
+}
+
+.export-report-section h3 {
+  margin-top: 0;
+  color: #000000;
+}
+
+.export-desc {
+  font-size: 0.9rem;
+  color: #000000;
+  margin-bottom: 1rem;
+}
+
+.export-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.chart-options label {
+  margin-right: 1rem;
+  font-weight: 500;
+  color: #010000;
+}
+
+.date-options select,
+.date-options input {
+  background: rgb(246, 223, 223);
+  border: none;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  color: #070101;
+}
+
+.date-options input[type="date"] {
+  color-scheme: dark;
+}
+
+.export-buttons button {
+  background: #509725;
+  border: none;
+  color: white;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.export-buttons button:hover {
+  background: #7cbc29;
+}
+
+.hidden {
+  display: none;
+}
 
 /* 🧩 Insight Cards (Predictive / Prescriptive) */
 .insight-card {

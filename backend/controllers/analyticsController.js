@@ -1,18 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../models/db'); // adjust if your db.js path is different
+const db = require('../models/db');
 
 /* ========================================
-   📊 ANALYTICS CONTROLLER
+   📊 ANALYTICS CONTROLLER (Updated)
+   ➕ Now supports custom date range filters
 ======================================== */
 
 /**
  * 🟣 GET /api/analytics/inquiries
- * Returns inquiry analytics based on the selected period (week, month, year)
- * Supports trend (chart data) and summary (total count)
+ * Query Params:
+ *  - period = week | month | year | custom
+ *  - summary = true | false
+ *  - start, end = optional custom date range (YYYY-MM-DD)
  */
 router.get('/inquiries', async (req, res) => {
-  const { period, summary } = req.query;
+  const { period, summary, start, end } = req.query;
 
   try {
     // ==========================================
@@ -20,6 +23,7 @@ router.get('/inquiries', async (req, res) => {
     // ==========================================
     if (summary === 'true') {
       let countQuery = 'SELECT COUNT(*) AS total FROM inquiries';
+      let queryParams = [];
 
       if (period === 'week') {
         countQuery += ' WHERE YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)';
@@ -27,18 +31,32 @@ router.get('/inquiries', async (req, res) => {
         countQuery += ' WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())';
       } else if (period === 'year') {
         countQuery += ' WHERE YEAR(created_at) = YEAR(CURDATE())';
+      } else if (period === 'custom' && start && end) {
+        countQuery += ' WHERE DATE(created_at) BETWEEN ? AND ?';
+        queryParams = [start, end];
       }
 
-      const [rows] = await db.query(countQuery);
+      const [rows] = await db.query(countQuery, queryParams);
       return res.json({ total: rows[0].total });
     }
 
     // ==========================================
     // 2️⃣ Trend Mode (chart data)
     // ==========================================
-    let trendQuery;
+    let trendQuery = '';
+    let queryParams = [];
 
-    if (period === 'week') {
+    if (period === 'custom' && start && end) {
+      // 🗓️ Custom Range
+      trendQuery = `
+        SELECT DATE_FORMAT(created_at, '%e %b %Y') AS label, COUNT(*) AS count
+        FROM inquiries
+        WHERE DATE(created_at) BETWEEN ? AND ?
+        GROUP BY DATE(created_at)
+        ORDER BY created_at ASC;
+      `;
+      queryParams = [start, end];
+    } else if (period === 'week') {
       trendQuery = `
         SELECT DAYNAME(created_at) AS label, COUNT(*) AS count
         FROM inquiries
@@ -73,7 +91,7 @@ router.get('/inquiries', async (req, res) => {
       `;
     }
 
-    const [trendRows] = await db.query(trendQuery);
+    const [trendRows] = await db.query(trendQuery, queryParams);
     res.json(trendRows);
 
   } catch (err) {
@@ -81,26 +99,58 @@ router.get('/inquiries', async (req, res) => {
     res.status(500).json({ message: 'Database error', error: err.message });
   }
 });
+
+/**
+ * 🟢 GET /api/analytics/services
+ * Supports custom date range filtering for trends.
+ */
 router.get('/services', async (req, res) => {
+  const { start, end, period } = req.query;
+
   try {
-    // Top Services
-    const [topServices] = await db.query(`
+    // =============================
+    // 1️⃣ Top Services
+    // =============================
+    let topServicesQuery = `
       SELECT service AS name, COUNT(*) AS total
       FROM records
       WHERE status = 'Completed'
+    `;
+    const queryParams = [];
+
+    if (period === 'custom' && start && end) {
+      topServicesQuery += ' AND DATE(date) BETWEEN ? AND ?';
+      queryParams.push(start, end);
+    }
+
+    topServicesQuery += `
       GROUP BY service
       ORDER BY total DESC
       LIMIT 5
-    `);
+    `;
 
-    // Service Trend
-    const [trend] = await db.query(`
+    const [topServices] = await db.query(topServicesQuery, queryParams);
+
+    // =============================
+    // 2️⃣ Trend Data
+    // =============================
+    let trendQuery = `
       SELECT DATE_FORMAT(date, '%b %Y') AS label, COUNT(*) AS count
       FROM records
       WHERE status = 'Completed'
+    `;
+
+    if (period === 'custom' && start && end) {
+      trendQuery += ' AND DATE(date) BETWEEN ? AND ?';
+      queryParams.push(start, end);
+    }
+
+    trendQuery += `
       GROUP BY YEAR(date), MONTH(date)
       ORDER BY YEAR(date), MONTH(date)
-    `);
+    `;
+
+    const [trend] = await db.query(trendQuery, queryParams);
 
     res.json({ topServices, trend });
   } catch (err) {
@@ -108,6 +158,5 @@ router.get('/services', async (req, res) => {
     res.status(500).json({ message: 'Database error', error: err.message });
   }
 });
-
 
 module.exports = router;

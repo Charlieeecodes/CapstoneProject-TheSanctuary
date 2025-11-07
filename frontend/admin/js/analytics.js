@@ -12,13 +12,55 @@ document.addEventListener('DOMContentLoaded', async () => {
   const inquiriesTrendCanvas = document.getElementById('inquiriesTrendChart');
   const feedbackBreakdownCanvas = document.getElementById('servicesBreakdownChart');
   const inquiriesPeriodSelect = document.getElementById('inquiriesPeriod');
-  
+  const exportRangeSelect = document.getElementById('exportRange');
+  const customDateInputs = document.getElementById('customDateInputs');
+  const startDateInput = document.getElementById('startDate');
+  const endDateInput = document.getElementById('endDate');
+  const previewBtn = document.getElementById('generatePreviewBtn');
+  const exportPdfBtn = document.getElementById('exportPdfBtn');
 
+  // Show or hide custom date inputs dynamically
+  if (exportRangeSelect) {
+    exportRangeSelect.addEventListener('change', () => {
+      if (exportRangeSelect.value === 'custom') {
+        customDateInputs.classList.remove('hidden');
+      } else {
+        customDateInputs.classList.add('hidden');
+        updateInquiriesChart(exportRangeSelect.value);
+        loadServiceTrendChart(exportRangeSelect.value);
+      }
+    });
+  }
+    [startDateInput, endDateInput].forEach(input => {
+    input.addEventListener('change', async () => {
+      if (exportRangeSelect.value === 'custom' && startDateInput.value && endDateInput.value) {
+        console.log(`📆 Applying custom range: ${startDateInput.value} → ${endDateInput.value}`);
+        await updateInquiriesChart('custom', startDateInput.value, endDateInput.value);
+        await loadServiceTrendChart('custom', startDateInput.value, endDateInput.value);
+      }
+    });
+  });
+  // ---- Date helpers for pretty labels in the PDF ----
+  function formatDateISOToLong(iso) {
+    if (!iso) return 'N/A';
+    const [y, m, d] = iso.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    return dt.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  function buildRangeLabel(rangeType, start, end) {
+    if (rangeType === 'custom') {
+      return `${formatDateISOToLong(start)} → ${formatDateISOToLong(end)}`;
+    }
+    if (rangeType === 'week') return 'Period: Week';
+    if (rangeType === 'month') return 'Period: Month';
+    if (rangeType === 'year') return 'Period: Year';
+    return `Period: ${rangeType}`;
+  }
   // New chart containers
   let topServicesChartCanvas;
   let serviceTrendChartCanvas;
   let currentInquiriesPeriod = 'month';
-
 
   // Create new chart section dynamically (below existing charts)
   function appendNewCharts() {
@@ -42,9 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     topServicesChartCanvas = document.getElementById('topServicesChart');
     serviceTrendChartCanvas = document.getElementById('servicesTrendChart');
   }
-
   appendNewCharts();
-
   // -----------------------------
   // Helper: Update Inquiries KPI mini chart
   // -----------------------------
@@ -151,13 +191,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       topServiceNameEl.textContent = 'Error';
     }
   }
-
   // -----------------------------
   // Helper: Update inquiries trend chart
   // -----------------------------
-  async function updateInquiriesChart(period = 'month') {
+  async function updateInquiriesChart(period = 'month', start = null, end = null) {
     try {
-      const url = `http://localhost:5000/api/analytics/inquiries?period=${encodeURIComponent(period)}&mode=trend`;
+      let url = `http://localhost:5000/api/analytics/inquiries?mode=trend`;
+      if (period === 'custom' && start && end) {
+        url += `&period=custom&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+      } else {
+        url += `&period=${encodeURIComponent(period)}`;
+      }
       const res = await fetch(url, { cache: 'no-store' });
       const data = await res.json();
 
@@ -171,7 +215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         data: {
           labels,
           datasets: [{
-            label: `Inquiries (${period})`,
+            label: `Inquiries (${period === 'custom' ? `${start} → ${end}` : period})`,
             data: counts,
             borderColor: '#007bff',
             backgroundColor: 'rgba(0,123,255,0.2)',
@@ -189,7 +233,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('❌ Error updating trend chart:', err);
     }
   }
-
   // -----------------------------
   // 🟣 Top Services Chart
   // -----------------------------
@@ -237,15 +280,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // -----------------------------
   // 🟣 Total Services Availed Trend
   // -----------------------------
-  async function loadServiceTrendChart() {
+  async function loadServiceTrendChart(period = 'month', start = null, end = null) {
     try {
-      const res = await fetch('http://localhost:5000/api/analytics/services/trend', { cache: 'no-store' });
+      let url = `http://localhost:5000/api/analytics/services/trend?period=${encodeURIComponent(period)}`;
+      if (period === 'custom' && start && end) {
+        url += `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+      }
+      const res = await fetch(url, { cache: 'no-store' });
       const data = await res.json();
-
-      if (!Array.isArray(data)) {
-      console.error('Service Trend data is not an array:', data);
-      return;
-}
 
       const labels = data.map(d => d.label);
       const counts = data.map(d => Number(d.count));
@@ -258,7 +300,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         data: {
           labels,
           datasets: [{
-            label: 'Total Services Availed',
+            label: `Services (${period === 'custom' ? `${start} → ${end}` : period})`,
             data: counts,
             borderColor: '#4CAF50',
             backgroundColor: 'rgba(76,175,80,0.2)',
@@ -276,7 +318,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('❌ Error loading service trend chart:', err);
     }
   }
-
   // -----------------------------
   // Initialize Analytics Page
   // -----------------------------
@@ -951,6 +992,309 @@ function appendNewCharts() {
     });
   });
 }
+// ==============================
+// 📤 Export Analytics Report Feature (Improved with Preview)
+// ==============================
+if (previewBtn && exportPdfBtn) {
+  // 🧠 Preview PDF in new tab
+  previewBtn.addEventListener('click', async () => {
+    const selected = {
+      inquiries: document.getElementById('exportInquiries')?.checked,
+      services: document.getElementById('exportServices')?.checked,
+      totalServices: document.getElementById('exportTotalServices')?.checked,
+      feedbacks: document.getElementById('exportFeedbacks')?.checked
+    };
+
+    const rangeType = exportRangeSelect.value;
+    const start = startDateInput?.value || null;
+    const end = endDateInput?.value || null;
+
+    console.log('👁️ [Preview PDF Triggered]', { selected, rangeType, start, end });
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+
+    // 🏢 Header
+    try {
+      const logo = new Image();
+      logo.src = 'icons/logo.PNG'; // adjust path if needed
+      await new Promise(resolve => { logo.onload = resolve; });
+
+      const logoWidth = 49;
+      const logoHeight = 22;
+      pdf.addImage(logo, 'PNG', 10, 20, logoWidth, logoHeight);
+    } catch (e) {
+      console.warn('⚠️ Logo failed to load for PDF header');
+    }
+
+    const baseX = 60;
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(16);
+    pdf.text('The Sanctuary Analytics Report', baseX, 25);
+    pdf.setDrawColor(150);
+    pdf.setLineWidth(0.4);
+    pdf.line(baseX, 27, baseX + 110, 27);
+
+    const now = new Date();
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    const formattedDate = now.toLocaleString('en-US', options);
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    pdf.text(`Report Created: ${formattedDate}`, baseX, 33);
+
+    const dateLabel =
+      rangeType === 'custom'
+        ? `Period: (${start || 'N/A'} - ${end || 'N/A'})`
+        : `Period: ${rangeType.charAt(0).toUpperCase() + rangeType.slice(1)}`;
+    pdf.text(dateLabel, baseX, 38);
+
+    let yPos = 50;
+
+    // 📊 Helper: Add Chart + Safe Insight Text to PDF
+    async function addChartToPDF(chartId, title) {
+      const chartCanvas = document.getElementById(chartId);
+      if (!chartCanvas) return;
+
+      const canvasImg = await html2canvas(chartCanvas, { backgroundColor: '#fff' });
+      const imgData = canvasImg.toDataURL('image/png');
+      const imgWidth = pageWidth - 20;
+      const imgHeight = (canvasImg.height * imgWidth) / canvasImg.width;
+
+      // Add chart title
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(13);
+      pdf.text(title, 10, yPos);
+      yPos += 5;
+
+      // Add chart image
+      pdf.addImage(imgData, 'PNG', 10, yPos, imgWidth, imgHeight);
+      yPos += imgHeight + 6;
+
+      // Generate simple insights
+      let insightText = '';
+      const chartInstance =
+        chartId === 'inquiriesTrendChart' ? window.inquiriesTrendChartInstance :
+        chartId === 'servicesTrendChart' ? window.serviceTrendChartInstance :
+        chartId === 'topServicesChart' ? window.topServicesChartInstance :
+        chartId === 'servicesBreakdownChart' ? window.feedbackBreakdownChart : null;
+
+      if (chartInstance) {
+        const data = chartInstance.data.datasets[0].data.map(Number);
+        const labels = chartInstance.data.labels;
+        const max = Math.max(...data);
+        const min = Math.min(...data);
+        const avg = (data.reduce((a, b) => a + b, 0) / data.length).toFixed(2);
+        const maxLabel = labels[data.indexOf(max)];
+        const minLabel = labels[data.indexOf(min)];
+
+        if (chartId === 'inquiriesTrendChart') {
+          insightText = `Inquiries peaked on ${maxLabel} (${max}) and were lowest on ${minLabel} (${min}). Average inquiries per period: ${avg}.`;
+        } 
+        else if (chartId === 'servicesTrendChart') {
+          insightText = `Service completions reached a high of ${max} in ${maxLabel}. The average completions per period were ${avg}.`;
+        } 
+        else if (chartId === 'topServicesChart') {
+          const topService = labels[data.indexOf(max)];
+          insightText = `The most availed service is "${topService}" with ${max} completions. The least requested is "${minLabel}" (${min}).`;
+        } 
+        else if (chartId === 'servicesBreakdownChart') {
+          const topAspect = labels[data.indexOf(max)];
+          insightText = `Highest rated aspect: "${topAspect}" (${max}/5). Average rating across all aspects: ${avg}/5.`;
+        }
+      }
+
+      // Add text safely (no emojis, Helvetica font)
+      if (insightText) {
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        const wrappedText = pdf.splitTextToSize(insightText, pageWidth - 20);
+        pdf.text(wrappedText, 10, yPos);
+        yPos += wrappedText.length * 5 + 5;
+      }
+
+      if (yPos > 260) {
+        pdf.addPage();
+        yPos = 20;
+      }
+    }
+
+  // 🔹 Capture selected charts in order
+  if (selected.inquiries)
+    await addChartToPDF('inquiriesTrendChart', 'Inquiries Trend');
+
+  if (selected.services)
+    await addChartToPDF('topServicesChart', 'Top Services Availed'); // FIXED
+
+  if (selected.totalServices)
+    await addChartToPDF('servicesTrendChart', 'Total Services Availed Trend'); // FIXED
+
+  if (selected.feedbacks)
+    await addChartToPDF('servicesBreakdownChart', 'Feedback Ratings per Service');
+
+    // 👁️ Instead of saving, open preview in new tab
+    const pdfBlob = pdf.output('blob');
+    const pdfURL = URL.createObjectURL(pdfBlob);
+    window.open(pdfURL, '_blank');
+  });
+
+  // 📄 Export PDF - download version
+  exportPdfBtn.addEventListener('click', async () => {
+    const selected = {
+      inquiries: document.getElementById('exportInquiries')?.checked,
+      services: document.getElementById('exportServices')?.checked,
+      totalServices: document.getElementById('exportTotalServices')?.checked,
+      feedbacks: document.getElementById('exportFeedbacks')?.checked
+    };
+    const rangeType = exportRangeSelect.value;
+    const start = startDateInput?.value || null;
+    const end = endDateInput?.value || null;
+
+    console.log('📤 [Export PDF Triggered]', { selected, rangeType, start, end });
+
+    await generateAnalyticsPDF(selected, rangeType, start, end); // your existing export function
+  });
+}
+
+// ==============================
+// 🧾 PDF Export Functionality
+// ==============================
+async function generateAnalyticsPDF(selected, rangeType, start, end) {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  const pageWidth = pdf.internal.pageSize.getWidth();
+
+  // 🏢 Header: Logo + Title + Underline + Timestamp + Period
+  try {
+    const logo = new Image();
+    logo.src = 'icons/logo.PNG'; // adjust path if needed
+    await new Promise(resolve => { logo.onload = resolve; });
+
+    const logoWidth = 49;
+    const logoHeight = 22;
+    pdf.addImage(logo, 'PNG', 10, 20, logoWidth, logoHeight);
+  } catch (e) {
+    console.warn('⚠️ Logo failed to load for PDF header');
+  }
+  const baseX = 60; 
+  // 🖋️ Title
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(16);
+  pdf.text('The Sanctuary Analytics Report', baseX, 25);
+
+  // 🔹 Underline (shorter + softer gray)
+  pdf.setDrawColor(150); // gray tone
+  pdf.setLineWidth(0.4);
+  pdf.line(baseX, 27, baseX + 110, 27); // shorter underline below title
+
+  // 🕒 Generate date & time
+  const now = new Date();
+  const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+  const formattedDate = now.toLocaleString('en-US', options);
+
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(10);
+  pdf.text(`Report Created: ${formattedDate}`, baseX, 33);
+
+  // 📅 Period Label
+  let periodLabel = '';
+  if (rangeType === 'custom' && start && end) {
+    periodLabel = `Analysis Period: (${start} - ${end})`;
+  } else {
+    periodLabel = `Analysis Period: ${rangeType.charAt(0).toUpperCase() + rangeType.slice(1)}`;
+  }
+
+  pdf.setFontSize(10);
+  pdf.text(periodLabel, baseX, 38);
+
+  let yPos = 50; // Charts start lower now
+
+  // 📊 Helper: Add Chart + Safe Insight Text to PDF
+  async function addChartToPDF(chartId, title) {
+    const chartCanvas = document.getElementById(chartId);
+    if (!chartCanvas) return;
+
+    const canvasImg = await html2canvas(chartCanvas, { backgroundColor: '#fff' });
+    const imgData = canvasImg.toDataURL('image/png');
+    const imgWidth = pageWidth - 20;
+    const imgHeight = (canvasImg.height * imgWidth) / canvasImg.width;
+
+    // Add chart title
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(13);
+    pdf.text(title, 10, yPos);
+    yPos += 5;
+
+    // Add chart image
+    pdf.addImage(imgData, 'PNG', 10, yPos, imgWidth, imgHeight);
+    yPos += imgHeight + 6;
+
+    // Generate simple insights
+    let insightText = '';
+    const chartInstance =
+      chartId === 'inquiriesTrendChart' ? window.inquiriesTrendChartInstance :
+      chartId === 'servicesTrendChart' ? window.serviceTrendChartInstance :
+      chartId === 'topServicesChart' ? window.topServicesChartInstance :
+      chartId === 'servicesBreakdownChart' ? window.feedbackBreakdownChart : null;
+
+    if (chartInstance) {
+      const data = chartInstance.data.datasets[0].data.map(Number);
+      const labels = chartInstance.data.labels;
+      const max = Math.max(...data);
+      const min = Math.min(...data);
+      const avg = (data.reduce((a, b) => a + b, 0) / data.length).toFixed(2);
+      const maxLabel = labels[data.indexOf(max)];
+      const minLabel = labels[data.indexOf(min)];
+
+      if (chartId === 'inquiriesTrendChart') {
+        insightText = `Inquiries peaked on ${maxLabel} (${max}) and were lowest on ${minLabel} (${min}). Average inquiries per period: ${avg}.`;
+      } 
+      else if (chartId === 'servicesTrendChart') {
+        insightText = `Service completions reached a high of ${max} in ${maxLabel}. The average completions per period were ${avg}.`;
+      } 
+      else if (chartId === 'topServicesChart') {
+        const topService = labels[data.indexOf(max)];
+        insightText = `The most availed service is "${topService}" with ${max} completions. The least requested is "${minLabel}" (${min}).`;
+      } 
+      else if (chartId === 'servicesBreakdownChart') {
+        const topAspect = labels[data.indexOf(max)];
+        insightText = `Highest rated aspect: "${topAspect}" (${max}/5). Average rating across all aspects: ${avg}/5.`;
+      }
+    }
+
+    // Add text safely (no emojis, Helvetica font)
+    if (insightText) {
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      const wrappedText = pdf.splitTextToSize(insightText, pageWidth - 20);
+      pdf.text(wrappedText, 10, yPos);
+      yPos += wrappedText.length * 5 + 5;
+    }
+
+    if (yPos > 260) {
+      pdf.addPage();
+      yPos = 20;
+    }
+  }
+
+  // 🔹 Capture selected charts in order
+  if (selected.inquiries)
+    await addChartToPDF('inquiriesTrendChart', 'Inquiries Trend');
+
+  if (selected.services)
+    await addChartToPDF('topServicesChart', 'Top Services Availed'); // FIXED
+
+  if (selected.totalServices)
+    await addChartToPDF('servicesTrendChart', 'Total Services Availed Trend'); // FIXED
+
+  if (selected.feedbacks)
+    await addChartToPDF('servicesBreakdownChart', 'Feedback Ratings per Service');
+
+  // ✅ Save the generated file
+  pdf.save('The_Sanctuary_Analytics_Report.pdf');
+}
+
 // Linear regression: returns predicted next value
 function linearRegressionForecast(data) {
   const n = data.length;
