@@ -374,46 +374,62 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         let recommendation = '';
 
-        // 🔹 Case 1: Dominant top service
+        // 🌟 Case 1: One dominant service
         if (topShare >= 60) {
-          recommendation = `🔥 ${topService} is dominating inquiries (${topShare.toFixed(1)}%). Ensure operational readiness, maintain service quality, and explore complementary offerings to sustain interest.`;
+          recommendation = `
+            🔥 <b>${topService}</b> is the clear favorite — capturing <b>${topShare.toFixed(1)}%</b> of all completed services!<br>
+            Demand is strong and consistent. Make sure your staff and supplies can keep up, and consider showcasing client stories or add-ons related to this service.
+          `;
         }
 
-        // 🔹 Case 2: Balanced but skewed demand
+        // 📊 Case 2: Leading but others growing
         else if (topShare >= 35 && diversity <= 2) {
-          recommendation = `📈 ${topService} leads with ${topShare.toFixed(1)}%, but other services are showing traction. Consider promotional bundles or referral tie-ins with ${lowService} to balance demand.`;
+          recommendation = `
+            📈 <b>${topService}</b> leads the way with <b>${topShare.toFixed(1)}%</b> — but other services are beginning to catch attention.<br>
+            Try offering bundled promotions or linking <b>${topService}</b> with <b>${lowService}</b> to encourage clients to explore more options.
+          `;
         }
 
-        // 🔹 Case 3: Evenly distributed demand
+        // ⚖️ Case 3: Balanced distribution
         else if (topShare < 35 && diversity >= totalServices / 2) {
-          recommendation = `⚖️ Demand is evenly distributed among most services. Maintain balanced resource allocation and track for emerging preferences next week.`;
+          recommendation = `
+            ⚖️ Demand looks well balanced across your services.<br>
+            Clients are exploring a variety of offerings, which shows healthy engagement. 
+            Keep monitoring for new favorites and ensure each service stays visible and well-supported.
+          `;
         }
 
-        // 🔹 Case 4: Weak engagement overall
+        // 📉 Case 4: Weak engagement overall
         else if (Math.max(...shares) < 20) {
-          recommendation = `📉 Low overall engagement detected. Consider targeted outreach, seasonal campaigns, or community events to boost inquiries.`;
+          recommendation = `
+            📉 Engagement seems low across the board.<br>
+            Consider refreshing your promotions, running a themed campaign, or highlighting seasonal services to reignite interest.
+          `;
         }
 
-        // 🔹 Case 5: Underserved service
+        // 🎯 Case 5: Underserved / least popular service
         else {
-          recommendation = `🎯 ${lowService} has the lowest engagement (${lowShare.toFixed(1)}%). Evaluate pricing, visibility, or consider limited-time promos to improve awareness.`;
+          recommendation = `
+            🎯 <b>${lowService}</b> has the lowest engagement at only <b>${lowShare.toFixed(1)}%</b>.<br>
+            It may need a boost — review pricing, improve visibility, or create a short-term promo to spark awareness.
+          `;
         }
 
-        // 🔹 Bonus: rotating motivational tip
+        // 💬 Bonus: motivational rotating tip
         const tips = [
-          '✅ Monitor weekly trends to stay ahead of client needs.',
-          '💡 Use social posts to highlight testimonials and success stories.',
-          '📊 Compare this data with feedback ratings for deeper insight.',
-          '🕒 Revisit underperforming services each quarter for strategy updates.',
+          '✅ Track these trends weekly to spot rising favorites early.',
+          '💡 Post a short success story or testimonial for your top service.',
+          '📊 Compare this chart with feedback ratings for deeper insights.',
+          '🕒 Review underperforming services each month for fresh ideas.',
         ];
-
         const randomTip = tips[Math.floor(Math.random() * tips.length)];
 
-        return `${recommendation}\n\n${randomTip}`;
+        return `${recommendation}<br><br><i>${randomTip}</i>`;
       }
 
-      // 👇 Call it like this (where you set the prescriptive text)
-      prescriptiveText.textContent = generatePrescriptiveInsight(labels, shares);
+      // 👇 Call it when setting your prescriptive text
+      prescriptiveText.innerHTML = generatePrescriptiveInsight(labels, shares);
+
 
 
       // 🔹 Rebuild chart manually to avoid config conflicts
@@ -462,20 +478,80 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
       }
 
+      // 🔍 Calculate feedback insights
       const categories = Object.keys(avgRatings);
       const values = Object.values(avgRatings).map(Number);
       const weakestIndex = values.indexOf(Math.min(...values));
       const strongestIndex = values.indexOf(Math.max(...values));
       const overallAvg = values.reduce((a, b) => a + b, 0) / values.length;
 
-      predictiveText.textContent =
-        `Average rating is ${overallAvg.toFixed(2)}⭐. Highest in ${categories[strongestIndex]} (${values[strongestIndex].toFixed(1)}⭐), lowest in ${categories[weakestIndex]} (${values[weakestIndex].toFixed(1)}⭐).`;
+      const topCategory = categories[strongestIndex];
+      const lowCategory = categories[weakestIndex];
+      const topValue = values[strongestIndex].toFixed(1);
+      const lowValue = values[weakestIndex].toFixed(1);
+      const avg = overallAvg.toFixed(2);
 
-      prescriptiveText.textContent =
-        values[weakestIndex] < 4
-          ? `📉 Focus on improving ${categories[weakestIndex]} through training or quality adjustments.`
-          : `✅ Ratings are consistently high across all aspects ; maintain service quality and responsiveness.`;
+      // 🌟 Predictive — what’s happening right now
+      let predictiveMessage = '';
+      if (overallAvg >= 4.5) {
+        predictiveMessage = `
+          🌟 <b>Outstanding feedback overall!</b><br>
+          Clients are <b>highly satisfied</b> with an average rating of <b>${avg}⭐</b>.<br>
+          <b>${topCategory}</b> is your strongest area (${topValue}⭐), showing genuine client trust.<br>
+          Even <b>${lowCategory}</b> (${lowValue}⭐) remains strong — an excellent sign of consistency.
+        `;
+      } 
+      else if (overallAvg >= 4.0) {
+        predictiveMessage = `
+          😊 <b>Very positive overall feedback!</b><br>
+          You’re holding a solid <b>${avg}⭐</b> average. Clients especially appreciate <b>${topCategory}</b> (${topValue}⭐).<br>
+          <b>${lowCategory}</b> (${lowValue}⭐) could use small refinements to push scores even higher.
+        `;
+      } 
+      else if (overallAvg >= 3.0) {
+        predictiveMessage = `
+          😐 <b>Mixed impressions detected.</b><br>
+          Average rating is <b>${avg}⭐</b>. Clients like <b>${topCategory}</b> (${topValue}⭐), 
+          but <b>${lowCategory}</b> (${lowValue}⭐) might be lowering satisfaction.<br>
+          Take time to listen and address key concerns in that area.
+        `;
+      } 
+      else {
+        predictiveMessage = `
+          ⚠️ <b>Low feedback ratings overall (${avg}⭐).</b><br>
+          While <b>${topCategory}</b> (${topValue}⭐) remains relatively positive, 
+          <b>${lowCategory}</b> (${lowValue}⭐) shows clear dissatisfaction.<br>
+          A focused quality review or retraining session may be needed.
+        `;
+      }
 
+      predictiveText.innerHTML = predictiveMessage;
+
+      // 💡 Prescriptive — what to do next
+      let prescriptiveMessage = '';
+      if (values[weakestIndex] < 3.5) {
+        prescriptiveMessage = `
+          📉 <b>Action needed:</b> Improve <b>${lowCategory}</b> by reviewing service flow, 
+          providing staff refreshers, or gathering direct client input to understand pain points.
+        `;
+      } 
+      else if (values[weakestIndex] < 4.0) {
+        prescriptiveMessage = `
+          🔍 <b>Opportunity to improve:</b> <b>${lowCategory}</b> scores slightly lower than others. 
+          Small changes — like faster responses or clearer communication — could lift ratings further.
+        `;
+      } 
+      else {
+        prescriptiveMessage = `
+          ✅ <b>Great balance across all areas!</b><br>
+          Ratings are consistently strong, showing reliable service quality. 
+          Keep recognizing staff performance and maintaining your communication standards.
+        `;
+      }
+
+      prescriptiveText.innerHTML = prescriptiveMessage;
+
+      // 📊 Render the chart visualization
       window.insightsChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -497,6 +573,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       insightsModal.classList.remove('hidden');
       return;
     }
+
 
     // ==============================
     // 🟢 Predictive Charts (Inquiries / Services)
@@ -559,62 +636,194 @@ document.addEventListener('DOMContentLoaded', async () => {
     else if (period === 'month') timeframeContext = 'this month';
     else if (period === 'year') timeframeContext = 'this year';
 
-    predictiveText.textContent =
-      `Inquiries last ${timeframeContext}: ${lastValue}. Forecast for next ${period}: ${predictedNext} (${growthRate.toFixed(1)}% change, range ${lowerBound}-${upperBound}).`;
-
-    // Step 5: Smarter prescriptive text based on chartType and growth
+    // Enhanced Predictive Text based on trend forecast
     if (chartType === 'inquiriesTrend') {
-      if (growthRate > 20) {
-        prescriptiveText.textContent =
-          `🚀 Inquiries surged by ${growthRate.toFixed(1)}%. This strong growth suggests rising community awareness. 
-          Consider expanding staff capacity and promoting related services to sustain momentum.`;
+      if (growthRate > 15) {
+        predictiveText.innerHTML = `
+          🔮 <b>Busy days ahead!</b><br>
+          Inquiries are expected to <b>rise sharply</b> over the next ${period}. 
+          Get ready for a wave of new questions and requests — a great sign of growing interest!
+        `;
       } 
-      else if (growthRate > 10) {
-        prescriptiveText.textContent =
-          `📈 Inquiries are trending upward (+${growthRate.toFixed(1)}%). Maintain communication speed and ensure follow-ups are timely to convert inquiries into bookings.`;
+      else if (growthRate > 5) {
+        predictiveText.innerHTML = `
+          📈 <b>Steady climb expected.</b><br>
+          Inquiries should keep growing at a healthy pace. Keep your response times quick — momentum is on your side.
+        `;
       } 
-      else if (growthRate > 0) {
-        prescriptiveText.textContent =
-          `🟢 Slight increase in inquiries (+${growthRate.toFixed(1)}%). Continue consistent outreach; monitor which channels are performing best this week.`;
+      else if (growthRate > -5) {
+        predictiveText.innerHTML = `
+          🟦 <b>Holding steady.</b><br>
+          Inquiry activity is expected to stay about the same in the coming ${period}. 
+          Consistency is good — use this time to plan your next outreach push.
+        `;
       } 
-      else if (growthRate < -15) {
-        prescriptiveText.textContent =
-          `🔻 Sharp decline detected (${growthRate.toFixed(1)}%). Investigate cause — possibly reduced visibility or service delays. Consider reactivating past clients via reminders.`;
-      } 
-      else if (growthRate < -5) {
-        prescriptiveText.textContent =
-          `📉 Moderate decline (${growthRate.toFixed(1)}%). Review messaging tone and online presence to re-engage potential inquirers.`;
+      else if (growthRate > -15) {
+        predictiveText.innerHTML = `
+          ⚠️ <b>Slight slowdown ahead.</b><br>
+          You may notice fewer inquiries than usual. It might just be a quiet week — stay visible and check if any service pages need updates.
+        `;
       } 
       else {
-        prescriptiveText.textContent =
-          `🟦 Inquiries are stable (${growthRate.toFixed(1)}%). Maintain steady operations, but look for small engagement opportunities (social updates, testimonials).`;
+        predictiveText.innerHTML = `
+          🔻 <b>Inquiries may dip noticeably.</b><br>
+          A drop is expected in the next ${period}. 
+          Consider re-engaging your audience or running a small reminder campaign to boost interest again.
+        `;
+      }
+    }
+
+    else if (chartType === 'serviceTrend') {
+      if (growthRate > 15) {
+        predictiveText.innerHTML = `
+          💼 <b>High demand coming!</b><br>
+          Service completions are predicted to jump significantly. 
+          Make sure staff and resources are ready for a busier period ahead.
+        `;
+      } 
+      else if (growthRate > 5) {
+        predictiveText.innerHTML = `
+          📊 <b>Good news — demand is growing.</b><br>
+          Expect a few more service requests in the next ${period}. 
+          A great time to keep quality high and clients happy.
+        `;
+      } 
+      else if (growthRate > -5) {
+        predictiveText.innerHTML = `
+          🟦 <b>Stable week ahead.</b><br>
+          Service activity should remain consistent. 
+          Keep doing what’s working, and use this calm period to prepare for future growth.
+        `;
+      } 
+      else if (growthRate > -15) {
+        predictiveText.innerHTML = `
+          ⚠️ <b>Minor slowdown predicted.</b><br>
+          You might see a few fewer bookings than usual. 
+          Stay connected with clients and consider offering follow-up reminders.
+        `;
+      } 
+      else {
+        predictiveText.innerHTML = `
+          🔻 <b>Services may slow down soon.</b><br>
+          A noticeable drop could be coming. 
+          Check for scheduling issues, recent feedback, or seasonal factors that might be affecting demand.
+        `;
+      }
+    }
+
+
+    // Step 5: Smarter, Insightful Prescriptive Texts
+    if (chartType === 'inquiriesTrend') {
+      if (growthRate > 20) {
+        prescriptiveText.innerHTML = `
+          🚀 <b>Massive Surge in Inquiries (+${growthRate.toFixed(1)}%)</b><br>
+          This strong upward trend indicates growing community engagement and high visibility of your services.
+          <br><br>
+          <b>Next Steps:</b> Increase staff availability, extend office hours, or promote bundled service offers 
+          to sustain and capitalize on this momentum.
+        `;
+      } 
+      else if (growthRate > 10) {
+        prescriptiveText.innerHTML = `
+          📈 <b>Healthy Inquiry Growth (+${growthRate.toFixed(1)}%)</b><br>
+          The steady climb suggests consistent outreach effectiveness.
+          <br><br>
+          <b>Recommendation:</b> Maintain active communication channels, ensure prompt responses, 
+          and highlight top-performing services in upcoming campaigns.
+        `;
+      } 
+      else if (growthRate > 0) {
+        prescriptiveText.innerHTML = `
+          🟢 <b>Minor Increase in Inquiries (+${growthRate.toFixed(1)}%)</b><br>
+          Growth is modest but positive — customers remain engaged.
+          <br><br>
+          <b>Tip:</b> Review which days or channels generate more inquiries, and 
+          reallocate attention toward those with higher engagement.
+        `;
+      } 
+      else if (growthRate < -15) {
+        prescriptiveText.innerHTML = `
+          🔻 <b>Significant Drop in Inquiries (${growthRate.toFixed(1)}%)</b><br>
+          A sharp decline could reflect reduced visibility or delays in responses.
+          <br><br>
+          <b>Immediate Action:</b> Audit recent marketing activities, ensure inquiry forms 
+          are working properly, and reach out to past clients with follow-up messages.
+        `;
+      } 
+      else if (growthRate < -5) {
+        prescriptiveText.innerHTML = `
+          📉 <b>Moderate Decline (${growthRate.toFixed(1)}%)</b><br>
+          Engagement is slipping slightly — may be seasonal or due to reduced exposure.
+          <br><br>
+          <b>Suggestion:</b> Refresh online posts, feature success stories, 
+          or collaborate with local partners to regain attention.
+        `;
+      } 
+      else {
+        prescriptiveText.innerHTML = `
+          🟦 <b>Stable Inquiry Levels (${growthRate.toFixed(1)}%)</b><br>
+          No major fluctuations detected — stability indicates operational consistency.
+          <br><br>
+          <b>Keep it up:</b> Maintain your response speed and customer follow-ups, 
+          while experimenting with small engagement boosts (e.g., feedback posts, polls).
+        `;
       }
     }
 
     else if (chartType === 'serviceTrend') {
       if (growthRate > 20) {
-        prescriptiveText.textContent =
-          `💼 Service completion rate spiked by ${growthRate.toFixed(1)}%! Great momentum — evaluate resource load and ensure quality remains consistent.`;
+        prescriptiveText.innerHTML = `
+          💼 <b>Strong Service Uptake (+${growthRate.toFixed(1)}%)</b><br>
+          A major surge in completed services — demand is scaling quickly.
+          <br><br>
+          <b>Next Steps:</b> Monitor team workload, streamline scheduling, 
+          and ensure quality control to avoid service fatigue.
+        `;
       } 
       else if (growthRate > 10) {
-        prescriptiveText.textContent =
-          `📊 More services are being availed (+${growthRate.toFixed(1)}%). Keep optimizing scheduling and ensure supplies match client volume.`;
+        prescriptiveText.innerHTML = `
+          📊 <b>Consistent Service Growth (+${growthRate.toFixed(1)}%)</b><br>
+          Indicates healthy client satisfaction and effective follow-through.
+          <br><br>
+          <b>Recommendation:</b> Reward top-performing staff, 
+          and document successful service workflows for standardization.
+        `;
       } 
       else if (growthRate > 0) {
-        prescriptiveText.textContent =
-          `🟢 Slight growth in service demand (+${growthRate.toFixed(1)}%). Sustain the pace; consider staff training or incentive programs to maintain morale.`;
+        prescriptiveText.innerHTML = `
+          🟢 <b>Slight Service Increase (+${growthRate.toFixed(1)}%)</b><br>
+          Positive but gentle progress — service demand remains steady.
+          <br><br>
+          <b>Tip:</b> Introduce referral incentives or client loyalty programs 
+          to turn small gains into sustainable growth.
+        `;
       } 
       else if (growthRate < -15) {
-        prescriptiveText.textContent =
-          `⚠️ Major drop in completed services (${growthRate.toFixed(1)}%). Review recent cancellations, staff schedules, or supply chain issues. Plan recovery actions for next week.`;
+        prescriptiveText.innerHTML = `
+          ⚠️ <b>Major Drop in Services (${growthRate.toFixed(1)}%)</b><br>
+          Potential causes: cancellations, scheduling gaps, or service quality issues.
+          <br><br>
+          <b>Immediate Action:</b> Conduct quick client surveys, review recent feedback, 
+          and retrain staff where bottlenecks appear.
+        `;
       } 
       else if (growthRate < -5) {
-        prescriptiveText.textContent =
-          `📉 Slight dip (${growthRate.toFixed(1)}%). Investigate customer satisfaction and identify any bottlenecks affecting service delivery.`;
+        prescriptiveText.innerHTML = `
+          📉 <b>Minor Decline in Service Completions (${growthRate.toFixed(1)}%)</b><br>
+          A temporary dip — may relate to external factors or limited availability.
+          <br><br>
+          <b>Suggestion:</b> Check for scheduling overlaps and evaluate 
+          whether peak-hour demand is being handled efficiently.
+        `;
       } 
       else {
-        prescriptiveText.textContent =
-          `🟦 Service trends are stable (${growthRate.toFixed(1)}%). Maintain operational consistency and prepare for potential seasonal fluctuations.`;
+        prescriptiveText.innerHTML = `
+          🟦 <b>Stable Service Volume (${growthRate.toFixed(1)}%)</b><br>
+          Demand remains balanced — a sign of predictable workflows.
+          <br><br>
+          <b>Keep it steady:</b> Maintain quality assurance routines and track 
+          client satisfaction to ensure continued reliability.
+        `;
       }
     }
 
