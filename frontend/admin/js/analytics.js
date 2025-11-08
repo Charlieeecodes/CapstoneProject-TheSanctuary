@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await updateInquiriesChart(range);
         await loadServiceTrendChart(range);
         await loadTopServicesChart(range);
+        await loadFeedbackRatingsChart(range) 
       }
     });
   }
@@ -382,39 +383,60 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('❌ Error loading service trend chart:', err);
     }
   }
+  // -----------------------------
+  // 🎛️ INDIVIDUAL KPI PERIOD CONTROLS
+  // -----------------------------
 
-  // -----------------------------
-  // Period dropdown listener
-  // -----------------------------
+  // 🟣 Total Inquiries
   if (inquiriesPeriodSelect) {
     inquiriesPeriodSelect.addEventListener('change', async e => {
-      const periodMap = { weekly: 'week', monthly: 'month', yearly: 'year' };
-      currentInquiriesPeriod = periodMap[e.target.value] || e.target.value;
-
-      // 🟣 Update ALL related charts
-      await Promise.all([
-        updateInquiriesChart(currentInquiriesPeriod),
-        updateInquiriesKPI(currentInquiriesPeriod),
-        loadTopServicesChart(currentInquiriesPeriod),
-        loadServiceTrendChart(currentInquiriesPeriod),
-        loadFeedbackRatingsChart(currentInquiriesPeriod)
-        
-      ]);
+      const period = e.target.value;
+      console.log(`📊 Inquiries period changed to: ${period}`);
+      await updateInquiriesChart(period);
+      await updateInquiriesKPI(period);
     });
-    inquiriesPeriodSelect.value = 'month';
-    currentInquiriesPeriod = 'month';
-
-    // ✅ single, clean initial load
-    await Promise.all([
-      loadKPIs(),
-      updateInquiriesChart('month'),
-      updateInquiriesKPI('month'),
-      loadTopServicesChart('month'),
-      loadServiceTrendChart('month'),
-      loadFeedbackRatingsChart('month')
-    ]);
-
   }
+
+  // 🟢 Feedback Ratings (new dropdown you'll add with id="feedbackPeriod")
+  const feedbackPeriodSelect = document.getElementById('feedbackPeriod');
+  if (feedbackPeriodSelect) {
+    feedbackPeriodSelect.addEventListener('change', async e => {
+      const period = e.target.value;
+      console.log(`💬 Feedback period changed to: ${period}`);
+      await loadFeedbackRatingsChart(period);
+    });
+  }
+
+  // 🔵 Top Services Availed (new dropdown you'll add with id="topServicesPeriod")
+  const topServicesPeriodSelect = document.getElementById('topServicesPeriod');
+  if (topServicesPeriodSelect) {
+    topServicesPeriodSelect.addEventListener('change', async e => {
+      const period = e.target.value;
+      console.log(`🏆 Top Services period changed to: ${period}`);
+      await loadTopServicesChart(period);
+    });
+  }
+
+  // 🟢 Total Services Availed Trend (new dropdown you'll add with id="servicesTrendPeriod")
+  const servicesTrendPeriodSelect = document.getElementById('servicesTrendPeriod');
+  if (servicesTrendPeriodSelect) {
+    servicesTrendPeriodSelect.addEventListener('change', async e => {
+      const period = e.target.value;
+      console.log(`📈 Services Trend period changed to: ${period}`);
+      await loadServiceTrendChart(period);
+    });
+  }
+
+  // ✅ Initial load (same as before)
+  await Promise.all([
+    loadKPIs(),
+    updateInquiriesChart('month'),
+    updateInquiriesKPI('month'),
+    loadTopServicesChart('month'),
+    loadServiceTrendChart('month'),
+    loadFeedbackRatingsChart('month')
+  ]);
+
   // ==============================
   // 🧠 Insights Modal Logic 
   // ==============================
