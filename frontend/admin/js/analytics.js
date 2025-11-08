@@ -264,6 +264,153 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
   // -----------------------------
+  // ✅ FIXED: Update Feedback KPI mini chart
+  // -----------------------------
+  async function updateFeedbackKPI(period = 'month') {
+    try {
+      // Fetch all feedbacks (no ?period filter yet)
+      const feedbackRes = await fetch('http://localhost:5000/api/feedbacks', { cache: 'no-store' });
+      const feedbackData = await feedbackRes.json();
+
+      // Filter manually by created_at field (if it exists)
+      const now = new Date();
+      const filtered = feedbackData.filter(fb => {
+        const created = new Date(fb.created_at || fb.date || fb.timestamp || now);
+        if (period === 'week') return created >= new Date(now - 7 * 24 * 60 * 60 * 1000);
+        if (period === 'month') return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+        if (period === 'year') return created.getFullYear() === now.getFullYear();
+        return true;
+      });
+
+      const totalFeedbacks = filtered.length;
+      if (totalFeedbacksEl) totalFeedbacksEl.textContent = totalFeedbacks;
+
+      // Average ratings from analytics endpoint
+      const ratingsRes = await fetch(`http://localhost:5000/api/analytics/feedbacks/ratings?period=${period}`, { cache: 'no-store' });
+      const ratingsData = await ratingsRes.json();
+
+      const ratings = [
+        Number(ratingsData.overall) || 0,
+        Number(ratingsData.service) || 0,
+        Number(ratingsData.satisfaction) || 0,
+        Number(ratingsData.professionalism) || 0,
+        Number(ratingsData.communication) || 0,
+        Number(ratingsData.facility) || 0
+      ];
+
+      const ctx = document.getElementById('feedbacksMiniChart')?.getContext('2d');
+      if (!ctx) return;
+      if (window.miniFeedbackChart) window.miniFeedbackChart.destroy();
+
+      window.miniFeedbackChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Overall', 'Service', 'Satisfaction', 'Professionalism', 'Communication', 'Facility'],
+          datasets: [{
+            label: 'Avg Rating',
+            data: ratings,
+            backgroundColor: '#FFC107'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { display: false } }
+        }
+      });
+    } catch (err) {
+      console.error('[analytics] Error updating feedback KPI:', err);
+    }
+  }
+
+  // -----------------------------
+  // Helper: Update Top Service KPI mini chart
+  // -----------------------------
+  async function updateTopServiceKPI(period = 'month') {
+    try {
+      const url = `http://localhost:5000/api/analytics/services/top?period=${encodeURIComponent(period)}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      const data = await res.json();
+
+      if (topServiceNameEl) topServiceNameEl.textContent = data[0]?.name || 'N/A';
+
+      const ctx = document.getElementById('topServiceMiniChart')?.getContext('2d'); // ✅ changed
+      if (!ctx) return;
+      if (window.miniTopServiceChart) window.miniTopServiceChart.destroy();
+
+      if (window.miniTopServiceChart) {
+        await new Promise(r => setTimeout(r, 100));
+        window.miniTopServiceChart.destroy();
+      }
+
+      const labels = data.map(d => d.name);
+      const values = data.map(d => d.total);
+
+      window.miniTopServiceChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{ data: values, backgroundColor: '#9C27B0' }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { x: { display: false }, y: { display: false } }
+        }
+      });
+    } catch (err) {
+      console.error('[analytics] Error updating Top Service KPI:', err);
+    }
+  }
+  // -----------------------------
+  // Helper: Update Total Services KPI mini chart
+  // -----------------------------
+  async function updateTotalServicesKPI(period = 'month') {
+    try {
+      const url = `http://localhost:5000/api/analytics/services/trend?period=${encodeURIComponent(period)}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      const data = await res.json();
+
+      const total = data.reduce((a, b) => a + Number(b.count), 0);
+      if (totalServicesEl) totalServicesEl.textContent = total;
+
+      const ctx = document.getElementById('servicesTrendMiniChart')?.getContext('2d'); // ✅ changed
+      if (!ctx) return;
+      if (window.miniServicesChart) window.miniServicesChart.destroy();
+
+      if (window.miniTopServiceChart) {
+        await new Promise(r => setTimeout(r, 100));
+        window.miniTopServiceChart.destroy();
+      }
+      const labels = data.map(d => d.label);
+      const values = data.map(d => Number(d.count));
+
+      window.miniServicesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            borderColor: '#4CAF50',
+            backgroundColor: 'rgba(76,175,80,0.2)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { x: { display: false }, y: { display: false } }
+        }
+      });
+    } catch (err) {
+      console.error('[analytics] Error updating Total Services KPI:', err);
+    }
+  }
+  // -----------------------------
   // 🟣 Top Services Chart(now supports week, month, year, and custom)
   // -----------------------------
   async function loadTopServicesChart(period = 'month', start = null, end = null) {
@@ -386,43 +533,41 @@ document.addEventListener('DOMContentLoaded', async () => {
   // -----------------------------
   // 🎛️ INDIVIDUAL KPI PERIOD CONTROLS
   // -----------------------------
-
   // 🟣 Total Inquiries
   if (inquiriesPeriodSelect) {
     inquiriesPeriodSelect.addEventListener('change', async e => {
       const period = e.target.value;
-      console.log(`📊 Inquiries period changed to: ${period}`);
       await updateInquiriesChart(period);
       await updateInquiriesKPI(period);
     });
   }
 
-  // 🟢 Feedback Ratings (new dropdown you'll add with id="feedbackPeriod")
+  // 🟢 Total Feedbacks
   const feedbackPeriodSelect = document.getElementById('feedbackPeriod');
   if (feedbackPeriodSelect) {
     feedbackPeriodSelect.addEventListener('change', async e => {
       const period = e.target.value;
-      console.log(`💬 Feedback period changed to: ${period}`);
+      await updateFeedbackKPI(period);
       await loadFeedbackRatingsChart(period);
     });
   }
 
-  // 🔵 Top Services Availed (new dropdown you'll add with id="topServicesPeriod")
+  // 🔵 Top Services
   const topServicesPeriodSelect = document.getElementById('topServicesPeriod');
   if (topServicesPeriodSelect) {
     topServicesPeriodSelect.addEventListener('change', async e => {
       const period = e.target.value;
-      console.log(`🏆 Top Services period changed to: ${period}`);
+      await updateTopServiceKPI(period);
       await loadTopServicesChart(period);
     });
   }
 
-  // 🟢 Total Services Availed Trend (new dropdown you'll add with id="servicesTrendPeriod")
+  // 🟢 Total Services Availed
   const servicesTrendPeriodSelect = document.getElementById('servicesTrendPeriod');
   if (servicesTrendPeriodSelect) {
     servicesTrendPeriodSelect.addEventListener('change', async e => {
       const period = e.target.value;
-      console.log(`📈 Services Trend period changed to: ${period}`);
+      await updateTotalServicesKPI(period);
       await loadServiceTrendChart(period);
     });
   }
@@ -430,12 +575,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ✅ Initial load (same as before)
   await Promise.all([
     loadKPIs(),
-    updateInquiriesChart('month'),
     updateInquiriesKPI('month'),
+    updateFeedbackKPI('range'),
+    updateTopServiceKPI('month'),
+    updateTotalServicesKPI('month'),
+    loadFeedbackRatingsChart('month'),
     loadTopServicesChart('month'),
     loadServiceTrendChart('month'),
-    loadFeedbackRatingsChart('month')
+    updateInquiriesChart('month')
   ]);
+
 
   // ==============================
   // 🧠 Insights Modal Logic 
@@ -1156,73 +1305,89 @@ if (previewBtn && exportPdfBtn) {
 
     let yPos = 50;
 
-    // 📊 Helper: Add Chart + Safe Insight Text to PDF
-    async function addChartToPDF(chartId, title) {
-      const chartCanvas = document.getElementById(chartId);
-      if (!chartCanvas) return;
+  // 📊 Helper: Add Chart + Safe Insight Text to PDF (taller chart version)
+  async function addChartToPDF(chartId, title) {
+    const chartCanvas = document.getElementById(chartId);
+    if (!chartCanvas) return;
 
-      const canvasImg = await html2canvas(chartCanvas, { backgroundColor: '#fff' });
-      const imgData = canvasImg.toDataURL('image/png');
-      const imgWidth = pageWidth - 20;
-      const imgHeight = (canvasImg.height * imgWidth) / canvasImg.width;
+    // 🖼️ Capture chart with white background and a bit of scaling for clarity
+    const canvasImg = await html2canvas(chartCanvas, {
+      backgroundColor: '#fff',
+      scale: 1.5 // sharper export
+    });
 
-      // Add chart title
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(13);
-      pdf.text(title, 10, yPos);
-      yPos += 5;
+    const imgData = canvasImg.toDataURL('image/png');
+    const imgWidth = pageWidth - 30;
 
-      // Add chart image
-      pdf.addImage(imgData, 'PNG', 10, yPos, imgWidth, imgHeight);
-      yPos += imgHeight + 6;
+    // 🟩 Adjusted height scaling — make charts taller
+    const heightFactor = 0.85; // 👈 you can tweak this: 0.75 (shorter), 0.85 (balanced), 1.0 (tallest)
+    const imgHeight = ((canvasImg.height * imgWidth) / canvasImg.width) * heightFactor;
 
-      // Generate simple insights
-      let insightText = '';
-      const chartInstance =
-        chartId === 'inquiriesTrendChart' ? window.inquiriesTrendChartInstance :
-        chartId === 'servicesTrendChart' ? window.serviceTrendChartInstance :
-        chartId === 'topServicesChart' ? window.topServicesChartInstance :
-        chartId === 'servicesBreakdownChart' ? window.feedbackBreakdownChart : null;
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const bottomMargin = 20;
 
-      if (chartInstance) {
-        const data = chartInstance.data.datasets[0].data.map(Number);
-        const labels = chartInstance.data.labels;
-        const max = Math.max(...data);
-        const min = Math.min(...data);
-        const avg = (data.reduce((a, b) => a + b, 0) / data.length).toFixed(2);
-        const maxLabel = labels[data.indexOf(max)];
-        const minLabel = labels[data.indexOf(min)];
+    // 🧭 Check before drawing chart — if not enough space, go to new page first
+    if (yPos + imgHeight + 40 > pageHeight - bottomMargin) {
+      pdf.addPage();
+      yPos = 40; // reset top margin
+    }
 
-        if (chartId === 'inquiriesTrendChart') {
-          insightText = `Inquiries peaked on ${maxLabel} (${max}) and were lowest on ${minLabel} (${min}). Average inquiries per period: ${avg}.`;
-        } 
-        else if (chartId === 'servicesTrendChart') {
-          insightText = `Service completions reached a high of ${max} in ${maxLabel}. The average completions per period were ${avg}.`;
-        } 
-        else if (chartId === 'topServicesChart') {
-          const topService = labels[data.indexOf(max)];
-          insightText = `The most availed service is "${topService}" with ${max} completions. The least requested is "${minLabel}" (${min}).`;
-        } 
-        else if (chartId === 'servicesBreakdownChart') {
-          const topAspect = labels[data.indexOf(max)];
-          insightText = `Highest rated aspect: "${topAspect}" (${max}/5). Average rating across all aspects: ${avg}/5.`;
-        }
-      }
+    // 🏷️ Chart title
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(13);
+    pdf.text(title, 10, yPos);
+    yPos += 6;
 
-      // Add text safely (no emojis, Helvetica font)
-      if (insightText) {
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(10);
-        const wrappedText = pdf.splitTextToSize(insightText, pageWidth - 20);
-        pdf.text(wrappedText, 10, yPos);
-        yPos += wrappedText.length * 5 + 5;
-      }
+    // 🖼️ Add chart image
+    pdf.addImage(imgData, 'PNG', 10, yPos, imgWidth, imgHeight);
+    yPos += imgHeight + 10;
 
-      if (yPos > 260) {
-        pdf.addPage();
-        yPos = 20;
+    // 📊 Generate simple insights
+    let insightText = '';
+    const chartInstance =
+      chartId === 'inquiriesTrendChart' ? window.inquiriesTrendChartInstance :
+      chartId === 'servicesTrendChart' ? window.serviceTrendChartInstance :
+      chartId === 'topServicesChart' ? window.topServicesChartInstance :
+      chartId === 'servicesBreakdownChart' ? window.feedbackBreakdownChart : null;
+
+    if (chartInstance) {
+      const data = chartInstance.data.datasets[0].data.map(Number);
+      const labels = chartInstance.data.labels;
+      const max = Math.max(...data);
+      const min = Math.min(...data);
+      const avg = (data.reduce((a, b) => a + b, 0) / data.length).toFixed(2);
+      const maxLabel = labels[data.indexOf(max)];
+      const minLabel = labels[data.indexOf(min)];
+
+      if (chartId === 'inquiriesTrendChart') {
+        insightText = `Inquiries peaked on ${maxLabel} (${max}) and were lowest on ${minLabel} (${min}). Average inquiries per period: ${avg}.`;
+      } else if (chartId === 'servicesTrendChart') {
+        insightText = `Service completions reached a high of ${max} in ${maxLabel}. Average completions per period: ${avg}.`;
+      } else if (chartId === 'topServicesChart') {
+        const topService = labels[data.indexOf(max)];
+        insightText = `Most availed service: "${topService}" (${max}). Least requested: "${minLabel}" (${min}).`;
+      } else if (chartId === 'servicesBreakdownChart') {
+        const topAspect = labels[data.indexOf(max)];
+        insightText = `Highest rated aspect: "${topAspect}" (${max}/5). Average rating across all aspects: ${avg}/5.`;
       }
     }
+
+    // 🧭 Check before writing text — if not enough space, start new page
+    if (insightText) {
+      const wrapped = pdf.splitTextToSize(insightText, pageWidth - 20);
+      if (yPos + wrapped.length * 5 + 30 > pageHeight - bottomMargin) {
+        pdf.addPage();
+        yPos = 40;
+      }
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.text(wrapped, 10, yPos);
+      yPos += wrapped.length * 5 + 12;
+    }
+  }
+
+
 
   // 🔹 Capture selected charts in order
   if (selected.inquiries)
@@ -1313,28 +1478,44 @@ async function generateAnalyticsPDF(selected, rangeType, start, end) {
   pdf.text(periodLabel, baseX, 38);
 
   let yPos = 50; // Charts start lower now
-
-  // 📊 Helper: Add Chart + Safe Insight Text to PDF
+  // 📊 Helper: Add Chart + Safe Insight Text to PDF (taller chart version)
   async function addChartToPDF(chartId, title) {
     const chartCanvas = document.getElementById(chartId);
     if (!chartCanvas) return;
 
-    const canvasImg = await html2canvas(chartCanvas, { backgroundColor: '#fff' });
-    const imgData = canvasImg.toDataURL('image/png');
-    const imgWidth = pageWidth - 20;
-    const imgHeight = (canvasImg.height * imgWidth) / canvasImg.width;
+    // 🖼️ Capture chart with white background and a bit of scaling for clarity
+    const canvasImg = await html2canvas(chartCanvas, {
+      backgroundColor: '#fff',
+      scale: 1.5 // sharper export
+    });
 
-    // Add chart title
+    const imgData = canvasImg.toDataURL('image/png');
+    const imgWidth = pageWidth - 30;
+
+    // 🟩 Adjusted height scaling — make charts taller
+    const heightFactor = 0.85; // 👈 you can tweak this: 0.75 (shorter), 0.85 (balanced), 1.0 (tallest)
+    const imgHeight = ((canvasImg.height * imgWidth) / canvasImg.width) * heightFactor;
+
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const bottomMargin = 20;
+
+    // 🧭 Check before drawing chart — if not enough space, go to new page first
+    if (yPos + imgHeight + 40 > pageHeight - bottomMargin) {
+      pdf.addPage();
+      yPos = 40; // reset top margin
+    }
+
+    // 🏷️ Chart title
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(13);
     pdf.text(title, 10, yPos);
-    yPos += 5;
+    yPos += 6;
 
-    // Add chart image
+    // 🖼️ Add chart image
     pdf.addImage(imgData, 'PNG', 10, yPos, imgWidth, imgHeight);
-    yPos += imgHeight + 6;
+    yPos += imgHeight + 10;
 
-    // Generate simple insights
+    // 📊 Generate simple insights
     let insightText = '';
     const chartInstance =
       chartId === 'inquiriesTrendChart' ? window.inquiriesTrendChartInstance :
@@ -1353,32 +1534,29 @@ async function generateAnalyticsPDF(selected, rangeType, start, end) {
 
       if (chartId === 'inquiriesTrendChart') {
         insightText = `Inquiries peaked on ${maxLabel} (${max}) and were lowest on ${minLabel} (${min}). Average inquiries per period: ${avg}.`;
-      } 
-      else if (chartId === 'servicesTrendChart') {
-        insightText = `Service completions reached a high of ${max} in ${maxLabel}. The average completions per period were ${avg}.`;
-      } 
-      else if (chartId === 'topServicesChart') {
+      } else if (chartId === 'servicesTrendChart') {
+        insightText = `Service completions reached a high of ${max} in ${maxLabel}. Average completions per period: ${avg}.`;
+      } else if (chartId === 'topServicesChart') {
         const topService = labels[data.indexOf(max)];
-        insightText = `The most availed service is "${topService}" with ${max} completions. The least requested is "${minLabel}" (${min}).`;
-      } 
-      else if (chartId === 'servicesBreakdownChart') {
+        insightText = `Most availed service: "${topService}" (${max}). Least requested: "${minLabel}" (${min}).`;
+      } else if (chartId === 'servicesBreakdownChart') {
         const topAspect = labels[data.indexOf(max)];
         insightText = `Highest rated aspect: "${topAspect}" (${max}/5). Average rating across all aspects: ${avg}/5.`;
       }
     }
 
-    // Add text safely (no emojis, Helvetica font)
+    // 🧭 Check before writing text — if not enough space, start new page
     if (insightText) {
+      const wrapped = pdf.splitTextToSize(insightText, pageWidth - 20);
+      if (yPos + wrapped.length * 5 + 30 > pageHeight - bottomMargin) {
+        pdf.addPage();
+        yPos = 40;
+      }
+
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(10);
-      const wrappedText = pdf.splitTextToSize(insightText, pageWidth - 20);
-      pdf.text(wrappedText, 10, yPos);
-      yPos += wrappedText.length * 5 + 5;
-    }
-
-    if (yPos > 260) {
-      pdf.addPage();
-      yPos = 20;
+      pdf.text(wrapped, 10, yPos);
+      yPos += wrapped.length * 5 + 12;
     }
   }
 

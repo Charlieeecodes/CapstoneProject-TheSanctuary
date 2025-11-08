@@ -367,5 +367,31 @@ router.get('/feedbacks/ratings', async (req, res) => {
     res.status(500).json({ message: 'Database error', error: err.message });
   }
 });
+router.get('/feedbacks/count', async (req, res) => {
+  const { period } = req.query;
+  let dateFilter = '';
+
+  if (period === 'week') {
+    dateFilter = 'AND DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)';
+  } else if (period === 'month') {
+    dateFilter = 'AND MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())';
+  } else if (period === 'year') {
+    dateFilter = 'AND YEAR(created_at) = YEAR(CURDATE())';
+  }
+
+  const query = `
+    SELECT COUNT(*) AS total
+    FROM feedbacks
+    WHERE 1=1 ${dateFilter};
+  `;
+  
+  try {
+    const [rows] = await db.query(query);
+    res.json({ total: rows[0].total });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error fetching feedback count' });
+  }
+});
 
 module.exports = router;
