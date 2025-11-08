@@ -149,44 +149,130 @@ router.get('/inquiries', async (req, res) => {
 
 /**
  * 🟣 GET /api/analytics/services/top
- * Returns top availed services (Completed only)
+ * Returns top 5 services based on selected period or custom range
  */
 router.get('/services/top', async (req, res) => {
+  const { period, start, end } = req.query;
+
   try {
-    const [rows] = await db.query(`
+    let topServicesQuery = `
       SELECT service AS name, COUNT(*) AS total
       FROM records
       WHERE status = 'Completed'
+    `;
+    const queryParams = [];
+
+    if (period === 'week') {
+      // ✅ Show data from the last 7 days
+      topServicesQuery += ` AND DATE(date) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+    }
+    else if (period === 'month') {
+      // ✅ Fix: Use last 30 days instead of current calendar month
+      topServicesQuery += ` AND DATE(date) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`;
+    } 
+    else if (period === 'year') {
+      topServicesQuery += ` AND YEAR(date) = YEAR(CURDATE())`;
+    } 
+    else if (period === 'custom' && start && end) {
+      topServicesQuery += ` AND DATE(date) BETWEEN ? AND ?`;
+      queryParams.push(start, end);
+    }
+
+    topServicesQuery += `
       GROUP BY service
       ORDER BY total DESC
       LIMIT 10
-    `);
-    res.json(Array.isArray(rows) ? rows : []); // ensure array
+    `;
+
+    const [rows] = await db.query(topServicesQuery, queryParams);
+
+    // 🪄 Optional fallback: If month data is still empty, widen to last 60 days
+    if (rows.length === 0 && period === 'month') {
+      console.log('⚠️ No recent records found — expanding to last 60 days');
+      const fallbackQuery = `
+        SELECT service AS name, COUNT(*) AS total
+        FROM records
+        WHERE status = 'Completed' AND DATE(date) >= DATE_SUB(CURDATE(), INTERVAL 60 DAY)
+        GROUP BY service
+        ORDER BY total DESC
+        LIMIT 10
+      `;
+      const [fallbackRows] = await db.query(fallbackQuery);
+      return res.json(fallbackRows);
+    }
+
+    res.json(rows);
   } catch (err) {
     console.error('❌ Error fetching top services:', err);
-    res.json([]); // return empty array to prevent frontend crash
+    res.status(500).json({ message: 'Database error', error: err.message });
   }
 });
 
 /**
- * 🟣 GET /api/analytics/services/trend
- * Returns monthly trend of completed services
+ * 🟢 GET /api/analytics/services/trend
+ * Returns trend of completed services (weekly, monthly, yearly, or custom)
  */
 router.get('/services/trend', async (req, res) => {
+  const { period, start, end } = req.query;
+
   try {
-    const [rows] = await db.query(`
-      SELECT DATE_FORMAT(date, '%b %Y') AS label, COUNT(*) AS count
-      FROM records
-      WHERE status = 'Completed'
-      GROUP BY YEAR(date), MONTH(date)
-      ORDER BY YEAR(date), MONTH(date);
-    `);
-    res.json(Array.isArray(rows) ? rows : []); // ensure array
+    let trendQuery = '';
+    const queryParams = [];
+
+    if (period === 'custom' && start && end) {
+      trendQuery = `
+        SELECT DATE_FORMAT(date, '%e %b %Y') AS label, COUNT(*) AS count
+        FROM records
+        WHERE status = 'Completed' AND DATE(date) BETWEEN ? AND ?
+        GROUP BY DATE(date)
+        ORDER BY DATE(date) ASC;
+      `;
+      queryParams.push(start, end);
+      } else if (period === 'week') {
+        trendQuery = `
+          SELECT DATE_FORMAT(date, '%e %b') AS label, COUNT(*) AS count
+          FROM records
+          WHERE status = 'Completed'
+            AND DATE(date) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+          GROUP BY DATE(date)
+          ORDER BY DATE(date) ASC;
+        `;
+      }
+      else if (period === 'month') {
+      trendQuery = `
+        SELECT DATE_FORMAT(date, '%e %b') AS label, COUNT(*) AS count
+        FROM records
+        WHERE status = 'Completed' AND MONTH(date) = MONTH(CURDATE()) AND YEAR(date) = YEAR(CURDATE())
+        GROUP BY DAY(date)
+        ORDER BY DATE(date) ASC;
+      `;
+    } else if (period === 'year') {
+      trendQuery = `
+        SELECT DATE_FORMAT(date, '%b') AS label, COUNT(*) AS count
+        FROM records
+        WHERE status = 'Completed' AND YEAR(date) = YEAR(CURDATE())
+        GROUP BY MONTH(date)
+        ORDER BY MONTH(date) ASC;
+      `;
+    } else {
+      // Default to month
+      trendQuery = `
+        SELECT DATE_FORMAT(date, '%e %b') AS label, COUNT(*) AS count
+        FROM records
+        WHERE status = 'Completed' AND MONTH(date) = MONTH(CURDATE()) AND YEAR(date) = YEAR(CURDATE())
+        GROUP BY DAY(date)
+        ORDER BY DATE(date) ASC;
+      `;
+    }
+
+    const [rows] = await db.query(trendQuery, queryParams);
+    res.json(rows);
   } catch (err) {
     console.error('❌ Error fetching service trend:', err);
-    res.json([]); // return empty array to prevent frontend crash
+    res.status(500).json({ message: 'Database error', error: err.message });
   }
 });
+
 /**
  * 🧠 GET /api/analytics/predictive
  * Predicts future inquiry or service counts (simple trend-based projection)
@@ -235,6 +321,49 @@ router.get('/predictive', async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Predictive analytics error:', err);
+    res.status(500).json({ message: 'Database error', error: err.message });
+  }
+});
+/**
+ * 🟡 GET /api/analytics/feedbacks/ratings
+ * Supports period filters: week | month | year | custom
+ */
+router.get('/feedbacks/ratings', async (req, res) => {
+  const { period, start, end } = req.query;
+
+  try {
+    let filter = '';
+    const params = [];
+
+    if (period === 'week') {
+      filter = `AND DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+    } else if (period === 'month') {
+      filter = `AND DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`;
+    } else if (period === 'year') {
+      filter = `AND DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 365 DAY)`;
+    } else if (period === 'custom' && start && end) {
+      filter = `AND DATE(created_at) BETWEEN ? AND ?`;
+      params.push(start, end);
+    }
+
+    const [rows] = await db.query(
+      `
+      SELECT
+        ROUND(AVG(overall_rating), 2) AS overall,
+        ROUND(AVG(service_rating), 2) AS service,
+        ROUND(AVG(satisfaction_rating), 2) AS satisfaction,
+        ROUND(AVG(professionalism_rating), 2) AS professionalism,
+        ROUND(AVG(communication_rating), 2) AS communication,
+        ROUND(AVG(facility_rating), 2) AS facility
+      FROM feedbacks
+      WHERE 1=1 ${filter};
+      `,
+      params
+    );
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('❌ Error fetching feedback ratings:', err);
     res.status(500).json({ message: 'Database error', error: err.message });
   }
 });

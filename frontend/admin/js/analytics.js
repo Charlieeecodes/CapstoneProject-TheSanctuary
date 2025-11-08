@@ -21,25 +21,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Show or hide custom date inputs dynamically
   if (exportRangeSelect) {
-    exportRangeSelect.addEventListener('change', () => {
-      if (exportRangeSelect.value === 'custom') {
+    exportRangeSelect.addEventListener('change', async () => {
+      const range = exportRangeSelect.value;
+
+      if (range === 'custom') {
         customDateInputs.classList.remove('hidden');
       } else {
         customDateInputs.classList.add('hidden');
-        updateInquiriesChart(exportRangeSelect.value);
-        loadServiceTrendChart(exportRangeSelect.value);
+        await updateInquiriesChart(range);
+        await loadServiceTrendChart(range);
+        await loadTopServicesChart(range);
       }
     });
   }
-    [startDateInput, endDateInput].forEach(input => {
+
+  [startDateInput, endDateInput].forEach(input => {
     input.addEventListener('change', async () => {
-      if (exportRangeSelect.value === 'custom' && startDateInput.value && endDateInput.value) {
-        console.log(`📆 Applying custom range: ${startDateInput.value} → ${endDateInput.value}`);
+      if (
+        exportRangeSelect.value === 'custom' &&
+        startDateInput.value &&
+        endDateInput.value
+      ) {
+        console.log(`📆 Custom range: ${startDateInput.value} → ${endDateInput.value}`);
         await updateInquiriesChart('custom', startDateInput.value, endDateInput.value);
         await loadServiceTrendChart('custom', startDateInput.value, endDateInput.value);
+        await loadTopServicesChart('custom', startDateInput.value, endDateInput.value);
+        await loadFeedbackRatingsChart('custom', startDateInput.value, endDateInput.value);
       }
     });
   });
+
   // ---- Date helpers for pretty labels in the PDF ----
   function formatDateISOToLong(iso) {
     if (!iso) return 'N/A';
@@ -118,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               borderColor: '#673AB7',
               backgroundColor: 'rgba(103,58,183,0.2)',
               fill: true,
-              tension: 0.3,
+              tension: 0.4,
               pointRadius: 0
             }]
           },
@@ -149,39 +160,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       totalServicesEl.textContent = data.totalServices ?? 0;
       topServiceNameEl.textContent = data.topService ?? 'N/A';
 
-      // -----------------------------
-      // Feedback Ratings Bar Chart
-      // -----------------------------
-      if (feedbackBreakdownCanvas && data.avgRatings) {
-        window.feedbackBreakdownChart = new Chart(feedbackBreakdownCanvas, {
-          type: 'bar',
-          data: {
-            labels: [
-              'Overall', 'Service', 'Satisfaction',
-              'Professionalism', 'Communication', 'Facility & Ambiance'
-            ],
-            datasets: [{
-              label: 'Average Rating',
-              data: [
-                data.avgRatings.overall ?? 0,
-                data.avgRatings.service ?? 0,
-                data.avgRatings.satisfaction ?? 0,
-                data.avgRatings.professionalism ?? 0,
-                data.avgRatings.communication ?? 0,
-                data.avgRatings.facility ?? 0
-              ],
-              backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#00BCD4', '#FFC107']
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true, max: 5 } },
-            plugins: { legend: { display: false } }
-          }
-        });
-      }
-
       console.log('✅ KPI Data Loaded');
     } catch (err) {
       console.error('❌ KPI Load Error:', err);
@@ -189,6 +167,57 @@ document.addEventListener('DOMContentLoaded', async () => {
       totalFeedbacksEl.textContent = 'Error';
       totalServicesEl.textContent = 'Error';
       topServiceNameEl.textContent = 'Error';
+    }
+  }
+    async function loadFeedbackRatingsChart(period = 'month', start = null, end = null) {
+    try {
+      let url = `http://localhost:5000/api/analytics/feedbacks/ratings?period=${period}`;
+      if (period === 'custom' && start && end) {
+        url += `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+      }
+
+      const res = await fetch(url, { cache: 'no-store' });
+      const data = await res.json();
+      console.log('🧩 [Feedback Chart Debug]', { url, data });
+
+
+      const ratings = [
+        data.overall ?? 0,
+        data.service ?? 0,
+        data.satisfaction ?? 0,
+        data.professionalism ?? 0,
+        data.communication ?? 0,
+        data.facility ?? 0
+      ];
+
+      const labels = [
+        'Overall', 'Service', 'Satisfaction',
+        'Professionalism', 'Communication', 'Facility & Ambiance'
+      ];
+
+      if (window.feedbackBreakdownChart) window.feedbackBreakdownChart.destroy();
+
+      const ctx = feedbackBreakdownCanvas.getContext('2d');
+      window.feedbackBreakdownChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Average Rating',
+            data: ratings,
+            backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#00BCD4', '#FFC107']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true, max: 5 } },
+          plugins: { legend: { display: false } }
+        }
+      });
+
+    } catch (err) {
+      console.error('❌ Error loading feedback ratings chart:', err);
     }
   }
   // -----------------------------
@@ -234,38 +263,74 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
   // -----------------------------
-  // 🟣 Top Services Chart
+  // 🟣 Top Services Chart(now supports week, month, year, and custom)
   // -----------------------------
-  async function loadTopServicesChart() {
+  async function loadTopServicesChart(period = 'month', start = null, end = null) {
     try {
-      const res = await fetch('http://localhost:5000/api/analytics/services/top', { cache: 'no-store' });
+      // 🧭 Build URL with date filters
+      let url = `http://localhost:5000/api/analytics/services/top?period=${encodeURIComponent(period)}`;
+      if (period === 'custom' && start && end) {
+        url += `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+      }
+
+      const res = await fetch(url, { cache: 'no-store' });
       const data = await res.json();
+
       if (!res.ok) {
-        console.error('❌ Inquiry trend fetch failed:', res.status);
+        console.error('❌ Top Services fetch failed:', res.status);
         return;
       }
+
       if (!Array.isArray(data)) {
-      console.error('Top Services data is not an array:', data);
-      return;
-}
+        console.error('❌ Top Services data is not an array:', data);
+        return;
+      }
+
+      // ⚠️ Handle no data gracefully
+      if (data.length === 0) {
+        console.warn(`⚠️ No records found for Top Services (${period})`);
+
+        const ctx = topServicesChartCanvas.getContext('2d');
+        if (window.topServicesChartInstance) window.topServicesChartInstance.destroy();
+
+        window.topServicesChartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['No Data'],
+            datasets: [{ label: 'No records', data: [0], backgroundColor: '#ccc' }]
+          },
+          options: {
+            indexAxis: 'y',
+            plugins: { legend: { display: false } },
+            scales: { x: { display: false }, y: { display: false } }
+          }
+        });
+        return;
+      }
+
+      // 🟣 Extract chart data
       const labels = data.map(d => d.name);
       const values = data.map(d => d.total);
 
+      // Destroy old chart instance if it exists
       if (window.topServicesChartInstance) window.topServicesChartInstance.destroy();
 
+      // 🧩 Create new chart
       const ctx = topServicesChartCanvas.getContext('2d');
       window.topServicesChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
           labels,
-          datasets: [{
-            label: 'Total Completed',
-            data: values,
-            backgroundColor: '#673AB7'
-          }]
+          datasets: [
+            {
+              label: `Total Completed (${period === 'custom' ? `${start} → ${end}` : period})`,
+              data: values,
+              backgroundColor: '#673AB7'
+            }
+          ]
         },
         options: {
-          indexAxis: 'y', // horizontal
+          indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
@@ -276,7 +341,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('❌ Error loading Top Services chart:', err);
     }
   }
-
   // -----------------------------
   // 🟣 Total Services Availed Trend
   // -----------------------------
@@ -318,13 +382,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('❌ Error loading service trend chart:', err);
     }
   }
-  // -----------------------------
-  // Initialize Analytics Page
-  // -----------------------------
-  await loadKPIs();
-  await updateInquiriesChart('month');
-  await loadTopServicesChart();
-  await loadServiceTrendChart();
 
   // -----------------------------
   // Period dropdown listener
@@ -332,15 +389,31 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (inquiriesPeriodSelect) {
     inquiriesPeriodSelect.addEventListener('change', async e => {
       const periodMap = { weekly: 'week', monthly: 'month', yearly: 'year' };
-      currentInquiriesPeriod = periodMap[e.target.value] || e.target.value; 
-      await updateInquiriesChart(currentInquiriesPeriod);
-      await updateInquiriesKPI(currentInquiriesPeriod);
-    });
+      currentInquiriesPeriod = periodMap[e.target.value] || e.target.value;
 
+      // 🟣 Update ALL related charts
+      await Promise.all([
+        updateInquiriesChart(currentInquiriesPeriod),
+        updateInquiriesKPI(currentInquiriesPeriod),
+        loadTopServicesChart(currentInquiriesPeriod),
+        loadServiceTrendChart(currentInquiriesPeriod),
+        loadFeedbackRatingsChart(currentInquiriesPeriod)
+        
+      ]);
+    });
     inquiriesPeriodSelect.value = 'month';
     currentInquiriesPeriod = 'month';
-    await updateInquiriesChart('month');
-    await updateInquiriesKPI('month');
+
+    // ✅ single, clean initial load
+    await Promise.all([
+      loadKPIs(),
+      updateInquiriesChart('month'),
+      updateInquiriesKPI('month'),
+      loadTopServicesChart('month'),
+      loadServiceTrendChart('month'),
+      loadFeedbackRatingsChart('month')
+    ]);
+
   }
   // ==============================
   // 🧠 Insights Modal Logic 
@@ -394,9 +467,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       const values = sourceChart.data.datasets[0].data.map(Number);
 
       const total = values.reduce((a, b) => a + b, 0);
+      if (!values.length || total === 0) {
+        predictiveText.textContent = '⚠️ No data available for analysis in this period.';
+        prescriptiveText.textContent = 'Please select a wider date range or ensure records exist.';
+        return;
+      }
+
       const shares = values.map(v => (v / total) * 100);
       const maxIndex = values.indexOf(Math.max(...values));
       const minIndex = values.indexOf(Math.min(...values));
+
+      const topShare = shares[maxIndex]?.toFixed(1) || 0;
+      const topLabel = labels[maxIndex] || 'N/A';
 
       predictiveText.textContent =
         `The most availed service is ${labels[maxIndex]} with ${shares[maxIndex].toFixed(1)}% of total completed services.`;
