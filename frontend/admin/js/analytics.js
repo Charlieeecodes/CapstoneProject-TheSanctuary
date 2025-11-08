@@ -1274,14 +1274,14 @@ if (previewBtn && exportPdfBtn) {
       logo.src = 'icons/logo.PNG'; // adjust path if needed
       await new Promise(resolve => { logo.onload = resolve; });
 
-      const logoWidth = 49;
+      const logoWidth = 59;
       const logoHeight = 22;
       pdf.addImage(logo, 'PNG', 10, 20, logoWidth, logoHeight);
     } catch (e) {
       console.warn('⚠️ Logo failed to load for PDF header');
     }
 
-    const baseX = 60;
+    const baseX = 70;
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(16);
     pdf.text('The Sanctuary Analytics Report', baseX, 25);
@@ -1440,13 +1440,13 @@ async function generateAnalyticsPDF(selected, rangeType, start, end) {
     logo.src = 'icons/logo.PNG'; // adjust path if needed
     await new Promise(resolve => { logo.onload = resolve; });
 
-    const logoWidth = 49;
+    const logoWidth = 59;
     const logoHeight = 22;
     pdf.addImage(logo, 'PNG', 10, 20, logoWidth, logoHeight);
   } catch (e) {
     console.warn('⚠️ Logo failed to load for PDF header');
   }
-  const baseX = 60; 
+  const baseX = 70; 
   // 🖋️ Title
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(16);
