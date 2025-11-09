@@ -6,44 +6,66 @@ const db = require('../models/db'); // promise-based database connection
    📥 Create a new record
 ======================================== */
 router.post('/', async (req, res) => {
-  const { clientName, email, contact, address, serviceAvailed, date } = req.body;
+  const { clientName, email, contact, address, serviceAvailed, cost, date } = req.body;
 
-  if (!clientName || !email || !contact || !address || !serviceAvailed || !date) {
+  if (!clientName || !email || !contact || !address || !serviceAvailed || !cost || !date) {
     return res.status(400).json({ error: 'All fields are required.' });
   }
 
   const sql = `
-    INSERT INTO records (client_name, email, contact, address, service, date, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO records (client_name, email, contact, address, service, cost, date, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   try {
-    const [result] = await db.query(sql, [clientName, email, contact, address, serviceAvailed, date, 'Pending']);
+    const [result] = await db.query(sql, [
+      clientName,
+      email,
+      contact,
+      address,
+      serviceAvailed,
+      cost,
+      date,
+      'Pending'
+    ]);
     res.json({ message: '✅ Record added successfully', id: result.insertId });
   } catch (err) {
     console.error('❌ Error inserting record:', err);
     res.status(500).json({ error: 'Database error' });
   }
 });
+
+
 /* ========================================
    ✏️ Update a record
 ======================================== */
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { clientName, email, contact, address, serviceAvailed, date, status } = req.body;
+  const { clientName, email, contact, address, serviceAvailed, cost, date, status } = req.body;
 
-  if (!clientName || !email || !contact || !address || !serviceAvailed || !date || !status) {
+  if (!clientName || !email || !contact || !address || !serviceAvailed || !cost || !date || !status) {
     return res.status(400).json({ error: 'All fields are required.' });
   }
 
   const sql = `
     UPDATE records 
-    SET client_name=?, email=?, contact=?, address=?, service=?, date=?, status=? 
+    SET client_name=?, email=?, contact=?, address=?, service=?, cost=?, date=?, status=? 
     WHERE id=?
   `;
 
   try {
-    const [result] = await db.query(sql, [clientName, email, contact, address, serviceAvailed, date, status, id]);
+    const [result] = await db.query(sql, [
+      clientName,
+      email,
+      contact,
+      address,
+      serviceAvailed,
+      cost,
+      date,
+      status,
+      id
+    ]);
+
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Record not found' });
     res.json({ message: '✅ Record updated successfully' });
   } catch (err) {
@@ -51,6 +73,7 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 });
+
 
 /* ========================================
    🗑️ Delete a record
@@ -67,6 +90,7 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 });
+
 
 /* ========================================
    🔍 Search records by name, email, contact, address, or service
@@ -94,21 +118,21 @@ router.get('/search', async (req, res) => {
   }
 });
 
+
 /* ========================================
-   📤 Get all records + Combined filters (Fixed)
+   📤 Get all records + Combined filters
 ======================================== */
 router.get('/', async (req, res) => {
   try {
-    const { service, status, date } = req.query;
+    const { service, status, startDate, endDate } = req.query;
 
     let sql = "SELECT * FROM records";
     const params = [];
     const conditions = [];
 
-    // Case-insensitive matching using LOWER()
-    if (service) 
-      { conditions.push("service LIKE ?"); 
-      params.push(`%${service}%`); 
+    if (service) {
+      conditions.push("service LIKE ?");
+      params.push(`%${service}%`);
     }
 
     if (status) {
@@ -116,17 +140,23 @@ router.get('/', async (req, res) => {
       params.push(status);
     }
 
-    // Ensure date matches even with timezones
-    if (date) {
-      conditions.push("DATE(date) = DATE(?)");
-      params.push(date);
+    // ✅ Handle date range
+    if (startDate && endDate) {
+      conditions.push("DATE(date) BETWEEN DATE(?) AND DATE(?)");
+      params.push(startDate, endDate);
+    } else if (startDate) {
+      conditions.push("DATE(date) >= DATE(?)");
+      params.push(startDate);
+    } else if (endDate) {
+      conditions.push("DATE(date) <= DATE(?)");
+      params.push(endDate);
     }
 
     if (conditions.length > 0) {
       sql += " WHERE " + conditions.join(" AND ");
     }
 
-    sql += " ORDER BY id DESC";
+    sql += " ORDER BY date DESC";
     const [rows] = await db.query(sql, params);
 
     res.json(rows);
@@ -152,8 +182,8 @@ router.post('/upload-csv', async (req, res) => {
     }
 
     const insertSQL = `
-      INSERT INTO records (client_name, email, contact, address, service, date, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO records (client_name, email, contact, address, service, cost, date, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     for (const r of records) {
@@ -163,6 +193,7 @@ router.post('/upload-csv', async (req, res) => {
         r.contact || null,
         r.address || null,
         r.service || null,
+        r.cost || 0,
         r.date || null,
         r.status || 'Pending',
       ]);

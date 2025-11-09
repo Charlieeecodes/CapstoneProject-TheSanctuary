@@ -208,41 +208,46 @@ router.get('/services/top', async (req, res) => {
   }
 });
 
-/**
- * 🟢 GET /api/analytics/services/trend
- * Returns trend of completed services (weekly, monthly, yearly, or custom)
- */
 router.get('/services/trend', async (req, res) => {
-  const { period, start, end } = req.query;
+  const { period, start, end, status } = req.query;
 
   try {
-    let trendQuery = '';
     const queryParams = [];
+    let statusFilter = '';
+
+    // ✅ Allow dynamic status filter (default to all statuses)
+    if (status && status !== 'All') {
+      statusFilter = 'AND LOWER(status) = LOWER(?)';
+      queryParams.push(status);
+    }
+
+    let trendQuery = '';
 
     if (period === 'custom' && start && end) {
       trendQuery = `
         SELECT DATE_FORMAT(date, '%e %b %Y') AS label, COUNT(*) AS count
         FROM records
-        WHERE status = 'Completed' AND DATE(date) BETWEEN ? AND ?
+        WHERE DATE(date) BETWEEN ? AND ?
+        ${statusFilter}
         GROUP BY DATE(date)
         ORDER BY DATE(date) ASC;
       `;
-      queryParams.push(start, end);
-      } else if (period === 'week') {
-        trendQuery = `
-          SELECT DATE_FORMAT(date, '%e %b') AS label, COUNT(*) AS count
-          FROM records
-          WHERE status = 'Completed'
-            AND DATE(date) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-          GROUP BY DATE(date)
-          ORDER BY DATE(date) ASC;
-        `;
-      }
-      else if (period === 'month') {
+      queryParams.unshift(start, end);
+    } else if (period === 'week') {
       trendQuery = `
         SELECT DATE_FORMAT(date, '%e %b') AS label, COUNT(*) AS count
         FROM records
-        WHERE status = 'Completed' AND MONTH(date) = MONTH(CURDATE()) AND YEAR(date) = YEAR(CURDATE())
+        WHERE DATE(date) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        ${statusFilter}
+        GROUP BY DATE(date)
+        ORDER BY DATE(date) ASC;
+      `;
+    } else if (period === 'month') {
+      trendQuery = `
+        SELECT DATE_FORMAT(date, '%e %b') AS label, COUNT(*) AS count
+        FROM records
+        WHERE MONTH(date) = MONTH(CURDATE()) AND YEAR(date) = YEAR(CURDATE())
+        ${statusFilter}
         GROUP BY DAY(date)
         ORDER BY DATE(date) ASC;
       `;
@@ -250,16 +255,18 @@ router.get('/services/trend', async (req, res) => {
       trendQuery = `
         SELECT DATE_FORMAT(date, '%b') AS label, COUNT(*) AS count
         FROM records
-        WHERE status = 'Completed' AND YEAR(date) = YEAR(CURDATE())
+        WHERE YEAR(date) = YEAR(CURDATE())
+        ${statusFilter}
         GROUP BY MONTH(date)
         ORDER BY MONTH(date) ASC;
       `;
     } else {
-      // Default to month
+      // Default to current month if period not specified
       trendQuery = `
         SELECT DATE_FORMAT(date, '%e %b') AS label, COUNT(*) AS count
         FROM records
-        WHERE status = 'Completed' AND MONTH(date) = MONTH(CURDATE()) AND YEAR(date) = YEAR(CURDATE())
+        WHERE MONTH(date) = MONTH(CURDATE()) AND YEAR(date) = YEAR(CURDATE())
+        ${statusFilter}
         GROUP BY DAY(date)
         ORDER BY DATE(date) ASC;
       `;

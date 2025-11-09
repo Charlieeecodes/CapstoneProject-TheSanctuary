@@ -9,6 +9,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   const API_URL = "http://localhost:5000/api/records";
   let editingId = null;
 
+  // Auto-fill cost when service is selected
+  const serviceSelect = document.getElementById("serviceAvailed");
+  const costInput = document.getElementById("serviceCost");
+
+  if (serviceSelect && costInput) {
+    serviceSelect.addEventListener("change", (e) => {
+      const selected = e.target.value;
+      costInput.value = servicePrices[selected] || "";
+    });
+  }
+
   /* ========================================
      🕒 TOPBAR DATE & TIME
   ======================================== */
@@ -61,7 +72,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         <td>${record.contact}</td>
         <td>${record.address}</td>
         <td>${record.service}</td>
-        <td>${record.date}</td>
+        <td>₱${Number(record.cost || 0).toLocaleString()}</td>
+        <td>${record.date ? record.date.split("T")[0] : ""}</td>
         <td>${record.status}</td>
         <td>
           <button class="edit" data-id="${record.id}">Edit</button>
@@ -71,6 +83,31 @@ document.addEventListener("DOMContentLoaded", async () => {
       recordTableBody.appendChild(row);
     });
   }
+  // ========================================
+  // 💰 SERVICE PRICES (Standardized)
+  // ========================================
+  const servicePrices = {
+    "Unit with perpetual care": 50000,
+    "Interment service": 10000,
+    "Retrieval of cadaver": 7000,
+    "Embalming services": 5000,
+    "Casket": 15000,
+    "Chapel viewing": 8000,
+    "House viewing or outside viewing": 6000,
+    "Hearse": 4000,
+    "Funeral Mass": 2000,
+    "Function area": 3000,
+    "Adult cremation": 15000,
+    "Child cremation": 10000,
+    "Baby cremation": 8000,
+    "Fetus cremation": 6000,
+    "Bone cremation": 5000,
+    "Urns": 3000,
+    "Keepsakes": 1200,
+    "Chapel A (30-50 pax)": 150000,
+    "Chapel B (75-100 pax)": 250000,
+    "Main Chapel (100-150 pax)": 350000,
+  };
 
   /* ========================================
      ➕ ADD / UPDATE RECORD
@@ -83,6 +120,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const contact = document.getElementById("contact").value.trim();
     const address = document.getElementById("address").value.trim();
     const serviceAvailed = document.getElementById("serviceAvailed").value.trim();
+    const cost = parseFloat(document.getElementById("serviceCost").value) || 0;
     const date = document.getElementById("recordDate").value;
     const status = document.getElementById("status").value;
 
@@ -91,7 +129,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    const payload = { clientName, email, contact, address, serviceAvailed, date, status };
+    const payload = { clientName, email, contact, address, serviceAvailed, cost, date, status };
 
     try {
       let res;
@@ -146,27 +184,26 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* ========================================
      🧮 FILTERS
   ======================================== */
-  const filters = { service: "", status: "", date: "" };
-
+  const filters = { service: "", status: "", startDate: "", endDate: "" };
   async function applyFilters() {
     try {
       const queryParams = new URLSearchParams();
+
       if (filters.service) queryParams.append("service", filters.service);
       if (filters.status) queryParams.append("status", filters.status);
-      if (filters.date) queryParams.append("date", filters.date);
-
-      console.log("🔎 Applying filters:", `${API_URL}?${queryParams.toString()}`);
+      if (filters.startDate) queryParams.append("startDate", filters.startDate);
+      if (filters.endDate) queryParams.append("endDate", filters.endDate);
 
       const res = await fetch(`${API_URL}?${queryParams.toString()}`);
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const records = await res.json();
       displayRecords(records);
     } catch (err) {
       console.error("❌ Failed to apply filters:", err);
-      recordTableBody.innerHTML = "<tr><td colspan='8'>Error while filtering records.</td></tr>";
+      recordTableBody.innerHTML = "<tr><td colspan='8'>Error filtering records.</td></tr>";
     }
   }
 
+  // Update event listeners
   document.getElementById("filterService").addEventListener("change", (e) => {
     filters.service = e.target.value;
     applyFilters();
@@ -177,17 +214,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     applyFilters();
   });
 
-  document.getElementById("filterDate").addEventListener("change", (e) => {
-    filters.date = e.target.value;
+  document.getElementById("filterStartDate").addEventListener("change", (e) => {
+    filters.startDate = e.target.value;
+    applyFilters();
+  });
+
+  document.getElementById("filterEndDate").addEventListener("change", (e) => {
+    filters.endDate = e.target.value;
     applyFilters();
   });
 
   /* ========================================
-     🟣 TOGGLE ADD FORM
+    🟣 TOGGLE ADD RECORD MODAL
   ======================================== */
+  const addRecordModal = document.getElementById("addRecordModal");
+  const closeRecordModal = document.getElementById("closeRecordModal");
+
   addRecordBtn.addEventListener("click", () => {
-    addRecordForm.style.display =
-      addRecordForm.style.display === "none" ? "block" : "none";
+    addRecordModal.classList.add("show");
+  });
+
+  closeRecordModal.addEventListener("click", () => {
+    addRecordModal.classList.remove("show");
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") addRecordModal.classList.remove("show");
   });
 
   /* ========================================
@@ -211,7 +263,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       }
     }
-
     if (btn.classList.contains("edit")) {
       const row = btn.closest("tr");
       document.getElementById("clientName").value = row.children[0].textContent;
@@ -219,10 +270,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("contact").value = row.children[2].textContent;
       document.getElementById("address").value = row.children[3].textContent;
       document.getElementById("serviceAvailed").value = row.children[4].textContent;
-      document.getElementById("recordDate").value = row.children[5].textContent;
-      document.getElementById("status").value = row.children[6].textContent;
+      document.getElementById("serviceCost").value = row.children[5].textContent.replace(/[₱,]/g, "").trim();
+
+      const dateText = row.children[6].textContent.trim();
+      document.getElementById("recordDate").value = dateText.includes("T")
+        ? dateText.split("T")[0]
+        : dateText;
+
+      document.getElementById("status").value = row.children[7].textContent.trim();
+
+      // ✅ Show modal and update title
+      const modal = document.getElementById("addRecordModal");
+      const modalTitle = document.getElementById("modalTitle");
+      modalTitle.textContent = "Edit Record";
+      modal.classList.add("show");
+
       editingId = id;
-      addRecordForm.style.display = "block";
     }
   });
 
@@ -257,6 +320,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const previewColumns = Object.keys(data[0]).filter(
           (h) => h.toLowerCase() !== "id"
         );
+        document.getElementById("csvPreviewContainer").style.display = "block";
 
         previewTable.querySelector("thead").innerHTML =
           "<tr>" + previewColumns.map((h) => `<th>${h}</th>`).join("") + "</tr>";
@@ -276,6 +340,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           contact: row.contact?.trim() || null,
           address: row.address?.trim() || null,
           service: row.service?.trim() || null,
+          cost: parseFloat(row.cost) || 0,
           date: row.date?.trim() || null,
           status: row.status?.trim() || "Pending",
         }));
@@ -336,7 +401,151 @@ document.addEventListener("DOMContentLoaded", async () => {
     popup.classList.add("show");
     setTimeout(() => popup.classList.remove("show"), 3000);
   }
+  /* ========================================
+    📄 GENERATE SERVICE RECORDS REPORT (Export or Preview)
+  ======================================== */
+  function generateRecordsPDF(preview = false) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // 🕊️ Logo (left side)
+    const logo = new Image();
+    logo.src = "../assets/images/logo.png";
+    const logoWidth = 35;
+    const logoHeight = 10;
+    doc.addImage(logo, "PNG", 10, 12, logoWidth, logoHeight);
+
+    // 🏛️ Title ("THE SANCTUARY")
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("THE SANCTUARY", 50, 17);
+
+    // 🗓️ Generation date (right-aligned)
+    const dateStr = new Date().toLocaleString("en-PH", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+    doc.setFontSize(10);
+    doc.text(`Report Created: ${dateStr}`, pageWidth - 10, 15, { align: "right" });
+
+    // 📘 Subtitle ("Service Records Report")
+    doc.setFontSize(9);
+    doc.text("Service Records Report", 50, 21);
+
+    // 🧠 Filter summary (left-aligned, below subtitle)
+    const filterService = document.getElementById("filterService")?.value || "All";
+    const filterStatus = document.getElementById("filterStatus")?.value || "All";
+    const filterStartDate = document.getElementById("filterStartDate")?.value || "";
+    const filterEndDate = document.getElementById("filterEndDate")?.value || "";
+    let dateRangeDisplay = "All";
+
+    if (filterStartDate && filterEndDate) {
+      dateRangeDisplay = `${filterStartDate} to ${filterEndDate}`;
+    } else if (filterStartDate) {
+      dateRangeDisplay = `From ${filterStartDate}`;
+    } else if (filterEndDate) {
+      dateRangeDisplay = `Until ${filterEndDate}`;
+    }
+
+    let filtersSummary = `Service: ${filterService} | Status: ${filterStatus} | Date: ${dateRangeDisplay}`;
+    filtersSummary = filtersSummary.replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim();
+
+    doc.setFontSize(10);
+    doc.text(filtersSummary, 9, 28); // left aligned under subtitle
+
+    // 🟢 Divider line (Sanctuary green)
+    doc.setDrawColor(27, 150, 90);
+    doc.setLineWidth(0.5);
+    doc.line(10, 30, pageWidth - 10, 30);
+
+
+    // 📋 Table data
+    const table = document.querySelector(".records-table");
+    if (!table) {
+      alert("No records table found to export.");
+      return;
+    }
+
+    // Exclude last column (Actions)
+    const headers = Array.from(table.querySelectorAll("thead th"))
+      .map(th => th.textContent.trim())
+      .slice(0, -1);
+
+    const body = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
+      const cells = Array.from(tr.children)
+        .slice(0, -1)
+        .map(td => td.textContent.trim());
+
+      // 🗓️ Clean up Date (column 6)
+      const dateIndex = 6;
+      if (cells[dateIndex]) cells[dateIndex] = cells[dateIndex].split("T")[0];
+
+      // 💰 Clean up Cost (column 5)
+      const costIndex = 5;
+      if (cells[costIndex]) {
+        const clean = cells[costIndex].replace(/[₱\s,]/g, "").trim();
+        const num = Number(clean);
+        cells[costIndex] = num ? `PHP ${num.toLocaleString()}` : "PHP 0";
+      }
+
+      return cells;
+    });
+
+    // 🧾 Generate table
+    doc.autoTable({
+      head: [headers],
+      body: body,
+      startY: 33, // start below header and line
+      tableWidth: "auto",
+      styles: {
+        fontSize: 8.5,
+        cellPadding: 2.5,
+        valign: "middle",
+        overflow: "linebreak",
+        cellWidth: "wrap",
+      },
+      headStyles: {
+        fillColor: [27, 150, 90],
+        textColor: 255,
+        fontSize: 9,
+        halign: "center",
+      },
+      bodyStyles: { minCellHeight: 6 },
+      columnStyles: {
+        0: { cellWidth: 25 },
+        1: { cellWidth: 30 },
+        2: { cellWidth: 22 },
+        3: { cellWidth: 28 },
+        4: { cellWidth: 28 },
+        5: { cellWidth: 18, halign: "right" },
+        6: { cellWidth: 25 },
+        7: { cellWidth: 20 },
+      },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      margin: { left: 8, right: 8 },
+    });
+
+    // 💾 Preview or Save
+    if (preview) {
+      const blobUrl = doc.output("bloburl");
+      window.open(blobUrl, "_blank"); // 👁️ Opens in new tab
+    } else {
+      doc.save(
+        `Sanctuary_Service_Records_${new Date().toISOString().split("T")[0]}.pdf`
+      );
+    }
+  }
+  /* ========================================
+    📄 BUTTON EVENT LISTENERS
+  ======================================== */
+  document
+    .getElementById("exportRecordsBtn")
+    .addEventListener("click", () => generateRecordsPDF(false));
+  document
+    .getElementById("previewRecordsBtn")
+    .addEventListener("click", () => generateRecordsPDF(true));
   /* ========================================
      🚀 INITIALIZE PAGE
   ======================================== */
