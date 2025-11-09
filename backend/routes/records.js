@@ -35,7 +35,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-
 /* ========================================
    ✏️ Update a record
 ======================================== */
@@ -43,9 +42,12 @@ router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { clientName, email, contact, address, serviceAvailed, cost, date, status } = req.body;
 
-  if (!clientName || !email || !contact || !address || !serviceAvailed || !cost || !date || !status) {
-    return res.status(400).json({ error: 'All fields are required.' });
+  // ✅ Allow cost = 0, just validate required text fields
+  if (!clientName || !email || !contact || !address || !serviceAvailed || !date || !status) {
+    return res.status(400).json({ error: 'All fields are required (except cost can be 0).' });
   }
+
+  const numericCost = Number(cost) || 0; // safely cast to number, allow 0
 
   const sql = `
     UPDATE records 
@@ -60,20 +62,22 @@ router.put('/:id', async (req, res) => {
       contact,
       address,
       serviceAvailed,
-      cost,
+      numericCost,
       date,
       status,
       id
     ]);
 
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'Record not found' });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Record not found' });
+    }
+
     res.json({ message: '✅ Record updated successfully' });
   } catch (err) {
     console.error('❌ Error updating record:', err);
     res.status(500).json({ error: 'Database error' });
   }
 });
-
 
 /* ========================================
    🗑️ Delete a record

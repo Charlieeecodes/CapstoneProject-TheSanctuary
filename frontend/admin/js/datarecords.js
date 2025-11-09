@@ -133,7 +133,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
       let res;
-      if (editingId) {
+      let isEdit = !!editingId; // ✅ check if we're editing
+
+      if (isEdit) {
         res = await fetch(`${API_URL}/${editingId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -150,8 +152,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (res.ok) {
         recordForm.reset();
-        addRecordForm.style.display = "none";
         await loadRecords();
+
+        // ✅ Close modal after saving
+        const modal = document.getElementById("addRecordModal");
+        if (modal) modal.classList.remove("show");
+
+        // ✅ Reset modal title
+        const modalTitle = document.getElementById("modalTitle");
+        if (modalTitle) modalTitle.textContent = "Add New Record";
+
+        // ✅ Show success popup
+        showUploadNotification(isEdit ? "✅ Record updated successfully!" : "✅ New record added!");
+
       } else {
         alert("Failed to save record.");
       }
