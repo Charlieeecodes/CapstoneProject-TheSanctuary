@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Show logged-in status & welcome
       userStatus.innerHTML = `🔒 Logged in as <strong>${user.name}</strong>`;
-      if (welcome) welcome.textContent = `Welcome back, ${user.name}!`;
+      if (welcome) welcome.textContent = `Welcome, ${user.name}!`;
     } else {
       // Guest mode
       guestFields.style.display = 'block';
