@@ -181,28 +181,65 @@ router.post('/upload-csv', async (req, res) => {
       });
     }
 
+    // 🧾 Standardized service price map
+    const servicePrices = {
+      "Unit with perpetual care": 50000,
+      "Interment service": 10000,
+      "Retrieval of cadaver": 7000,
+      "Embalming services": 5000,
+      "Casket": 15000,
+      "Chapel viewing": 8000,
+      "House viewing or outside viewing": 6000,
+      "Hearse": 4000,
+      "Funeral Mass": 2000,
+      "Function area": 3000,
+      "Adult cremation": 15000,
+      "Child cremation": 10000,
+      "Baby cremation": 8000,
+      "Fetus cremation": 6000,
+      "Bone cremation": 5000,
+      "Urns": 3000,
+      "Keepsakes": 1200,
+      "Chapel A (30-50 pax)": 150000,
+      "Chapel B (75-100 pax)": 250000,
+      "Main Chapel (100-150 pax)": 350000
+    };
+
     const insertSQL = `
       INSERT INTO records (client_name, email, contact, address, service, cost, date, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
+    let inserted = 0;
+
     for (const r of records) {
+      // 🧠 Normalize the service text (fix casing + extra spaces)
+      const cleanService = (r.service || '').trim();
+
+      // 💰 Auto-compute cost if not provided
+      const autoCost = r.cost && Number(r.cost) > 0
+        ? Number(r.cost)
+        : servicePrices[cleanService] || 0;
+
       await db.query(insertSQL, [
         r.client_name || null,
         r.email || null,
         r.contact || null,
         r.address || null,
-        r.service || null,
-        r.cost || 0,
+        cleanService,
+        autoCost,
         r.date || null,
-        r.status || 'Pending',
+        r.status || 'Pending'
       ]);
+
+      inserted++;
     }
 
     return res.status(200).json({
       success: true,
-      message: `✅ Upload complete! ${records.length} record(s) successfully added.`,
+      message: `✅ Upload complete! ${inserted} record(s) successfully added with computed costs.`,
     });
+
   } catch (error) {
     console.error('❌ Error processing CSV upload:', error);
     return res.status(500).json({
@@ -212,5 +249,6 @@ router.post('/upload-csv', async (req, res) => {
     });
   }
 });
+
 
 module.exports = router;
