@@ -18,6 +18,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   const endDateInput = document.getElementById('endDate');
   const previewBtn = document.getElementById('generatePreviewBtn');
   const exportPdfBtn = document.getElementById('exportPdfBtn');
+  // 🔄 Current period + custom range per chart
+  const state = {
+    inquiries: { period: 'month', start: null, end: null },
+    servicesTrend: { period: 'month', start: null, end: null },
+    topServices: { period: 'month', start: null, end: null },
+    feedbackRatings: { period: 'month', start: null, end: null },
+  };
+
+  function setStateAll(period, start = null, end = null) {
+    Object.keys(state).forEach(k => { state[k] = { period, start, end }; });
+  }
+
+  function buildPeriodQS({ period, start, end }) {
+    if (period === 'custom' && start && end) {
+      return `period=custom&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+    }
+    return `period=${encodeURIComponent(period)}`;
+  }
 
   // Show or hide custom date inputs dynamically
   if (exportRangeSelect) {
@@ -26,13 +44,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (range === 'custom') {
         customDateInputs.classList.remove('hidden');
-      } else {
-        customDateInputs.classList.add('hidden');
-        await updateInquiriesChart(range);
-        await loadServiceTrendChart(range);
-        await loadTopServicesChart(range);
-        await loadFeedbackRatingsChart(range) 
+        // defer chart loads until both dates set
+        return;
       }
+
+      // update state for all charts
+      setStateAll(range, null, null);
+
+      customDateInputs.classList.add('hidden');
+      await updateInquiriesChart(range);
+      await loadServiceTrendChart(range);
+      await loadTopServicesChart(range);
+      await loadFeedbackRatingsChart(range);
     });
   }
 
@@ -40,14 +63,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     input.addEventListener('change', async () => {
       if (
         exportRangeSelect.value === 'custom' &&
-        startDateInput.value &&
-        endDateInput.value
+        startDateInput.value && endDateInput.value
       ) {
-        console.log(`📆 Custom range: ${startDateInput.value} → ${endDateInput.value}`);
-        await updateInquiriesChart('custom', startDateInput.value, endDateInput.value);
-        await loadServiceTrendChart('custom', startDateInput.value, endDateInput.value);
-        await loadTopServicesChart('custom', startDateInput.value, endDateInput.value);
-        await loadFeedbackRatingsChart('custom', startDateInput.value, endDateInput.value);
+        const s = startDateInput.value;
+        const e = endDateInput.value;
+
+        // update state for all charts
+        setStateAll('custom', s, e);
+
+        await updateInquiriesChart('custom', s, e);
+        await loadServiceTrendChart('custom', s, e);
+        await loadTopServicesChart('custom', s, e);
+        await loadFeedbackRatingsChart('custom', s, e);
       }
     });
   });
@@ -537,36 +564,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (inquiriesPeriodSelect) {
     inquiriesPeriodSelect.addEventListener('change', async e => {
       const period = e.target.value;
+      state.inquiries = { period, start: null, end: null };
       await updateInquiriesChart(period);
       await updateInquiriesKPI(period);
     });
   }
 
-  // 🟢 Total Feedbacks
   const feedbackPeriodSelect = document.getElementById('feedbackPeriod');
   if (feedbackPeriodSelect) {
     feedbackPeriodSelect.addEventListener('change', async e => {
       const period = e.target.value;
+      state.feedbackRatings = { period, start: null, end: null };
       await updateFeedbackKPI(period);
       await loadFeedbackRatingsChart(period);
     });
   }
 
-  // 🔵 Top Services
   const topServicesPeriodSelect = document.getElementById('topServicesPeriod');
   if (topServicesPeriodSelect) {
     topServicesPeriodSelect.addEventListener('change', async e => {
       const period = e.target.value;
+      state.topServices = { period, start: null, end: null };
       await updateTopServiceKPI(period);
       await loadTopServicesChart(period);
     });
   }
 
-  // 🟢 Total Services Availed
   const servicesTrendPeriodSelect = document.getElementById('servicesTrendPeriod');
   if (servicesTrendPeriodSelect) {
     servicesTrendPeriodSelect.addEventListener('change', async e => {
       const period = e.target.value;
+      state.servicesTrend = { period, start: null, end: null };
       await updateTotalServicesKPI(period);
       await loadServiceTrendChart(period);
     });
@@ -576,7 +604,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await Promise.all([
     loadKPIs(),
     updateInquiriesKPI('month'),
-    updateFeedbackKPI('range'),
+    updateFeedbackKPI('month'),
     updateTopServiceKPI('month'),
     updateTotalServicesKPI('month'),
     loadFeedbackRatingsChart('month'),
@@ -753,15 +781,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (chartType === 'feedbackRatings') {
       insightTitle.textContent = 'Feedback Ratings Insights';
 
-      // 🧠 Always fetch fresh KPI data before displaying insights
+      // ✅ Fetch fresh data for the current period/custom range
+      const p = state.feedbackRatings; // ← uses shared state
+      const url = `http://localhost:5000/api/analytics/feedbacks/ratings?${buildPeriodQS(p)}`;
+
       let avgRatings = null;
       try {
-        const res = await fetch('http://localhost:5000/api/analytics/kpis', { cache: 'no-store' });
-        const data = await res.json();
-        avgRatings = data.avgRatings;
-        window.kpiData = data; // 🔁 update global cache for next time
+        const res = await fetch(url, { cache: 'no-store' });
+        avgRatings = await res.json();
       } catch (err) {
-        console.error('❌ Failed to refresh feedback KPI data:', err);
+        console.error('❌ Failed to fetch feedback ratings for insights:', err);
       }
 
       // 🧩 Fallback if fetch fails
@@ -772,15 +801,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
       }
 
-      // 🔍 Calculate feedback insights
-      const categories = Object.keys(avgRatings);
-      const values = Object.values(avgRatings).map(Number);
+      // 🧮 Prepare labels and values
+      const categories = ['overall','service','satisfaction','professionalism','communication','facility'];
+      const labels = ['Overall','Service','Satisfaction','Professionalism','Communication','Facility & Ambiance'];
+      const values = categories.map(k => Number(avgRatings[k] ?? 0));
+
       const weakestIndex = values.indexOf(Math.min(...values));
       const strongestIndex = values.indexOf(Math.max(...values));
       const overallAvg = values.reduce((a, b) => a + b, 0) / values.length;
 
-      const topCategory = categories[strongestIndex];
-      const lowCategory = categories[weakestIndex];
+      const topCategory = labels[strongestIndex];
+      const lowCategory = labels[weakestIndex];
       const topValue = values[strongestIndex].toFixed(1);
       const lowValue = values[weakestIndex].toFixed(1);
       const avg = overallAvg.toFixed(2);
@@ -791,65 +822,53 @@ document.addEventListener('DOMContentLoaded', async () => {
         predictiveMessage = `
           🌟 <b>Outstanding feedback overall!</b><br>
           Clients are <b>highly satisfied</b> with an average rating of <b>${avg}⭐</b>.<br>
-          <b>${topCategory}</b> is your strongest area (${topValue}⭐), showing genuine client trust.<br>
-          Even <b>${lowCategory}</b> (${lowValue}⭐) remains strong — an excellent sign of consistency.
+          <b>${topCategory}</b> is your strongest area (${topValue}⭐).<br>
+          Even <b>${lowCategory}</b> (${lowValue}⭐) remains strong — excellent consistency.
         `;
-      } 
-      else if (overallAvg >= 4.0) {
+      } else if (overallAvg >= 4.0) {
         predictiveMessage = `
-          😊 <b>Very positive overall feedback!</b><br>
-          You’re holding a solid <b>${avg}⭐</b> average. Clients especially appreciate <b>${topCategory}</b> (${topValue}⭐).<br>
+          😊 <b>Very positive feedback!</b><br>
+          Holding a solid <b>${avg}⭐</b> average. Clients especially appreciate <b>${topCategory}</b> (${topValue}⭐).<br>
           <b>${lowCategory}</b> (${lowValue}⭐) could use small refinements to push scores even higher.
         `;
-      } 
-      else if (overallAvg >= 3.0) {
+      } else if (overallAvg >= 3.0) {
         predictiveMessage = `
           😐 <b>Mixed impressions detected.</b><br>
           Average rating is <b>${avg}⭐</b>. Clients like <b>${topCategory}</b> (${topValue}⭐), 
-          but <b>${lowCategory}</b> (${lowValue}⭐) might be lowering satisfaction.<br>
-          Take time to listen and address key concerns in that area.
+          but <b>${lowCategory}</b> (${lowValue}⭐) might be lowering satisfaction.
         `;
-      } 
-      else {
+      } else {
         predictiveMessage = `
-          ⚠️ <b>Low feedback ratings overall (${avg}⭐).</b><br>
-          While <b>${topCategory}</b> (${topValue}⭐) remains relatively positive, 
-          <b>${lowCategory}</b> (${lowValue}⭐) shows clear dissatisfaction.<br>
-          A focused quality review or retraining session may be needed.
+          ⚠️ <b>Low overall feedback (${avg}⭐).</b><br>
+          While <b>${topCategory}</b> (${topValue}⭐) stays fair, 
+          <b>${lowCategory}</b> (${lowValue}⭐) indicates dissatisfaction.
         `;
       }
-
       predictiveText.innerHTML = predictiveMessage;
 
       // 💡 Prescriptive — what to do next
       let prescriptiveMessage = '';
       if (values[weakestIndex] < 3.5) {
         prescriptiveMessage = `
-          📉 <b>Action needed:</b> Improve <b>${lowCategory}</b> by reviewing service flow, 
-          providing staff refreshers, or gathering direct client input to understand pain points.
+          📉 <b>Action needed:</b> Improve <b>${lowCategory}</b> through staff refreshers or client follow-ups.
         `;
-      } 
-      else if (values[weakestIndex] < 4.0) {
+      } else if (values[weakestIndex] < 4.0) {
         prescriptiveMessage = `
-          🔍 <b>Opportunity to improve:</b> <b>${lowCategory}</b> scores slightly lower than others. 
-          Small changes — like faster responses or clearer communication — could lift ratings further.
+          🔍 <b>Opportunity:</b> <b>${lowCategory}</b> scores slightly lower. 
+          Small adjustments could further raise satisfaction.
         `;
-      } 
-      else {
+      } else {
         prescriptiveMessage = `
-          ✅ <b>Great balance across all areas!</b><br>
-          Ratings are consistently strong, showing reliable service quality. 
-          Keep recognizing staff performance and maintaining your communication standards.
+          ✅ <b>Great balance!</b> All areas maintain strong feedback. Keep recognizing staff performance.
         `;
       }
-
       prescriptiveText.innerHTML = prescriptiveMessage;
 
-      // 📊 Render the chart visualization
+      // 📊 Render chart visualization
       window.insightsChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: categories,
+          labels,
           datasets: [{
             label: 'Average Rating',
             data: values,
@@ -868,7 +887,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-
     // ==============================
     // 🟢 Predictive Charts (Inquiries / Services)
     // ==============================
@@ -878,25 +896,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       let url = '';
       if (chartType === 'inquiriesTrend') {
-        url = `http://localhost:5000/api/analytics/inquiries?period=${period}&mode=trend`;
+        const p = state.inquiries;
+        url = `http://localhost:5000/api/analytics/inquiries?mode=trend&${buildPeriodQS(p)}`;
       } else if (chartType === 'serviceTrend') {
-        url = `http://localhost:5000/api/analytics/services/trend`;
+        const p = state.servicesTrend;
+        url = `http://localhost:5000/api/analytics/services/trend?${buildPeriodQS(p)}`;
+      } else if (chartType === 'feedbackRatings') {
+        // handled earlier; return
       }
 
-      const res = await fetch(url);
+      if (url) {
+        const res = await fetch(url, { cache: 'no-store' });
         if (!res.ok) {
-        console.error('Trend API failed:', res.status, url);
-        insightsModal.classList.remove('hidden');
-        return;
+          console.error('Trend API failed:', res.status, url);
+          insightsModal.classList.remove('hidden');
+          return;
+        }
+        const trendData = await res.json();
+        labels = trendData.map(d => d.label);
+        counts = trendData.map(d => Number(d.count));
       }
-
-      const trendData = await res.json();
-
-      labels = trendData.map(d => d.label);
-      counts = trendData.map(d => Number(d.count));
     } catch (err) {
       console.error('Error fetching trend data for prediction:', err);
     }
+
     if (!counts.length) {
       console.warn(`[InsightsModal] No data available for ${chartType}.`);
       insightsModal.classList.remove('hidden');
@@ -1129,7 +1152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     insightTitle.textContent =
       chartType === 'inquiriesTrend'
         ? 'Inquiries Predictive Analysis'
-        : 'Services Predictive Analysis';
+        : 'Total Services Predictive Analysis';
 
     const forecastData = [...counts, predictedNext];
     const forecastLabels = [...labels, 'Next'];
@@ -1174,16 +1197,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 document.querySelectorAll('.view-insights-btn').forEach(btn => {
   btn.addEventListener('click', e => {
     const chartType = e.target.getAttribute('data-chart');
-
-    // 🧩 If viewing inquiries trend, pass current period dynamically
-    if (chartType === 'inquiriesTrend') {
-      openInsightsModal(chartType, currentInquiriesPeriod);
-    } else {
-      openInsightsModal(chartType);
-    }
+    openInsightsModal(chartType);
   });
 });
-
 
 function closeInsightsModal() {
   insightsModal.classList.add('hidden');
