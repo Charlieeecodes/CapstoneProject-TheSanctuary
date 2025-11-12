@@ -62,6 +62,7 @@ router.post('/register', async (req, res) => {
     }
 
     // Hash password and insert new user
+    // Hash password and insert new user
     const hashed = await bcrypt.hash(password, 10);
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -70,13 +71,17 @@ router.post('/register', async (req, res) => {
       [name, email, hashed, verificationCode, false]
     );
 
-    await sendVerificationEmail(email, verificationCode);
+    // ✅ In development, log code instead of sending real email
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📨 [DEV MODE] Verification code for ${email}: ${verificationCode}`);
+    } else {
+      await sendVerificationEmail(email, verificationCode);
+    }
 
     res.json({
       success: true,
-      message: 'Registration successful! A verification code has been sent to your email.'
+      message: 'Registration successful! Please check your email (or console in dev mode).'
     });
-
   } catch (err) {
     console.error('❌ Registration error:', err);
     res.status(500).json({ success: false, message: 'Registration failed' });
@@ -167,12 +172,19 @@ router.post('/resend', async (req, res) => {
     if (user.isVerified) {
       return res.status(400).json({ success: false, message: 'Email already verified.' });
     }
-
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     await db.query('UPDATE users SET verificationCode = ? WHERE id = ?', [verificationCode, user.id]);
-    await sendVerificationEmail(email, verificationCode);
 
-    res.json({ success: true, message: 'A new verification code has been sent to your email.' });
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📨 [DEV MODE] Resent verification code for ${email}: ${verificationCode}`);
+    } else {
+      await sendVerificationEmail(email, verificationCode);
+    }
+
+    res.json({
+      success: true,
+      message: 'A new verification code has been sent (or logged in dev mode).'
+    });
 
   } catch (err) {
     console.error('❌ Resend verification error:', err);
