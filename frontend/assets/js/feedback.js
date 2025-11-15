@@ -2,8 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const feedbackForm = document.getElementById('feedbackForm');
   const guestFields = document.getElementById('guestFields');
   const userStatus = document.getElementById('userStatus');
-  const loginBtn = document.getElementById('loginBtn');
-  const guestBtn = document.getElementById('guestBtn');
   const responseMessage = document.createElement('p');
   responseMessage.id = 'responseMessage';
   feedbackForm.parentNode.insertBefore(responseMessage, feedbackForm.nextSibling);
@@ -19,44 +17,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const user = getCurrentUser();
 
-  // Auto-fill and disable inputs if logged in
-  if (user) {
+  // -----------------------------
+  // UPDATE UI BASED ON USER STATE
+  // -----------------------------
+  const setUserUI = (user) => {
     const nameInput = document.getElementById('name');
     const emailInput = document.getElementById('email');
-    if (nameInput) { nameInput.value = user.name; nameInput.disabled = true; }
-    if (emailInput) { emailInput.value = user.email; emailInput.disabled = true; }
-  }
 
-  // Update UI based on user state
-  const setUserUI = (user) => {
     if (user && user.token) {
+      // LOGGED-IN MODE
       guestFields.style.display = 'none';
-      loginBtn.style.display = 'none';
-      guestBtn.style.display = 'inline-block';
-      userStatus.innerHTML = `🔒 Logged in as <strong>${user.name}</strong>`;
-    } else {
-      guestFields.style.display = 'block';
-      loginBtn.style.display = 'inline-block';
-      guestBtn.style.display = 'inline-block';
-      userStatus.innerHTML = '👤 Guest mode';
 
-      const nameInput = document.getElementById('name');
-      const emailInput = document.getElementById('email');
-      if (nameInput) nameInput.disabled = false;
-      if (emailInput) emailInput.disabled = false;
+      if (nameInput) {
+        nameInput.value = user.name;
+        nameInput.disabled = true;
+        nameInput.required = false;
+      }
+      if (emailInput) {
+        emailInput.value = user.email;
+        emailInput.disabled = true;
+        emailInput.required = false;
+      }
+
+      userStatus.innerHTML = `🔒 Logged in as <strong>${user.name}</strong>`;
+
+    } else {
+      // GUEST MODE
+      guestFields.style.display = 'block';
+
+      if (nameInput) {
+        nameInput.value = '';
+        nameInput.disabled = false;
+        nameInput.required = true;
+      }
+      if (emailInput) {
+        emailInput.value = '';
+        emailInput.disabled = false;
+        emailInput.required = true;
+      }
+
+      userStatus.innerHTML = '👤 You are submitting as a Guest';
     }
   };
-
-  loginBtn?.addEventListener('click', () => window.location.href = 'login.html?redirect=feedback.html');
-  guestBtn?.addEventListener('click', () => {
-    localStorage.removeItem('user');
-    setUserUI(null);
-  });
 
   setUserUI(user);
 
   // -----------------------------
-  // Feedback Form Submission
+  // FEEDBACK FORM SUBMISSION
   // -----------------------------
   feedbackForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -72,15 +79,15 @@ document.addEventListener('DOMContentLoaded', () => {
       responseMessage.style.color = 'orange';
       return;
     }
+
     // -----------------------------
-    // Validate and collect ratings
+    // Validate ratings
     // -----------------------------
     const ratingKeys = ['overall','service','satisfaction','professionalism','communication','facility'];
     const feedbackData = { name, email, message };
 
     for (const key of ratingKeys) {
       const el = document.querySelector(`input[name="${key}"]:checked`);
-      console.log(`${key} element:`, el); // Debug: see which element is found
 
       if (!el) {
         responseMessage.textContent = `⚠️ Please select a rating for ${key}.`;
@@ -94,9 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add userId if logged in
     feedbackData.userId = user ? user.id : null;
 
-    console.log('Feedback payload:', feedbackData); 
+    console.log('Feedback payload:', feedbackData);
+
     // -----------------------------
-    // Send to server
+    // SEND TO BACKEND
     // -----------------------------
     try {
       const res = await fetch('/api/public/feedbacks', {

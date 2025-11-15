@@ -5,8 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const responseMessage = document.getElementById('responseMessage');
   const guestFields = document.getElementById('guestFields');
   const userStatus = document.getElementById('userStatus');
-  const loginBtn = document.getElementById('loginBtn');
-  const guestBtn = document.getElementById('guestBtn');
 
   // -----------------------------
   // Helper: Get current logged-in user
@@ -28,58 +26,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const welcome = document.getElementById('welcomeMessage');
 
     if (user && user.token) {
-      // Hide guest fields and login button
+      // -----------------------------
+      // LOGGED-IN MODE
+      // -----------------------------
       guestFields.style.display = 'none';
-      loginBtn.style.display = 'none';
-      guestBtn.style.display = 'inline-block';
 
-      // Fill name/email and disable
       if (nameInput) {
         nameInput.value = user.name;
         nameInput.required = false;
         nameInput.disabled = true;
       }
+
       if (emailInput) {
         emailInput.value = user.email;
         emailInput.required = false;
         emailInput.disabled = true;
       }
 
-      // Show logged-in status & welcome
       userStatus.innerHTML = `🔒 Logged in as <strong>${user.name}</strong>`;
       if (welcome) welcome.textContent = `Welcome, ${user.name}!`;
+
     } else {
-      // Guest mode
+      // -----------------------------
+      // GUEST MODE
+      // -----------------------------
       guestFields.style.display = 'block';
-      loginBtn.style.display = 'inline-block';
-      guestBtn.style.display = 'inline-block';
-      userStatus.innerHTML = '👤 Guest mode';
 
       if (nameInput) {
         nameInput.value = '';
         nameInput.required = true;
         nameInput.disabled = false;
       }
+
       if (emailInput) {
         emailInput.value = '';
         emailInput.required = true;
         emailInput.disabled = false;
       }
 
+      userStatus.innerHTML = '👤 You are submitting as a Guest';
       if (welcome) welcome.textContent = '';
     }
   };
-
-  // -----------------------------
-  // Login / Guest button actions
-  // -----------------------------
-  loginBtn?.addEventListener('click', () => {
-    window.location.href = `login.html?redirect=inquiry.html`;
-  });
-  guestBtn?.addEventListener('click', () => {
-    localStorage.removeItem('user');
-    setUserUI(null);
-  });
 
   setUserUI(getCurrentUser());
 

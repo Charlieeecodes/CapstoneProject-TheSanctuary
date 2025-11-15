@@ -5,36 +5,173 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sanctuary Inquiry System - Home</title>
   <link rel="stylesheet" href="assets/css/main.css">
+  <script defer src="assets/js/home.js"></script>
 </head>
+
 <body>
+
+<!-- ===================== HEADER ===================== -->
 <header class="main-header">
   <div class="container">
     <div class="logo-title">
       <img src="assets/images/logo.png" alt="Sanctuary Logo">
     </div>
+
+    <!-- 🔄 Dynamic Navbar (Guest vs Logged-In) -->
     <nav class="nav-bar">
-      <ul>
-        <li><a href="#" class="active">Home</a></li>
-        <li><a href="#">Services</a></li>
-        <li><a href="#">Gallery</a></li>
-        <li><a href="#">About Us</a></li>
-        <li><a href="inquiry.html">Submit Inquiry</a></li>
-        <li><a href="feedback.html">Feedback</a></li>
+      <ul id="navMenu">
+        <!-- Filled dynamically by home.js -->
       </ul>
     </nav>
   </div>
 </header>
 
+<!-- ===================== HERO SECTION ===================== -->
 <section class="hero">
   <div class="overlay"></div>
   <div class="hero-content">
-    <h2>Welcome to The Sanctuary</h2>
-    <p>A joint venture of VTA International Realty Corporation and Heaven’s Gate Memorial Gardens Inc.</p>
-    <div class="btn-container">
-      <a href="" class="btn-primary">Our Services</a>
-      <a href="" class="btn-secondary">About Us</a>
+
+    <!-- 🔄 Dynamic greeting based on login state -->
+    <h2 id="heroTitle">Welcome to The Sanctuary</h2>
+
+    <p id="heroSubtitle">
+      A joint venture of VTA International Realty Corporation and 
+      Heaven’s Gate Memorial Gardens Inc.
+    </p>
+
+    <div class="btn-container" id="heroButtons">
+      <a href="#" class="btn-primary" data-link="services">Our Services</a>
+      <a href="#" class="btn-secondary" data-link="about">About Us</a>
     </div>
+
   </div>
 </section>
+
+<!-- ===================== OUR SERVICES SECTION ===================== -->
+<section id="servicesSection" class="home-section services-section">
+  <div class="section-inner">
+
+    <!-- CENTERED TITLE -->
+    <div class="section-header centered-header">
+      <h2>Our Services</h2>
+      <p>
+        Explore the memorial services we offer — from serene chapels to complete cremation 
+        and columbarium options.
+      </p>
+    </div>
+
+    <!-- SERVICES GRID -->
+<div class="services-grid-wrapper">
+  <div class="services-grid">
+
+    <!-- 1. Facilities -->
+    <div class="service-box">
+      <img src="assets/images/services/main-chapel.jpg" class="service-img">
+      <h3>Sanctuary Facilities</h3>
+      <p class="service-teaser">
+        Main chapel, family rooms, prayer rooms, viewing areas, and more.
+      </p>
+      <button class="view-more-service" data-target="services">View More</button>
+      <div class="guest-only-note">
+        🔒 Login to view full facility details
+      </div>
+    </div>
+
+    <!-- 2. Columbarium -->
+    <div class="service-box">
+      <img src="assets/images/services/columbarium-hall.jpg" class="service-img">
+      <h3>Columbarium Products</h3>
+      <p class="service-teaser">
+        Regular & special vaults designed for 4–8 urn capacity.
+      </p>
+      <button class="view-more-service" data-target="services">View More</button>
+      <div class="guest-only-note">
+        🔒 Login to view full vault specifications
+      </div>
+    </div>
+
+    <!-- 3. Viewing Packages -->
+    <div class="service-box">
+      <img src="assets/images/services/viewing-casket.jpg" class="service-img">
+      <h3>Viewing Packages</h3>
+      <p class="service-teaser">
+        Urn or casket viewing packages with chapel rental options.
+      </p>
+      <button class="view-more-service" data-target="services">View More</button>
+      <div class="guest-only-note">
+        🔒 Login to view full viewing package details
+      </div>
+    </div>
+
+    <!-- 4. Cremation Services -->
+    <div class="service-box">
+      <img src="assets/images/services/cremation-setup.jpg" class="service-img">
+      <h3>Cremation Services</h3>
+      <p class="service-teaser">
+        Direct cremation, service plans, and a range of urn options.
+      </p>
+      <button class="view-more-service" data-target="services">View More</button>
+      <div class="guest-only-note">
+        🔒 Login to view full cremation service details
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</section>
+
+<!-- ===================== GALLERY SECTION ===================== -->
+<section id="gallerySection" class="home-section gallery-section">
+  <div class="section-inner">
+
+    <div class="section-header centered-header">
+      <h2>Gallery</h2>
+      <p>Take a glimpse of our peaceful facilities and memorial spaces.</p>
+    </div>
+
+    <!-- PREVIEW GRID -->
+    <div class="gallery-grid">
+      <div class="gallery-item"><img src="assets/images/gallery/gallery-1.jpg"></div>
+      <div class="gallery-item"><img src="assets/images/gallery/gallery-2.jpg"></div>
+      <div class="gallery-item"><img src="assets/images/gallery/gallery-3.jpg"></div>
+    </div>
+
+    <!-- VIEW MORE BUTTON -->
+    <button class="view-more-gallery">View More</button>
+
+    <!-- Guest-Only Message -->
+    <div class="guest-gallery-note">
+      🔒 Login to view the complete gallery in full resolution
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ===================== ABOUT US SECTION ===================== -->
+<section id="aboutSection" class="home-section about-section">
+  <div class="section-inner about-layout">
+
+    <div class="about-text">
+      <h2>About The Sanctuary</h2>
+      <p>
+        The Sanctuary is a joint venture of VTA International Realty Corporation and 
+        Heaven’s Gate Memorial Gardens Inc. We are committed to providing dignified, 
+        compassionate services to every family we serve.
+      </p>
+      <p>
+        Our facilities are designed to offer a peaceful environment where families can gather,
+        remember, and celebrate the life of their loved ones.
+      </p>
+    </div>
+
+    <div class="about-image">
+      <div class="about-placeholder">About Us Image</div>
+    </div>
+
+  </div>
+</section>
+
 </body>
 </html>

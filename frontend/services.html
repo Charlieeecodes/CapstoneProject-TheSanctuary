@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Services | The Sanctuary</title>
+
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/services.css">
+
+  <!-- Dynamic Navbar -->
+  <script defer src="assets/js/home.js"></script>
+
+  <!-- Access Script -->
+  <script defer>
+    document.addEventListener("DOMContentLoaded", () => {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user || !user.token) {
+        // Guest mode → redirect to home preview
+        window.location.href = "index.html#servicesSection";
+      }
+    });
+  </script>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header class="main-header">
+  <div class="container">
+    <div class="logo-title">
+      <img src="assets/images/logo.png" alt="Sanctuary Logo">
+    </div>
+    <nav class="nav-bar">
+      <ul id="navMenu"></ul>
+    </nav>
+  </div>
+</header>
+
+<!-- MAIN TITLE -->
+<section class="services-header">
+  <h1>Our Services</h1>
+  <p>Explore the full range of memorial and chapel services we offer — complete details available only to registered users.</p>
+</section>
+
+<!-- MAIN GRID -->
+<section class="services-full-grid">
+
+  <!-- ========== 1. SANCTUARY FACILITIES ========== -->
+  <div class="full-service-card">
+    <img src="assets/images/services/main-chapel.jpg" class="full-service-img" alt="Main Chapel">
+    <h2>Sanctuary Facilities</h2>
+    <p class="service-description">
+      Our facilities are designed to offer a serene and dignified environment for families and loved ones.
+    </p>
+    
+    <ul class="service-details">
+      <li>Administrative Office</li>
+      <li>Main Chapel</li>
+      <li>Chapel Family Room</li>
+      <li>Prayer Room</li>
+      <li>Viewing Area</li>
+      <li>PWD-Friendly Comfort Rooms</li>
+      <li>Columbarium Facility</li>
+      <li>Mortuary</li>
+      <li>Waiting Area</li>
+    </ul>
+  </div>
+
+  <!-- ========== 2. COLUMBARIUM ========== -->
+  <div class="full-service-card">
+    <img src="assets/images/services/columbarium-hall.jpg" class="full-service-img" alt="Columbarium Hall">
+    <h2>Columbarium Products</h2>
+
+    <p class="service-description">Premium vaults designed for families seeking a serene and lasting memorial space.</p>
+
+    <ul class="service-details">
+      <li>Regular Vault (4 Urns)</li>
+      <li>Special Cut Vault (8 Urns)</li>
+      <li>Personalized Nameplates</li>
+      <li>Vault Level Options</li>
+      <li>Temperature-Controlled Columbarium Hall</li>
+    </ul>
+  </div>
+
+  <!-- ========== 3. VIEWING PACKAGES ========== -->
+  <div class="full-service-card">
+    <img src="assets/images/services/viewing-casket.jpg" class="full-service-img" alt="Viewing Package">
+    <h2>Viewing Packages</h2>
+
+    <p class="service-description">Complete viewing services for both urn and casket setups.</p>
+
+    <ul class="service-details">
+      <li>Urn Viewing Setup</li>
+      <li>Casket Viewing Setup</li>
+      <li>Chapel Rental Options</li>
+      <li>Viewing Package Inclusions</li>
+      <li>Freebies & Amenities</li>
+      <li>Use of Chapel A, Chapel B, or Main Chapel</li>
+    </ul>
+  </div>
+
+  <!-- ========== 4. CREMATION SERVICES ========== -->
+  <div class="full-service-card">
+    <img src="assets/images/services/cremation-setup.jpg" class="full-service-img" alt="Cremation Service">
+    <h2>Cremation Services</h2>
+
+    <p class="service-description">Dignified cremation services with professional care.</p>
+
+    <ul class="service-details">
+      <li>Direct Cremation</li>
+      <li>Cremation Service Plans</li>
+      <li>Marble, Aluminum & Brass Urns</li>
+      <li>Coordination & Documentation</li>
+      <li>Referral Fee Details</li>
+    </ul>
+  </div>
+
+</section>
+
+</body>
+</html>

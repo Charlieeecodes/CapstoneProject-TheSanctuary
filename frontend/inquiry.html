@@ -4,71 +4,69 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inquiry Form | The Sanctuary</title>
+
+  <!-- Styles -->
   <link rel="stylesheet" href="assets/css/main.css">
   <link rel="stylesheet" href="assets/css/inquiry.css" />
-  <!-- ✅ Google reCAPTCHA v2 -->
+
+  <!-- Google reCAPTCHA v2 -->
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+  <!-- Dynamic Navbar -->
+  <script defer src="assets/js/home.js"></script>
+
+  <!-- Inquiry Logic -->
+  <script defer src="assets/js/inquiry.js"></script>
 </head>
 
 <body>
-  <header class="main-header">
-    <div class="container">
-      <div class="logo-title">
-        <img src="assets/images/logo.png" alt="Sanctuary Logo">
-      </div>
-      <nav class="nav-bar">
-        <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="#">Services</a></li>
-          <li><a href="#">Gallery</a></li>
-          <li><a href="#">About Us</a></li>
-          <li><a href="inquiry.html" class="active">Submit Inquiry</a></li>
-          <li><a href="feedback.html">Feedback</a></li>
-        </ul>
-      </nav>
+
+<header class="main-header">
+  <div class="container">
+    <div class="logo-title">
+      <img src="assets/images/logo.png" alt="Sanctuary Logo">
     </div>
-  </header>
-  <div class="inquiry-container">
-    <h2>Submit an Inquiry</h2>
-    <p class="inquiry-description">
-      Please fill out the form below to send us your inquiry. <br>
-      If you have an account, <a href="login.html" class="login-link">log in here</a> for faster response.
-    </p>
-    <div id="welcomeMessage" class="welcome-message"></div>
-    <!-- 🔐 User vs Guest -->
-    <div id="userStatus" class="user-status">
-      <!-- This will dynamically show "Logged in as: John Doe" or "Guest User" -->
-    </div>
-    <!-- User Mode Selection -->
-    <div class="user-mode-toggle" ">
-      <button type="button" id="loginBtn">Log In</button>
-      <button type="button" id="guestBtn">Continue as Guest</button>
-    </div>
-
-    <form id="inquiryForm">
-      <!-- Guest fields (optional for logged-in users) -->
-      <div class="guest-fields" id="guestFields">
-        <label for="name">Full Name</label>
-        <input type="text" id="name" name="name" required />
-
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required />
-      </div>
-
-      <label for="subject">Subject</label>
-      <input type="text" id="subject" name="subject" required />
-
-      <label for="message">Message</label>
-      <textarea id="message" name="message" rows="4" required></textarea>
-
-      <!-- ✅ reCAPTCHA widget -->
-      <div class="g-recaptcha" data-sitekey="6LefkAMsAAAAALC_8WTkOdzlktlJY-REbiaMQhnt"></div>
-      <button type="submit">Send Inquiry</button>
-    </form>
-
-    <p id="responseMessage"></p>
+    <nav class="nav-bar">
+      <ul id="navMenu"></ul>
+    </nav>
   </div>
+</header>
 
-  <script src="assets/js/inquiry.js"></script>
+<div class="inquiry-container">
+  <h2>Submit an Inquiry</h2>
+
+  <p class="inquiry-description">
+    Please fill out the form below to send us your inquiry.
+  </p>
+
+  <div id="userStatus" class="user-status"></div>
+
+  <form id="inquiryForm">
+
+    <!-- Guest-only fields -->
+    <div class="guest-fields" id="guestFields">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" name="name" required />
+
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required />
+    </div>
+
+    <label for="subject">Subject</label>
+    <input type="text" id="subject" name="subject" required />
+
+    <label for="message">Message</label>
+    <textarea id="message" name="message" rows="4" required></textarea>
+
+    <!-- reCAPTCHA (only visible for guests) -->
+    <div id="captchaContainer" class="g-recaptcha"
+         data-sitekey="6LefkAMsAAAAALC_8WTkOdzlktlJY-REbiaMQhnt"></div>
+
+    <button type="submit">Send Inquiry</button>
+  </form>
+
+  <p id="responseMessage"></p>
+</div>
+
 </body>
 </html>
