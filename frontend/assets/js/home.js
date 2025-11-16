@@ -21,7 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
       <li><a href="index.html#aboutSection">About Us</a></li>
       <li><a href="inquiry.html">Submit Inquiry</a></li>
       <li><a href="feedback.html">Feedback</a></li>
-      <li><a href="profile.html">My Profile</a></li>
       <li><a href="#" id="logoutBtn">Logout</a></li>
     `;
 
@@ -185,7 +184,6 @@ document.addEventListener("DOMContentLoaded", () => {
       <li><a href="index.html#aboutSection">About Us</a></li>
       <li><a href="inquiry.html">Submit Inquiry</a></li>
       <li><a href="feedback.html">Feedback</a></li>
-      <li><a href="profile.html">My Profile</a></li>
       <li><a href="#" id="logoutBtn">Logout</a></li>
     `;
 

@@ -1,122 +1,712 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Services | The Sanctuary</title>
 
-  <link rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/services.css">
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <link rel="stylesheet" href="assets/css/services.css" />
 
   <!-- Dynamic Navbar -->
   <script defer src="assets/js/home.js"></script>
-
-  <!-- Access Script -->
-  <script defer>
-    document.addEventListener("DOMContentLoaded", () => {
-      const user = JSON.parse(localStorage.getItem("user"));
-      if (!user || !user.token) {
-        // Guest mode → redirect to home preview
-        window.location.href = "index.html#servicesSection";
-      }
-    });
-  </script>
+  <!-- Services Page Logic (filters, modals, calculator, etc.) -->
+  <script defer src="assets/js/services.js"></script>
 </head>
 
 <body>
-
-<!-- HEADER -->
-<header class="main-header">
-  <div class="container">
-    <div class="logo-title">
-      <img src="assets/images/logo.png" alt="Sanctuary Logo">
+  <!-- HEADER -->
+  <header class="main-header">
+    <div class="container">
+      <div class="logo-title">
+        <img src="assets/images/logo.png" alt="Sanctuary Logo" />
+      </div>
+      <nav class="nav-bar">
+        <ul id="navMenu"></ul>
+      </nav>
     </div>
-    <nav class="nav-bar">
-      <ul id="navMenu"></ul>
-    </nav>
+  </header>
+
+  <main>
+    <!-- MAIN TITLE -->
+    <section class="services-header">
+      <h1>Our Services & Facilities</h1>
+      <p>
+        As a registered client, you can now explore the complete services offered by
+        The Sanctuary in Heaven’s Garden  from viewing packages and cremation plans
+        to columbarium units and chapel facilities.
+      </p>
+    </section>
+
+    <!-- FILTER BAR -->
+    <section class="services-filter-bar">
+      <div class="container">
+        <button class="filter-btn active" data-filter="all">All Services</button>
+        <button class="filter-btn" data-filter="viewing">Viewing Packages</button>
+        <button class="filter-btn" data-filter="columbarium">Columbarium</button>
+        <button class="filter-btn" data-filter="cremation">Cremation Services</button>
+        <button class="filter-btn" data-filter="plans">Cremation Plans</button>
+        <button class="filter-btn" data-filter="facilities">Facilities</button>
+      </div>
+    </section>
+
+    <!-- MAIN SERVICES GRID -->
+    <section class="services-full-grid container" id="servicesGrid">
+      <!-- ========== FACILITIES OVERVIEW ========== -->
+      <article
+        class="full-service-card service-card"
+        data-category="facilities"
+        data-service-id="facilities-overview"
+      >
+        <div class="facility-slider" data-slider="facilities">
+        <button class="slider-arrow left-arrow" data-slider="facilities">&#10094;</button>
+        <div class="slider-images">
+          <img src="assets/images/Servicecardfacilities/main-chapel-1.JPG" class="slide active" alt="Facility Image 1">
+          <img src="assets/images/Servicecardfacilities/administrative-1.JPG" class="slide" alt="Facility Image 2">
+          <img src="assets/images/Servicecardfacilities/Familyroom-1.PNG" class="slide" alt="Facility Image 3">
+          <img src="assets/images/Servicecardfacilities/mainchapel-1.JPG" class="slide" alt="Facility Image 4">
+          <img src="assets/images/Servicecardfacilities/comfortroom-1.JPG" class="slide" alt="Facility Image 5">
+          <img src="assets/images/Servicecardfacilities/family-room-2.JPG" class="slide" alt="Facility Image 6">
+          <img src="assets/images/Servicecardfacilities/viewing-area-1.JPG" class="slide" alt="Facility Image 7">
+          <img src="assets/images/Servicecardfacilities/waiting-area-1.JPG" class="slide" alt="Facility Image 8">
+          <img src="assets/images/Servicecardfacilities/prayerroom-1.JPG" class="slide" alt="Facility Image 9">
+        </div>
+        <button class="slider-arrow right-arrow" data-slider="facilities">&#10095;</button>
+        <div class="slider-dots" data-slider="facilities"></div>
+      </div>
+
+        <h2>Sanctuary Facilities</h2>
+        <p class="service-description">
+          A thoughtfully designed complex that provides a peaceful and dignified setting
+          for families, visitors, and loved ones during times of grief and remembrance.
+        </p>
+        <ul class="service-details">
+          <li>Administrative office for inquiries & assistance</li>
+          <li>Main Chapel & Chapel Family Rooms</li>
+          <li>Dedicated Prayer Room</li>
+          <li>Viewing & urn viewing areas</li>
+          <li>PWD-friendly comfort rooms</li>
+          <li>Indoor columbarium facility</li>
+          <li>Mortuary preparation area</li>
+          <li>Comfortable waiting areas & view decks</li>
+        </ul>
+        <div class="service-actions">
+          <button class="btn-primary view-details-btn" data-service-id="facilities-overview">
+            View Details
+          </button>
+          <a href="inquiry.html" class="btn-secondary">Inquire Now</a>
+        </div>
+      </article>
+
+      <!-- ========== COLUMBARIUM PRODUCTS ========== -->
+      <article
+        class="full-service-card service-card"
+        data-category="columbarium"
+        data-service-id="columbarium-products"
+      >
+        <div class="columbarium-slider" data-slider="columbarium">
+          <button class="slider-arrow left-arrow" data-slider="columbarium">&#10094;</button>
+
+          <div class="slider-images">
+            <img src="assets/images/columbarium/columbarium-facility-1.JPG" class="col-slide active" alt="Columbarium Image 1">
+            <img src="assets/images/columbarium/columbariumLevels.JPG" class="col-slide" alt="Columbarium Image 2">
+            <img src="assets/images/columbarium/vault-levels-1.JPG" class="col-slide" alt="Columbarium Image 3">
+            <img src="assets/images/columbarium/vault-regular.jpg" class="col-slide" alt="Columbarium Image 4">
+            <img src="assets/images/columbarium/vault-special.jpg" class="col-slide" alt="Columbarium Image 5">
+          </div>
+
+          <button class="slider-arrow right-arrow" data-slider="columbarium">&#10095;</button>
+
+          <div class="slider-dots" data-slider="columbarium"></div>
+        </div>
+        <h2>Columbarium Vaults</h2>
+        <p class="service-description">
+          Elegant, indoor columbarium units designed as a sacred resting place for
+          cremated loved ones, with modern architecture and a quiet, secure environment.
+        </p>
+        <ul class="service-details">
+          <li>Regular Vault – up to 4 standard urns</li>
+          <li>Special Cut Vault – up to 8 standard urns (corner unit)</li>
+          <li>Two-sided design with labeled rows & columns</li>
+          <li>Personalized nameplates with message & epitaph</li>
+          <li>24/7 security and CCTV monitoring</li>
+        </ul>
+        <div class="service-actions">
+          <button class="btn-primary view-details-btn" data-service-id="columbarium-products">
+            View Details
+          </button>
+          <a href="inquiry.html" class="btn-secondary">Inquire About Units</a>
+        </div>
+      </article>
+
+      <!-- ========== URN VIEWING PACKAGES ========== -->
+      <article
+        class="full-service-card service-card"
+        data-category="viewing"
+        data-service-id="urn-viewing"
+      >
+        <img
+          src="assets/images/services/viewing-urn.jpg"
+          class="full-service-img"
+          alt="Urn Viewing"
+        />
+        <h2>Urn Viewing Packages</h2>
+        <p class="service-description">
+          Complete urn viewing arrangements in our chapels, combining cremation services,
+          urn, viewing venue, and pastoral support.
+        </p>
+        <p class="service-price">Package rates start at ₱150,000</p>
+        <ul class="service-details">
+          <li>Chapel A (approx. 30–50 guests)</li>
+          <li>Chapel B (approx. 75–100 guests)</li>
+          <li>Main Chapel (approx. 100–150 guests)</li>
+          <li>4 days and 3 nights viewing</li>
+          <li>Inclusive of cremation and marble urn</li>
+        </ul>
+        <div class="service-actions">
+          <button class="btn-primary view-details-btn" data-service-id="urn-viewing">
+            View Complete Inclusions
+          </button>
+          <a href="inquiry.html" class="btn-secondary">Book an Urn Viewing</a>
+        </div>
+      </article>
+
+      <!-- ========== CASKET VIEWING PACKAGES ========== -->
+      <article
+        class="full-service-card service-card"
+        data-category="viewing"
+        data-service-id="casket-viewing"
+      >
+        <img
+          src="assets/images/services/viewing-casket.jpg"
+          class="full-service-img"
+          alt="Casket Viewing"
+        />
+        <h2>Casket Viewing Packages</h2>
+        <p class="service-description">
+          Full casket viewing services, including body preparation, casket, chapel venue,
+          and pastoral support for the family.
+        </p>
+        <p class="service-price">Package rates start at ₱200,000</p>
+        <ul class="service-details">
+          <li>Chapel A, Chapel B, or Main Chapel options</li>
+          <li>Professional retrieval and embalming</li>
+          <li>Metal casket included</li>
+          <li>4 days and 3 nights viewing</li>
+          <li>Complete setup & coordinated liturgical service</li>
+        </ul>
+        <div class="service-actions">
+          <button class="btn-primary view-details-btn" data-service-id="casket-viewing">
+            View Complete Inclusions
+          </button>
+          <a href="inquiry.html" class="btn-secondary">Book a Casket Viewing</a>
+        </div>
+      </article>
+
+      <!-- ========== CHAPEL RENTAL (VIEWING ONLY) ========== -->
+      <article
+        class="full-service-card service-card"
+        data-category="viewing"
+        data-service-id="chapel-rental"
+      >
+        <img
+          src="assets/images/Servicecardfacilities/chapel.jpg"
+          class="full-service-img"
+          alt="Chapel Rental"
+        />
+        <h2>Chapel Rental</h2>
+        <p class="service-description">
+          For families who already have existing arrangements but would like to hold their
+          viewing and gatherings in a serene and well-equipped chapel.
+        </p>
+        <p class="service-price">Daily rental starts at ₱75,000</p>
+        <ul class="service-details">
+          <li>Chapel A, Chapel B, or Main Chapel</li>
+          <li>Viewing setup & basic decorations</li>
+          <li>Comfortable seating and ambient lighting</li>
+          <li>CCTV, Wi-Fi, and parking access</li>
+        </ul>
+        <div class="service-actions">
+          <button class="btn-primary view-details-btn" data-service-id="chapel-rental">
+            View Rental Options
+          </button>
+          <a href="inquiry.html" class="btn-secondary">Reserve a Chapel</a>
+        </div>
+      </article>
+
+      <!-- ========== CREMATION SERVICES ========== -->
+      <article
+        class="full-service-card service-card"
+        data-category="cremation"
+        data-service-id="cremation-services"
+      >
+        <img
+          src="assets/images/services/cremation.jpg"
+          class="full-service-img"
+          alt="Cremation Services"
+        />
+        <h2>Cremation Services</h2>
+        <p class="service-description">
+          Respectful and carefully managed cremation services, whether part of a viewing
+          package or arranged as a direct cremation.
+        </p>
+        <ul class="service-details">
+          <li>Standard cremation service</li>
+          <li>Direct cremation (no chapel viewing)</li>
+          <li>Coordination with families & documents</li>
+          <li>Use of crematorium & waiting area</li>
+          <li>Optional liturgical rites</li>
+        </ul>
+        <div class="service-actions">
+          <button class="btn-primary view-details-btn" data-service-id="cremation-services">
+            View Cremation Options
+          </button>
+          <a href="inquiry.html" class="btn-secondary">Arrange Cremation</a>
+        </div>
+      </article>
+
+      <!-- ========== CREMATION URNS ========== -->
+      <article
+        class="full-service-card service-card"
+        data-category="cremation"
+        data-service-id="cremation-urns"
+      >
+        <div class="urn-slider" data-slider="urns">
+          <button class="slider-arrow left-arrow" data-slider="urns">&#10094;</button>
+
+          <div class="slider-images">
+            <img src="assets/images/services/urns1.jpg" class="urn-slide active" alt="Urn Image 1">
+            <img src="assets/images/services/urns2.jpg" class="urn-slide" alt="Urn Image 2">
+            <img src="assets/images/services/urns3.jpg" class="urn-slide" alt="Urn Image 3">
+          </div>
+
+          <button class="slider-arrow right-arrow" data-slider="urns">&#10095;</button>
+
+          <div class="slider-dots" data-slider="urns"></div>
+        </div>
+        <h2>Cremation Urns</h2>
+        <p class="service-description">
+          A selection of dignified urns to honor the memory of your loved one, suitable for
+          both columbarium placement and home keeping.
+        </p>
+        <ul class="service-details">
+          <li>Marble urn – approx. ₱3,500</li>
+          <li>Aluminum metal urn – approx. ₱5,000</li>
+          <li>Metal brass urn – approx. ₱18,000</li>
+          <li>Classic and modern designs available</li>
+        </ul>
+        <div class="service-actions">
+          <button class="btn-primary view-details-btn" data-service-id="cremation-urns">
+            View Urn Details
+          </button>
+          <a href="inquiry.html" class="btn-secondary">Inquire About Urns</a>
+        </div>
+      </article>
+
+      <!-- ========== CREMATION SERVICE PLAN ========== -->
+      <article
+        class="full-service-card service-card"
+        data-category="plans cremation"
+        data-service-id="cremation-plan"
+      >
+        <img
+          src="assets/images/services/cremation-services.jpg"
+          class="full-service-img"
+          alt="Cremation Plan"
+        />
+        <h2>Cremation Service Plan</h2>
+        <p class="service-description">
+          A flexible, pre-need cremation service plan exclusively for columbarium unit
+          owners, designed to ease future arrangements.
+        </p>
+        <p class="service-price">Contract value: ₱21,000 per plan</p>
+        <ul class="service-details">
+          <li>Exclusive to columbarium unit owners</li>
+          <li>Transferable and assignable</li>
+          <li>Up to 4 plans per unit owner</li>
+          <li>1-year or 2-year payment options</li>
+        </ul>
+        <div class="service-actions">
+          <button class="btn-primary view-details-btn" data-service-id="cremation-plan">
+            View Plan Details
+          </button>
+          <a href="#cremationPlanCalculator" class="btn-secondary">
+            Calculate Monthly Payment
+          </a>
+        </div>
+      </article>
+
+      <!-- ========== FUNERAL SERVICE REFERRAL ========== -->
+      <article
+        class="full-service-card service-card"
+        data-category="plans"
+        data-service-id="funeral-referral"
+      >
+        <img
+          src="assets/images/services/services.jpg"
+          class="full-service-img"
+          alt="Funeral Service Referral"
+        />
+        <h2>Funeral Service Referral</h2>
+        <p class="service-description">
+          Coordinated referral to funeral service providers, helping families connect with
+          trusted partners for complete funeral packages.
+        </p>
+        <ul class="service-details">
+          <li>Referral for full funeral service packages</li>
+          <li>Transparent referral fee guidelines</li>
+          <li>Coordination with main office for processing</li>
+          <li>Support for both cash and check payments</li>
+        </ul>
+        <div class="service-actions">
+          <button class="btn-primary view-details-btn" data-service-id="funeral-referral">
+            View Referral Details
+          </button>
+          <a href="inquiry.html" class="btn-secondary">Ask About Referrals</a>
+        </div>
+      </article>
+    </section>
+
+    <!-- COMPARISON SECTION -->
+    <section class="services-comparison">
+      <div class="container">
+        <h2 class="section-title">Compare Service Options</h2>
+        <p class="section-subtitle">
+          Quickly see the differences between chapel capacities, package rates, and urn
+          choices to help you decide what best fits your family’s needs.
+        </p>
+
+        <div class="comparison-tabs">
+          <button class="comparison-tab active" data-target="compare-chapel-packages">
+            Chapel Packages
+          </button>
+          <button class="comparison-tab" data-target="compare-chapel-rentals">
+            Chapel Rentals (Per Day)
+          </button>
+          <button class="comparison-tab" data-target="compare-urns">
+            Cremation Urns
+          </button>
+        </div>
+
+        <div class="comparison-tables">
+          <!-- Chapel Packages -->
+          <div
+            class="comparison-table active"
+            id="compare-chapel-packages"
+          >
+            <table>
+              <thead>
+                <tr>
+                  <th>Package</th>
+                  <th>Capacity (Approx.)</th>
+                  <th>Urn Viewing</th>
+                  <th>Casket Viewing</th>
+                  <th>Key Inclusions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Chapel A</td>
+                  <td>30–50 guests</td>
+                  <td>₱150,000</td>
+                  <td>₱200,000</td>
+                  <td>
+                    4D/3N viewing, chapel use, basic setup, liturgical service, amenities
+                  </td>
+                </tr>
+                <tr>
+                  <td>Chapel B</td>
+                  <td>75–100 guests</td>
+                  <td>₱250,000</td>
+                  <td>₱300,000</td>
+                  <td>
+                    Larger chapel space, extended seating, full viewing setup & support
+                  </td>
+                </tr>
+                <tr>
+                  <td>Main Chapel</td>
+                  <td>100–150 guests</td>
+                  <td>₱350,000</td>
+                  <td>₱400,000</td>
+                  <td>
+                    Grand chapel, ideal for bigger gatherings with complete amenities
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="comparison-note">
+              Senior Citizen & PWD discounts apply in accordance with existing regulations.
+            </p>
+          </div>
+
+          <!-- Chapel Rentals -->
+          <div class="comparison-table" id="compare-chapel-rentals">
+            <table>
+              <thead>
+                <tr>
+                  <th>Chapel</th>
+                  <th>Capacity (Approx.)</th>
+                  <th>Daily Rental Rate</th>
+                  <th>Best For</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Chapel A</td>
+                  <td>30–50 guests</td>
+                  <td>₱75,000 / day</td>
+                  <td>Intimate family gatherings</td>
+                </tr>
+                <tr>
+                  <td>Chapel B</td>
+                  <td>75–100 guests</td>
+                  <td>₱150,000 / day</td>
+                  <td>Medium-sized services & groups</td>
+                </tr>
+                <tr>
+                  <td>Main Chapel</td>
+                  <td>100–150 guests</td>
+                  <td>₱225,000 / day</td>
+                  <td>Large services and memorial events</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="comparison-note">
+              Includes viewing setup and use of facilities; rates are subject to applicable
+              discounts where eligible.
+            </p>
+          </div>
+
+          <!-- Cremation Urns -->
+          <div class="comparison-table" id="compare-urns">
+            <table>
+              <thead>
+                <tr>
+                  <th>Urn Type</th>
+                  <th>Approximate Price</th>
+                  <th>Material</th>
+                  <th>Highlights</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Marble Urn</td>
+                  <td>₱3,500</td>
+                  <td>Marble</td>
+                  <td>Classic look, suitable for columbarium placement</td>
+                </tr>
+                <tr>
+                  <td>Aluminum Metal Urn</td>
+                  <td>₱5,000</td>
+                  <td>Aluminum Metal</td>
+                  <td>Lightweight, clean metallic finish</td>
+                </tr>
+                <tr>
+                  <td>Metal Brass Urn</td>
+                  <td>₱18,000</td>
+                  <td>Brass</td>
+                  <td>Premium finish, elegant and timeless design</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="comparison-note">
+              Final urn styles and prices may vary; please confirm current availability with
+              our office.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FACILITIES SHOWCASE -->
+    <section class="facilities-showcase">
+      <div class="container">
+        <h2 class="section-title">Inside The Sanctuary</h2>
+        <p class="section-subtitle">
+          Take a closer look at the key areas within The Sanctuary that support families
+          throughout the entire memorial journey.
+        </p>
+
+        <div class="facilities-slider">
+          <div class="facility-card">
+            <img
+              src="assets/images/services/main-chapel.jpg"
+              alt="Main Chapel"
+            />
+            <h3>Main Chapel</h3>
+            <p>
+              A solemn and spacious chapel where funeral masses and memorial services
+              are held with dignity and reverence.
+            </p>
+          </div>
+
+          <div class="facility-card">
+            <img
+              src="assets/images/services/family-room.jpg"
+              alt="Family Room"
+            />
+            <h3>Family Rooms</h3>
+            <p>
+              Modern, comfortable rooms where family members can rest, stay close, and
+              gather in privacy during the viewing period.
+            </p>
+          </div>
+
+          <div class="facility-card">
+            <img
+              src="assets/images/services/prayer-room.jpg"
+              alt="Prayer Room"
+            />
+            <h3>Prayer Room</h3>
+            <p>
+              A quiet space dedicated to personal reflection, prayer, and spiritual
+              support for family and friends.
+            </p>
+          </div>
+
+          <div class="facility-card">
+            <img
+              src="assets/images/services/columbarium-facility.jpg"
+              alt="Columbarium"
+            />
+            <h3>Indoor Columbarium</h3>
+            <p>
+              A serene and secured columbarium hall where urns are respectfully housed
+              in well-designed vaults.
+            </p>
+          </div>
+
+          <div class="facility-card">
+            <img
+              src="assets/images/services/mortuary.jpg"
+              alt="Mortuary"
+            />
+            <h3>Mortuary</h3>
+            <p>
+              Professional preparation area where the remains of loved ones are carefully
+              attended to before viewing or cremation.
+            </p>
+          </div>
+
+          <div class="facility-card">
+            <img
+              src="assets/images/services/waiting-area.jpg"
+              alt="Waiting Area"
+            />
+            <h3>Waiting & Viewing Areas</h3>
+            <p>
+              Comfortable spaces for relatives and guests while cremation or services
+              are ongoing, with access to basic amenities.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CREMATION PLAN CALCULATOR -->
+    <section class="cremation-plan-calculator" id="cremationPlanCalculator">
+      <div class="container">
+        <h2 class="section-title">Cremation Service Plan Estimator</h2>
+        <p class="section-subtitle">
+          Get a quick idea of how much your monthly payments may be for the Cremation
+          Service Plan. Final figures will still be confirmed by our office.
+        </p>
+
+        <div class="calculator-grid">
+          <div class="calculator-info">
+            <h3>Plan Overview</h3>
+            <ul>
+              <li>Contract value per plan: <strong>₱21,000</strong></li>
+              <li>Exclusively for columbarium unit owners</li>
+              <li>Transferable and assignable</li>
+              <li>Up to 4 plans per unit owner</li>
+            </ul>
+            <p class="calculator-note">
+              This estimator is for guidance only and does not replace an official
+              computation from The Sanctuary.
+            </p>
+          </div>
+
+          <div class="calculator-form-wrapper">
+            <form id="planCalculatorForm">
+              <div class="calc-row">
+                <label for="planCount">Number of plans:</label>
+                <input
+                  type="number"
+                  id="planCount"
+                  min="1"
+                  max="4"
+                  value="1"
+                  required
+                />
+              </div>
+
+              <div class="calc-row">
+                <label for="planTerm">Payment term:</label>
+                <select id="planTerm">
+                  <option
+                    value="1year"
+                    data-months="12"
+                    data-monthly="1750"
+                  >
+                    1 year – ₱1,750/month (0% interest)
+                  </option>
+                  <option
+                    value="2years"
+                    data-months="24"
+                    data-monthly="970"
+                  >
+                    2 years – ₱970/month (with interest)
+                  </option>
+                </select>
+              </div>
+
+              <button type="submit" class="btn-primary">Calculate</button>
+            </form>
+
+            <div id="planResult" class="calc-result">
+              <p>Select your preferred term and number of plans to see an estimate.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- SERVICE DETAILS MODAL -->
+  <div id="serviceModal" class="service-modal hidden">
+    <div class="service-modal-backdrop"></div>
+    <div class="service-modal-content">
+      <button class="modal-close" aria-label="Close details">&times;</button>
+
+      <h3 id="modalTitle">Service Title</h3>
+      <p id="modalPrice" class="modal-price"></p>
+      <p id="modalDescription" class="modal-description"></p>
+
+      <div class="modal-columns">
+        <div class="modal-column">
+          <h4>Inclusions</h4>
+          <ul id="modalInclusions"></ul>
+        </div>
+        <div class="modal-column">
+          <h4>Freebies & Amenities</h4>
+          <ul id="modalFreebies"></ul>
+        </div>
+      </div>
+
+      <p id="modalNotes" class="modal-notes"></p>
+
+      <div class="modal-actions">
+        <a
+          id="modalInquireBtn"
+          href="inquiry.html"
+          class="btn-primary"
+        >
+          Inquire About This Service
+        </a>
+        <button class="btn-secondary modal-close">Close</button>
+      </div>
+    </div>
   </div>
-</header>
-
-<!-- MAIN TITLE -->
-<section class="services-header">
-  <h1>Our Services</h1>
-  <p>Explore the full range of memorial and chapel services we offer — complete details available only to registered users.</p>
-</section>
-
-<!-- MAIN GRID -->
-<section class="services-full-grid">
-
-  <!-- ========== 1. SANCTUARY FACILITIES ========== -->
-  <div class="full-service-card">
-    <img src="assets/images/services/main-chapel.jpg" class="full-service-img" alt="Main Chapel">
-    <h2>Sanctuary Facilities</h2>
-    <p class="service-description">
-      Our facilities are designed to offer a serene and dignified environment for families and loved ones.
-    </p>
-    
-    <ul class="service-details">
-      <li>Administrative Office</li>
-      <li>Main Chapel</li>
-      <li>Chapel Family Room</li>
-      <li>Prayer Room</li>
-      <li>Viewing Area</li>
-      <li>PWD-Friendly Comfort Rooms</li>
-      <li>Columbarium Facility</li>
-      <li>Mortuary</li>
-      <li>Waiting Area</li>
-    </ul>
-  </div>
-
-  <!-- ========== 2. COLUMBARIUM ========== -->
-  <div class="full-service-card">
-    <img src="assets/images/services/columbarium-hall.jpg" class="full-service-img" alt="Columbarium Hall">
-    <h2>Columbarium Products</h2>
-
-    <p class="service-description">Premium vaults designed for families seeking a serene and lasting memorial space.</p>
-
-    <ul class="service-details">
-      <li>Regular Vault (4 Urns)</li>
-      <li>Special Cut Vault (8 Urns)</li>
-      <li>Personalized Nameplates</li>
-      <li>Vault Level Options</li>
-      <li>Temperature-Controlled Columbarium Hall</li>
-    </ul>
-  </div>
-
-  <!-- ========== 3. VIEWING PACKAGES ========== -->
-  <div class="full-service-card">
-    <img src="assets/images/services/viewing-casket.jpg" class="full-service-img" alt="Viewing Package">
-    <h2>Viewing Packages</h2>
-
-    <p class="service-description">Complete viewing services for both urn and casket setups.</p>
-
-    <ul class="service-details">
-      <li>Urn Viewing Setup</li>
-      <li>Casket Viewing Setup</li>
-      <li>Chapel Rental Options</li>
-      <li>Viewing Package Inclusions</li>
-      <li>Freebies & Amenities</li>
-      <li>Use of Chapel A, Chapel B, or Main Chapel</li>
-    </ul>
-  </div>
-
-  <!-- ========== 4. CREMATION SERVICES ========== -->
-  <div class="full-service-card">
-    <img src="assets/images/services/cremation-setup.jpg" class="full-service-img" alt="Cremation Service">
-    <h2>Cremation Services</h2>
-
-    <p class="service-description">Dignified cremation services with professional care.</p>
-
-    <ul class="service-details">
-      <li>Direct Cremation</li>
-      <li>Cremation Service Plans</li>
-      <li>Marble, Aluminum & Brass Urns</li>
-      <li>Coordination & Documentation</li>
-      <li>Referral Fee Details</li>
-    </ul>
-  </div>
-
-</section>
-
 </body>
 </html>

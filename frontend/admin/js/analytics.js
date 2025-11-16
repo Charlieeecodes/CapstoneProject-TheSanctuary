@@ -1284,164 +1284,354 @@ function appendNewCharts() {
 // ==============================
 if (previewBtn && exportPdfBtn) {
   // 🧠 Preview PDF in new tab
-  previewBtn.addEventListener('click', async () => {
-    const selected = {
-      inquiries: document.getElementById('exportInquiries')?.checked,
-      services: document.getElementById('exportServices')?.checked,
-      totalServices: document.getElementById('exportTotalServices')?.checked,
-      feedbacks: document.getElementById('exportFeedbacks')?.checked
-    };
+// ===============================
+// 📄 PREVIEW PDF (TABULAR VERSION)
+// ===============================
+previewBtn.addEventListener('click', async () => {
+  const selected = {
+    inquiries: document.getElementById('exportInquiries')?.checked,
+    services: document.getElementById('exportServices')?.checked,
+    totalServices: document.getElementById('exportTotalServices')?.checked,
+    feedbacks: document.getElementById('exportFeedbacks')?.checked
+  };
 
-    const rangeType = exportRangeSelect.value;
-    const start = startDateInput?.value || null;
-    const end = endDateInput?.value || null;
+  const rangeType = exportRangeSelect.value;
+  const start = startDateInput?.value || null;
+  const end = endDateInput?.value || null;
 
-    console.log('👁️ [Preview PDF Triggered]', { selected, rangeType, start, end });
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  let yPos = 50;
+  const pageWidth = pdf.internal.pageSize.getWidth();
 
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pageWidth = pdf.internal.pageSize.getWidth();
+  // =============================
+  // HEADER
+  // =============================
+  try {
+    const logo = new Image();
+    logo.src = 'icons/logo.PNG';
+    await new Promise(resolve => { logo.onload = resolve; });
+    pdf.addImage(logo, 'PNG', 10, 20, 59, 22);
+  } catch {}
 
-    // 🏢 Header
-    try {
-      const logo = new Image();
-      logo.src = 'icons/logo.PNG'; // adjust path if needed
-      await new Promise(resolve => { logo.onload = resolve; });
+  const baseX = 70;
 
-      const logoWidth = 59;
-      const logoHeight = 22;
-      pdf.addImage(logo, 'PNG', 10, 20, logoWidth, logoHeight);
-    } catch (e) {
-      console.warn('⚠️ Logo failed to load for PDF header');
-    }
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(16);
+  pdf.text('The Sanctuary Analytics Report (Preview)', baseX, 25);
 
-    const baseX = 70;
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(16);
-    pdf.text('The Sanctuary Analytics Report', baseX, 25);
-    pdf.setDrawColor(150);
-    pdf.setLineWidth(0.4);
-    pdf.line(baseX, 27, baseX + 110, 27);
+  pdf.setDrawColor(150);
+  pdf.setLineWidth(0.4);
+  pdf.line(baseX, 27, baseX + 110, 27);
 
-    const now = new Date();
-    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-    const formattedDate = now.toLocaleString('en-US', options);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(10);
+  pdf.text(`Report Created: ${new Date().toLocaleString()}`, baseX, 33);
 
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(10);
-    pdf.text(`Report Created: ${formattedDate}`, baseX, 33);
+  // ----- FIXED CUSTOM RANGE -----
+  let safeStart = start ? start : "N/A";
+  let safeEnd = end ? end : "N/A";
 
-    const dateLabel =
-      rangeType === 'custom'
-        ? `Period: (${start || 'N/A'} - ${end || 'N/A'})`
-        : `Period: ${rangeType.charAt(0).toUpperCase() + rangeType.slice(1)}`;
-    pdf.text(dateLabel, baseX, 38);
+  const periodLabel =
+    rangeType === "custom"
+      ? `Analysis Period: ${safeStart} - ${safeEnd}`
+      : `Analysis Period: ${rangeType}`;
 
-    let yPos = 50;
+  pdf.text(periodLabel, baseX, 38);
 
-  // 📊 Helper: Add Chart + Safe Insight Text to PDF (taller chart version)
-  async function addChartToPDF(chartId, title) {
-    const chartCanvas = document.getElementById(chartId);
-    if (!chartCanvas) return;
-
-    // 🖼️ Capture chart with white background and a bit of scaling for clarity
-    const canvasImg = await html2canvas(chartCanvas, {
-      backgroundColor: '#fff',
-      scale: 1.5 // sharper export
-    });
-
-    const imgData = canvasImg.toDataURL('image/png');
-    const imgWidth = pageWidth - 30;
-
-    // 🟩 Adjusted height scaling — make charts taller
-    const heightFactor = 0.85; // 👈 you can tweak this: 0.75 (shorter), 0.85 (balanced), 1.0 (tallest)
-    const imgHeight = ((canvasImg.height * imgWidth) / canvasImg.width) * heightFactor;
-
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const bottomMargin = 20;
-
-    // 🧭 Check before drawing chart — if not enough space, go to new page first
-    if (yPos + imgHeight + 40 > pageHeight - bottomMargin) {
-      pdf.addPage();
-      yPos = 40; // reset top margin
-    }
-
-    // 🏷️ Chart title
+  // =============================
+  // TABLE SECTION BUILDER
+  // =============================
+  function addSection(title, insightText, headers, rows) {
+    // Title
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(13);
     pdf.text(title, 10, yPos);
     yPos += 6;
 
-    // 🖼️ Add chart image
-    pdf.addImage(imgData, 'PNG', 10, yPos, imgWidth, imgHeight);
-    yPos += imgHeight + 10;
-
-    // 📊 Generate simple insights
-    let insightText = '';
-    const chartInstance =
-      chartId === 'inquiriesTrendChart' ? window.inquiriesTrendChartInstance :
-      chartId === 'servicesTrendChart' ? window.serviceTrendChartInstance :
-      chartId === 'topServicesChart' ? window.topServicesChartInstance :
-      chartId === 'servicesBreakdownChart' ? window.feedbackBreakdownChart : null;
-
-    if (chartInstance) {
-      const data = chartInstance.data.datasets[0].data.map(Number);
-      const labels = chartInstance.data.labels;
-      const max = Math.max(...data);
-      const min = Math.min(...data);
-      const avg = (data.reduce((a, b) => a + b, 0) / data.length).toFixed(2);
-      const maxLabel = labels[data.indexOf(max)];
-      const minLabel = labels[data.indexOf(min)];
-
-      if (chartId === 'inquiriesTrendChart') {
-        insightText = `Inquiries peaked on ${maxLabel} (${max}) and were lowest on ${minLabel} (${min}). Average inquiries per period: ${avg}.`;
-      } else if (chartId === 'servicesTrendChart') {
-        insightText = `Service completions reached a high of ${max} in ${maxLabel}. Average completions per period: ${avg}.`;
-      } else if (chartId === 'topServicesChart') {
-        const topService = labels[data.indexOf(max)];
-        insightText = `Most availed service: "${topService}" (${max}). Least requested: "${minLabel}" (${min}).`;
-      } else if (chartId === 'servicesBreakdownChart') {
-        const topAspect = labels[data.indexOf(max)];
-        insightText = `Highest rated aspect: "${topAspect}" (${max}/5). Average rating across all aspects: ${avg}/5.`;
-      }
-    }
-
-    // 🧭 Check before writing text — if not enough space, start new page
+    // Insight
     if (insightText) {
       const wrapped = pdf.splitTextToSize(insightText, pageWidth - 20);
-      if (yPos + wrapped.length * 5 + 30 > pageHeight - bottomMargin) {
-        pdf.addPage();
-        yPos = 40;
-      }
-
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(10);
       pdf.text(wrapped, 10, yPos);
-      yPos += wrapped.length * 5 + 12;
+      yPos += wrapped.length * 5 + 6;
+    }
+
+    // Table
+    pdf.autoTable({
+      startY: yPos,
+      head: [headers],
+      body: rows,
+      theme: 'grid',
+      headStyles: { fillColor: [60, 141, 66] },
+      styles: { fontSize: 10 }
+    });
+
+    yPos = pdf.lastAutoTable.finalY + 15;
+
+    if (yPos > 250) {
+      pdf.addPage();
+      yPos = 20;
     }
   }
 
+  // =============================
+  // 📊 INQUIRIES TREND (TABULAR)
+  // =============================
+  if (selected.inquiries) {
+    const chart = window.inquiriesTrendChartInstance;
+    if (chart) {
+      const labels = chart.data.labels;
+      const values = chart.data.datasets[0].data.map(Number);
 
+      const max = Math.max(...values);
+      const min = Math.min(...values);
+      const avg = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2);
 
-  // 🔹 Capture selected charts in order
-  if (selected.inquiries)
-    await addChartToPDF('inquiriesTrendChart', 'Inquiries Trend');
+      const insight = `Inquiries peaked on ${labels[values.indexOf(max)]} (${max}). 
+      Lowest on ${labels[values.indexOf(min)]} (${min}). 
+      Average inquiries per period: ${avg}.`;
 
-  if (selected.services)
-    await addChartToPDF('topServicesChart', 'Top Services Availed'); // FIXED
+      const rows = labels.map((lbl, i) => [lbl, values[i]]);
 
-  if (selected.totalServices)
-    await addChartToPDF('servicesTrendChart', 'Total Services Availed Trend'); // FIXED
+      addSection('Inquiries Trend', insight, ['Period', 'Inquiries'], rows);
+    }
+  }
 
-  if (selected.feedbacks)
-    await addChartToPDF('servicesBreakdownChart', 'Feedback Ratings per Service');
+  // =============================
+  // 📊 TOP SERVICES AVAILED
+  // =============================
+  if (selected.services) {
+    const chart = window.topServicesChartInstance;
 
-    // 👁️ Instead of saving, open preview in new tab
-    const pdfBlob = pdf.output('blob');
-    const pdfURL = URL.createObjectURL(pdfBlob);
-    window.open(pdfURL, '_blank');
-  });
+    if (chart) {
+      const labels = chart.data.labels;
+      const values = chart.data.datasets[0].data.map(Number);
+      const max = Math.max(...values);
 
+      const insight = `Most availed service: "${labels[values.indexOf(max)]}" (${max}).`;
+
+      const rows = labels.map((label, i) => [label, values[i]]);
+
+      addSection('Top Services Availed', insight, ['Service', 'Total Availed'], rows);
+    }
+  }
+
+  // =============================
+  // 📊 TOTAL SERVICES AVAILED TREND
+  // =============================
+  if (selected.totalServices) {
+    const chart = window.serviceTrendChartInstance;
+
+    if (chart) {
+      const labels = chart.data.labels;
+      const values = chart.data.datasets[0].data.map(Number);
+      const max = Math.max(...values);
+
+      const insight = `Service completions peaked at ${max} during ${labels[values.indexOf(max)]}.`;
+
+      const rows = labels.map((lbl, i) => [lbl, values[i]]);
+
+      addSection('Total Services Availed Trend', insight, ['Period', 'Total'], rows);
+    }
+  }
+
+  // =============================
+  // 📊 FEEDBACK BREAKDOWN
+  // =============================
+  if (selected.feedbacks) {
+    const chart = window.feedbackBreakdownChart;
+
+    if (chart) {
+      const labels = chart.data.labels;
+      const values = chart.data.datasets[0].data.map(Number);
+      const max = Math.max(...values);
+
+      const insight = `Highest rated aspect: "${labels[values.indexOf(max)]}" (${max}/5).`;
+
+      const rows = labels.map((lbl, i) => [lbl, values[i]]);
+
+      addSection(
+        'Feedback Ratings Breakdown',
+        insight,
+        ['Rating Aspect', 'Average Score'],
+        rows
+      );
+    }
+  }
+
+  // =============================
+  // OPEN PREVIEW IN NEW TAB
+  // =============================
+  const pdfBlob = pdf.output('blob');
+  const pdfURL = URL.createObjectURL(pdfBlob);
+  window.open(pdfURL, '_blank');
+});
+
+  // 📊 Helper: Add Chart + Safe Insight Text to PDF (taller chart version)
+    async function generateAnalyticsPDF(selected, rangeType, start, end) {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    let yPos = 50;
+
+    // ============================
+    // 🔹 HEADER
+    // ============================
+    try {
+      const logo = new Image();
+      logo.src = 'icons/logo.PNG';
+      await new Promise(resolve => { logo.onload = resolve; });
+      pdf.addImage(logo, 'PNG', 10, 20, 59, 22);
+    } catch {}
+
+    const baseX = 70;
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(16);
+    pdf.text('The Sanctuary Analytics Report', baseX, 25);
+
+    pdf.setDrawColor(150);
+    pdf.setLineWidth(0.4);
+    pdf.line(baseX, 27, baseX + 110, 27);
+
+    pdf.setFontSize(10);
+    pdf.text(`Report Created: ${new Date().toLocaleString()}`, baseX, 33);
+
+    const periodLabel =
+      rangeType === 'custom' ? `Analysis Period: ${start} - ${end}`
+                            : `Analysis Period: ${rangeType}`;
+    pdf.text(periodLabel, baseX, 38);
+
+    // ========================================================
+    // 🔧 UTILITY — Add DESCRIPTION + TABLE
+    // ========================================================
+    function addSection(title, insightText, headers, rows) {
+      // ---------- TITLE ----------
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(13);
+      pdf.text(title, 10, yPos);
+      yPos += 6;
+
+      // ---------- INSIGHT TEXT ----------
+      if (insightText) {
+        const wrappedInsight = pdf.splitTextToSize(insightText, pageWidth - 20);
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        pdf.text(wrappedInsight, 10, yPos);
+
+        yPos += wrappedInsight.length * 5 + 6;
+      }
+
+      // ---------- TABLE ----------
+      pdf.autoTable({
+        startY: yPos,
+        head: [headers],
+        body: rows,
+        theme: 'grid',
+        headStyles: { fillColor: [60, 141, 66] },
+        styles: { fontSize: 10 },
+        margin: { top: 8 }
+      });
+
+      yPos = pdf.lastAutoTable.finalY + 15;
+
+      if (yPos > 250) {
+        pdf.addPage();
+        yPos = 20;
+      }
+    }
+
+    // ========================================================
+    // 📊 1. INQUIRIES TREND
+    // ========================================================
+    if (selected.inquiries) {
+      const chart = window.inquiriesTrendChartInstance;
+
+      if (chart) {
+        const labels = chart.data.labels;
+        const values = chart.data.datasets[0].data.map(Number);
+
+        const max = Math.max(...values);
+        const min = Math.min(...values);
+        const avg = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2);
+
+        const insight =
+          `Inquiries peaked on ${labels[values.indexOf(max)]} (${max}). ` +
+          `Lowest on ${labels[values.indexOf(min)]} (${min}). ` +
+          `Average inquiries per period: ${avg}.`;
+
+        const rows = labels.map((lbl, i) => [lbl, values[i]]);
+
+        addSection('Inquiries Trend', insight, ['Period', 'Inquiries'], rows);
+      }
+    }
+
+    // ========================================================
+    // 📊 2. TOP SERVICES AVAILED
+    // ========================================================
+    if (selected.services) {
+      const chart = window.topServicesChartInstance;
+
+      if (chart) {
+        const labels = chart.data.labels;
+        const values = chart.data.datasets[0].data.map(Number);
+
+        const max = Math.max(...values);
+        const insight =
+          `The most availed service is "${labels[values.indexOf(max)]}" (${max}).`;
+
+        const rows = labels.map((lbl, i) => [lbl, values[i]]);
+
+        addSection('Top Services Availed', insight, ['Service', 'Total'], rows);
+      }
+    }
+
+    // ========================================================
+    // 📊 3. TOTAL SERVICES AVAILED (TREND)
+    // ========================================================
+    if (selected.totalServices) {
+      const chart = window.serviceTrendChartInstance;
+
+      if (chart) {
+        const labels = chart.data.labels;
+        const values = chart.data.datasets[0].data.map(Number);
+
+        const max = Math.max(...values);
+        const insight =
+          `Service completions reached a peak of ${max} during ${labels[values.indexOf(max)]}.`;
+
+        const rows = labels.map((lbl, i) => [lbl, values[i]]);
+
+        addSection('Total Services Availed Trend', insight, ['Period', 'Total'], rows);
+      }
+    }
+
+    // ========================================================
+    // 📊 4. FEEDBACK BREAKDOWN
+    // ========================================================
+    if (selected.feedbacks) {
+      const chart = window.feedbackBreakdownChart;
+
+      if (chart) {
+        const labels = chart.data.labels;
+        const values = chart.data.datasets[0].data.map(Number);
+
+        const max = Math.max(...values);
+        const insight =
+          `Highest rated aspect is "${labels[values.indexOf(max)]}" (${max}/5).`;
+
+        const rows = labels.map((lbl, i) => [lbl, values[i]]);
+
+        addSection('Feedback Ratings Breakdown', insight, ['Aspect', 'Average Rating'], rows);
+      }
+    }
+
+    // -------
+    pdf.save('The_Sanctuary_Analytics_Report.pdf');
+  }
   // 📄 Export PDF - download version
   exportPdfBtn.addEventListener('click', async () => {
     const selected = {
@@ -1460,156 +1650,143 @@ if (previewBtn && exportPdfBtn) {
   });
 }
 
-// ==============================
-// 🧾 PDF Export Functionality
-// ==============================
 async function generateAnalyticsPDF(selected, rangeType, start, end) {
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF('p', 'mm', 'a4');
   const pageWidth = pdf.internal.pageSize.getWidth();
+  let yPos = 50;
 
-  // 🏢 Header: Logo + Title + Underline + Timestamp + Period
+  // ============================
+  // 🔹 HEADER
+  // ============================
   try {
     const logo = new Image();
-    logo.src = 'icons/logo.PNG'; // adjust path if needed
+    logo.src = 'icons/logo.PNG';
     await new Promise(resolve => { logo.onload = resolve; });
+    pdf.addImage(logo, 'PNG', 10, 20, 59, 22);
+  } catch {}
 
-    const logoWidth = 59;
-    const logoHeight = 22;
-    pdf.addImage(logo, 'PNG', 10, 20, logoWidth, logoHeight);
-  } catch (e) {
-    console.warn('⚠️ Logo failed to load for PDF header');
-  }
-  const baseX = 70; 
-  // 🖋️ Title
+  const baseX = 70;
+
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(16);
   pdf.text('The Sanctuary Analytics Report', baseX, 25);
 
-  // 🔹 Underline (shorter + softer gray)
-  pdf.setDrawColor(150); // gray tone
+  pdf.setDrawColor(150);
   pdf.setLineWidth(0.4);
-  pdf.line(baseX, 27, baseX + 110, 27); // shorter underline below title
+  pdf.line(baseX, 27, baseX + 110, 27);
 
-  // 🕒 Generate date & time
   const now = new Date();
-  const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-  const formattedDate = now.toLocaleString('en-US', options);
-
-  pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(10);
-  pdf.text(`Report Created: ${formattedDate}`, baseX, 33);
+  pdf.text(`Report Created: ${now.toLocaleString()}`, baseX, 33);
 
-  // 📅 Period Label
-  let periodLabel = '';
-  if (rangeType === 'custom' && start && end) {
-    periodLabel = `Analysis Period: (${start} - ${end})`;
-  } else {
-    periodLabel = `Analysis Period: ${rangeType.charAt(0).toUpperCase() + rangeType.slice(1)}`;
-  }
+  let safeStart = start ? start : "N/A";
+  let safeEnd = end ? end : "N/A";
 
-  pdf.setFontSize(10);
+  const periodLabel =
+    rangeType === 'custom'
+      ? `Analysis Period: ${safeStart} - ${safeEnd}`
+      : `Analysis Period: ${rangeType}`;
+
   pdf.text(periodLabel, baseX, 38);
 
-  let yPos = 50; // Charts start lower now
-  // 📊 Helper: Add Chart + Safe Insight Text to PDF (taller chart version)
-  async function addChartToPDF(chartId, title) {
-    const chartCanvas = document.getElementById(chartId);
-    if (!chartCanvas) return;
 
-    // 🖼️ Capture chart with white background and a bit of scaling for clarity
-    const canvasImg = await html2canvas(chartCanvas, {
-      backgroundColor: '#fff',
-      scale: 1.5 // sharper export
-    });
-
-    const imgData = canvasImg.toDataURL('image/png');
-    const imgWidth = pageWidth - 30;
-
-    // 🟩 Adjusted height scaling — make charts taller
-    const heightFactor = 0.85; // 👈 you can tweak this: 0.75 (shorter), 0.85 (balanced), 1.0 (tallest)
-    const imgHeight = ((canvasImg.height * imgWidth) / canvasImg.width) * heightFactor;
-
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const bottomMargin = 20;
-
-    // 🧭 Check before drawing chart — if not enough space, go to new page first
-    if (yPos + imgHeight + 40 > pageHeight - bottomMargin) {
-      pdf.addPage();
-      yPos = 40; // reset top margin
-    }
-
-    // 🏷️ Chart title
+  // ========================================================
+  // 🔧 UTILITY — Add Table to PDF with Paging Support
+  // ========================================================
+  function addTable(title, headers, rows) {
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(13);
     pdf.text(title, 10, yPos);
-    yPos += 6;
+    yPos += 4;
 
-    // 🖼️ Add chart image
-    pdf.addImage(imgData, 'PNG', 10, yPos, imgWidth, imgHeight);
-    yPos += imgHeight + 10;
+    pdf.autoTable({
+      startY: yPos,
+      head: [headers],
+      body: rows,
+      theme: 'grid',
+      headStyles: { fillColor: [60, 141, 66] },
+      styles: { fontSize: 10 },
+      margin: { top: 8 }
+    });
 
-    // 📊 Generate simple insights
-    let insightText = '';
-    const chartInstance =
-      chartId === 'inquiriesTrendChart' ? window.inquiriesTrendChartInstance :
-      chartId === 'servicesTrendChart' ? window.serviceTrendChartInstance :
-      chartId === 'topServicesChart' ? window.topServicesChartInstance :
-      chartId === 'servicesBreakdownChart' ? window.feedbackBreakdownChart : null;
+    yPos = pdf.lastAutoTable.finalY + 12;
 
-    if (chartInstance) {
-      const data = chartInstance.data.datasets[0].data.map(Number);
-      const labels = chartInstance.data.labels;
-      const max = Math.max(...data);
-      const min = Math.min(...data);
-      const avg = (data.reduce((a, b) => a + b, 0) / data.length).toFixed(2);
-      const maxLabel = labels[data.indexOf(max)];
-      const minLabel = labels[data.indexOf(min)];
-
-      if (chartId === 'inquiriesTrendChart') {
-        insightText = `Inquiries peaked on ${maxLabel} (${max}) and were lowest on ${minLabel} (${min}). Average inquiries per period: ${avg}.`;
-      } else if (chartId === 'servicesTrendChart') {
-        insightText = `Service completions reached a high of ${max} in ${maxLabel}. Average completions per period: ${avg}.`;
-      } else if (chartId === 'topServicesChart') {
-        const topService = labels[data.indexOf(max)];
-        insightText = `Most availed service: "${topService}" (${max}). Least requested: "${minLabel}" (${min}).`;
-      } else if (chartId === 'servicesBreakdownChart') {
-        const topAspect = labels[data.indexOf(max)];
-        insightText = `Highest rated aspect: "${topAspect}" (${max}/5). Average rating across all aspects: ${avg}/5.`;
-      }
-    }
-
-    // 🧭 Check before writing text — if not enough space, start new page
-    if (insightText) {
-      const wrapped = pdf.splitTextToSize(insightText, pageWidth - 20);
-      if (yPos + wrapped.length * 5 + 30 > pageHeight - bottomMargin) {
-        pdf.addPage();
-        yPos = 40;
-      }
-
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.text(wrapped, 10, yPos);
-      yPos += wrapped.length * 5 + 12;
+    // If close to bottom, add new page
+    if (yPos > 250) {
+      pdf.addPage();
+      yPos = 20;
     }
   }
 
-  // 🔹 Capture selected charts in order
-  if (selected.inquiries)
-    await addChartToPDF('inquiriesTrendChart', 'Inquiries Trend');
+  // ========================================================
+  // 📊 1. INQUIRIES TREND (Tabular)
+  // ========================================================
+  if (selected.inquiries) {
+    const chart = window.inquiriesTrendChartInstance;
 
-  if (selected.services)
-    await addChartToPDF('topServicesChart', 'Top Services Availed'); // FIXED
+    if (chart) {
+      const labels = chart.data.labels;
+      const values = chart.data.datasets[0].data.map(Number);
 
-  if (selected.totalServices)
-    await addChartToPDF('servicesTrendChart', 'Total Services Availed Trend'); // FIXED
+      const rows = labels.map((lbl, i) => [lbl, values[i]]);
 
-  if (selected.feedbacks)
-    await addChartToPDF('servicesBreakdownChart', 'Feedback Ratings per Service');
+      addTable('Inquiries Trend Table', ['Period', 'Total Inquiries'], rows);
+    }
+  }
 
-  // ✅ Save the generated file
+  // ========================================================
+  // 📊 2. TOP SERVICES AVAILED TABLE
+  // ========================================================
+  if (selected.services) {
+    const chart = window.topServicesChartInstance;
+
+    if (chart) {
+      const labels = chart.data.labels;
+      const values = chart.data.datasets[0].data.map(Number);
+
+      const rows = labels.map((service, i) => [service, values[i]]);
+
+      addTable('Top Services Availed', ['Service', 'Total Availed'], rows);
+    }
+  }
+
+  // ========================================================
+  // 📊 3. SERVICE TREND (Total Services Availed)
+  // ========================================================
+  if (selected.totalServices) {
+    const chart = window.serviceTrendChartInstance;
+
+    if (chart) {
+      const labels = chart.data.labels;
+      const values = chart.data.datasets[0].data.map(Number);
+
+      const rows = labels.map((lbl, i) => [lbl, values[i]]);
+
+      addTable('Services Trend Table', ['Period', 'Services Availed'], rows);
+    }
+  }
+
+  // ========================================================
+  // 📊 4. FEEDBACK RATINGS (Tabular)
+  // ========================================================
+  if (selected.feedbacks) {
+    const chart = window.feedbackBreakdownChart;
+
+    if (chart) {
+      const labels = chart.data.labels;
+      const values = chart.data.datasets[0].data.map(Number);
+
+      const rows = labels.map((label, i) => [label, values[i]]);
+
+      addTable('Feedback Ratings Breakdown', ['Rating Aspect', 'Average Score'], rows);
+    }
+  }
+
+  // SAVE
   pdf.save('The_Sanctuary_Analytics_Report.pdf');
 }
+
 
 // Linear regression: returns predicted next value
 function linearRegressionForecast(data) {

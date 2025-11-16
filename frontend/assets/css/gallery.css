@@ -1,3 +1,4 @@
+/* HEADER */
 .gallery-header {
   text-align: center;
   padding: 120px 20px 20px;
@@ -16,15 +17,16 @@
   margin: 10px auto 0;
 }
 
-/* FULL GALLERY GRID */
+/* PINTEREST / MASONRY GALLERY */
 .gallery-full-grid {
   padding: 40px 20px 100px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 25px;
+  column-count: 4;
+  column-gap: 20px;
 }
 
 .gallery-full-item {
+  break-inside: avoid;
+  margin-bottom: 20px;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 8px 18px rgba(0,0,0,0.4);
@@ -33,7 +35,8 @@
 
 .gallery-full-item img {
   width: 100%;
-  height: 260px;
+  height: auto;
+  display: block;
   object-fit: cover;
   transition: all 0.3s ease;
 }
@@ -41,4 +44,77 @@
 .gallery-full-item:hover img {
   transform: scale(1.07);
   opacity: 0.9;
+}
+
+/* Responsive Masonry Columns */
+@media (max-width: 1100px) {
+  .gallery-full-grid {
+    column-count: 3;
+  }
+}
+
+@media (max-width: 768px) {
+  .gallery-full-grid {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 500px) {
+  .gallery-full-grid {
+    column-count: 1;
+  }
+}
+/* =============================== */
+/* LIGHTBOX VIEWER (Fullscreen)   */
+/* =============================== */
+
+.lightbox.hidden {
+  display: none;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.lightbox-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(4px);
+}
+
+.lightbox-content {
+  position: relative;
+  z-index: 10000;
+  max-width: 90%;
+  max-height: 90%;
+}
+
+#lightbox-img {
+  width: 100%;
+  height: auto;
+  max-height: 90vh;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.8);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #ffd700;
+  border: none;
+  font-size: 26px;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  color: #222;
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
 }

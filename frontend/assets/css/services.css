@@ -1,3 +1,7 @@
+/* ============================= */
+/* SERVICES PAGE STYLES          */
+/* ============================= */
+
 .services-header {
   padding: 120px 20px 20px;
   text-align: center;
@@ -7,35 +11,75 @@
 .services-header h1 {
   color: #ffd700;
   font-size: 40px;
+  letter-spacing: 1px;
 }
 
 .services-header p {
   font-size: 16px;
   color: #eee;
-  max-width: 800px;
-  margin: 10px auto 0;
+  max-width: 820px;
+  margin: 12px auto 0;
+  line-height: 1.6;
 }
 
-/* FULL GRID */
+/* FILTER BAR */
+.services-filter-bar {
+  padding: 10px 20px 0;
+}
+
+.services-filter-bar .container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.filter-btn {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.45);
+  color: #f8f8f8;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.1s ease;
+}
+
+.filter-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 215, 0, 0.18);
+}
+
+.filter-btn.active {
+  background: #ffd700;
+  color: #222;
+  font-weight: 600;
+}
+
+/* MAIN GRID */
 .services-full-grid {
   padding: 40px 20px 80px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
   gap: 35px;
 }
 
 .full-service-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(6px);
-  border-radius: 12px;
-  padding: 25px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  border-radius: 14px;
+  padding: 24px;
   color: #fff;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.4);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .full-service-img {
   width: 100%;
-  height: 220px;
+  height: 280px;
   object-fit: cover;
   border-radius: 10px;
   margin-bottom: 15px;
@@ -43,17 +87,709 @@
 
 .full-service-card h2 {
   color: #ffd700;
-  font-size: 24px;
+  font-size: 22px;
+  margin-bottom: 6px;
+}
+
+.service-price {
+  font-weight: 600;
+  color: #ffe27a;
   margin-bottom: 8px;
 }
 
 .service-description {
   color: #f0f0f0;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .service-details {
   line-height: 1.6;
-  padding-left: 20px;
+  padding-left: 18px;
   color: #ddd;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+.service-details li {
+  margin-bottom: 4px;
+}
+
+.service-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+}
+.facility-card {
+  min-width: 320px;
+  max-width: 350px;
+}
+.facilities-slider {
+  gap: 24px;
+}
+
+/* ============================= */
+/* FACILITY SLIDER (INSIDE CARD) */
+/* ============================= */
+/* Default slider height (All Services view) */
+.facility-slider {
+  height: 260px;
+}
+.facility-slider .slide {
+  height: 500px;
+}
+
+/* Larger height ONLY when Facilities category is active */
+.facility-slider.large-slider {
+  height: 800px !important;
+}
+.facility-slider.large-slider .slide {
+  height: 800px !important;
+}
+
+.facility-slider {
+  position: relative;
+  width: 100%;
+  height: 230px;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.facility-slider .slider-images {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.facility-slider .slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 230px;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.facility-slider .slide.active {
+  opacity: 1;
+}
+
+.slider-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  font-size: 22px;
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 6px;
+  transition: background 0.3s ease;
+}
+
+.slider-arrow:hover {
+  background: rgba(0,0,0,0.7);
+}
+
+.left-arrow {
+  left: 10px;
+}
+
+.right-arrow {
+  right: 10px;
+}
+
+/* Dots */
+.slider-dots {
+  position: absolute;
+  bottom: 8px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  z-index: 10;
+}
+
+.slider-dots .dot {
+  width: 8px;
+  height: 8px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.slider-dots .dot.active {
+  background: #ffd700;
+}
+/* ============================= */
+/* COLUMBARIUM IMAGE SLIDER      */
+/* ============================= */
+
+.columbarium-slider {
+  position: relative;
+  width: 100%;
+  height: 500px; /* default size (All Services) */
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  transition: height 0.3s ease;
+}
+
+.columbarium-slider .col-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.columbarium-slider .col-slide.active {
+  opacity: 1;
+}
+
+.columbarium-slider {
+  height: 240px; /* default */
+}
+
+.columbarium-slider.large-col {
+  height: 800px !important; /* category enlarged */
+}
+.columbarium-slider .col-slide {
+  height: 240px;
+}
+
+.columbarium-slider.large-col .col-slide {
+  height: 800px !important;
+}
+
+/* ============================= */
+/* CREMATION URNS SLIDER         */
+/* ============================= */
+
+.urn-slider {
+  position: relative;
+  width: 100%;
+  height: 290px; /* default size in All Services */
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  transition: height 0.3s ease;
+}
+
+.urn-slider .urn-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 230px;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.urn-slider .urn-slide.active {
+  opacity: 1;
+}
+.urn-slider {
+  height: 300px;
+}
+.urn-slider .urn-slide {
+  height: 300px;
+}
+/* Larger height ONLY in Cremation category */
+.urn-slider.large-urn {
+  height: 330px !important;
+}
+
+.urn-slider.large-urn .urn-slide {
+  height: 330px !important;
+}
+
+/* Dots + Arrows (reuse same style as facilities slider) */
+
+/* === MAKE MAIN CONTENT WIDER === */
+.container {
+  max-width: 1400px !important;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Make the services grid stretch wider */
+.services-full-grid {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* In case global .btn-primary / .btn-secondary were removed before */
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.1s ease;
+}
+
+.btn-primary {
+  background: #ffd700;
+  color: #222;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: #ffe875;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #ffd700;
+  border: 1px solid #ffd700;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 215, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+/* Hidden via JS */
+.hidden-card {
+  display: none !important;
+}
+
+/* ============================= */
+/* COMPARISON SECTION            */
+/* ============================= */
+
+.services-comparison {
+  padding: 20px 20px 70px;
+  background: linear-gradient(180deg, #062218, #041510);
+}
+
+.services-comparison .section-title {
+  text-align: center;
+  color: #ffd700;
+  font-size: 26px;
+  margin-bottom: 8px;
+}
+
+.services-comparison .section-subtitle {
+  text-align: center;
+  color: #e8e8e8;
+  max-width: 900px;
+  margin: 0 auto 24px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.comparison-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.comparison-tab {
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.4);
+  color: #f8f8f8;
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.1s ease;
+}
+
+.comparison-tab:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 215, 0, 0.16);
+}
+
+.comparison-tab.active {
+  background: #ffd700;
+  color: #222;
+  font-weight: 600;
+}
+
+.comparison-tables {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.comparison-table {
+  display: none;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.6);
+  font-size: 15px;
+}
+
+.comparison-table.active {
+  display: block;
+}
+
+.comparison-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: left;
+  color: #f9f9f9;
+}
+
+.comparison-table th {
+  background: rgba(255, 215, 0, 0.06);
+  font-weight: 600;
+}
+
+.comparison-table tr:last-child td {
+  border-bottom: none;
+}
+
+.comparison-note {
+  font-size: 12px;
+  color: #cccccc;
+  margin-top: 10px;
+}
+
+/* ============================= */
+/* FACILITIES SHOWCASE           */
+/* ============================= */
+
+.facilities-showcase {
+  padding: 40px 20px 80px;
+  background: linear-gradient(180deg, #041510, #02100b);
+}
+
+.facilities-showcase .section-title {
+  text-align: center;
+  color: #ffd700;
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.facilities-showcase .section-subtitle {
+  text-align: center;
+  color: #e0e0e0;
+  max-width: 750px;
+  margin: 0 auto 24px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.facilities-slider {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+}
+
+.facilities-slider::-webkit-scrollbar {
+  height: 6px;
+}
+
+.facilities-slider::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.facilities-slider::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.6);
+  border-radius: 999px;
+}
+
+.facility-card {
+  min-width: 260px;
+  max-width: 300px;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 12px;
+  padding: 14px 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.7);
+  scroll-snap-align: start;
+  color: #f5f5f5;
+}
+
+.facility-card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.facility-card h3 {
+  font-size: 16px;
+  color: #ffd700;
+  margin-bottom: 6px;
+}
+
+.facility-card p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #e5e5e5;
+}
+
+/* ============================= */
+/* CREMATION PLAN CALCULATOR     */
+/* ============================= */
+
+.cremation-plan-calculator {
+  padding: 40px 20px 80px;
+  background: linear-gradient(180deg, #02100b, #000000);
+}
+
+.cremation-plan-calculator .section-title {
+  text-align: center;
+  color: #ffd700;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.cremation-plan-calculator .section-subtitle {
+  text-align: center;
+  color: #e0e0e0;
+  max-width: 760px;
+  margin: 0 auto 30px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.calculator-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.1fr) minmax(260px, 1.1fr);
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.calculator-info {
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 12px;
+  padding: 20px 20px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f5f5f5;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.75);
+}
+
+.calculator-info h3 {
+  margin-bottom: 8px;
+  color: #ffd700;
+  font-size: 18px;
+}
+
+.calculator-info ul {
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+
+.calculator-info li {
+  margin-bottom: 4px;
+}
+
+.calculator-note {
+  font-size: 12px;
+  color: #cccccc;
+}
+
+.calculator-form-wrapper {
+  background: rgba(0, 0, 0, 0.58);
+  border-radius: 12px;
+  padding: 20px 20px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.8);
+  color: #f5f5f5;
+}
+
+.calc-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}
+
+.calc-row label {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.calc-row input,
+.calc-row select {
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 8px 10px;
+  color: #f5f5f5;
+  font-size: 14px;
+}
+
+.calc-result {
+  margin-top: 14px;
+  font-size: 14px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e8e8e8;
+}
+
+/* ============================= */
+/* SERVICE MODAL                 */
+/* ============================= */
+
+.service-modal.hidden {
+  display: none;
+}
+
+.service-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.service-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.service-modal-content {
+  position: relative;
+  background: linear-gradient(135deg, #041510, #02100b);
+  border-radius: 14px;
+  padding: 22px 22px 20px;
+  max-width: 820px;
+  width: 94%;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.9);
+  color: #f5f5f5;
+}
+
+.service-modal-content h3 {
+  font-size: 22px;
+  color: #ffd700;
+  margin-bottom: 6px;
+}
+
+.modal-price {
+  font-weight: 600;
+  color: #ffe27a;
+  margin-bottom: 8px;
+}
+
+.modal-description {
+  font-size: 14px;
+  line-height: 1.7;
+  margin-bottom: 14px;
+}
+
+.modal-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.modal-column h4 {
+  font-size: 15px;
+  margin-bottom: 6px;
+  color: #ffd700;
+}
+
+.modal-column ul {
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.modal-column li {
+  margin-bottom: 4px;
+}
+
+.modal-notes {
+  font-size: 12px;
+  color: #cccccc;
+  margin-bottom: 12px;
+}
+
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* ============================= */
+/* RESPONSIVE                    */
+/* ============================= */
+
+@media (max-width: 900px) {
+  .calculator-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .service-modal-content {
+    padding: 18px 16px 16px;
+  }
+
+  .services-header h1 {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 600px) {
+  .services-full-grid {
+    grid-template-columns: 1fr;
+    padding: 30px 16px 60px;
+  }
+
+  .full-service-card {
+    padding: 18px;
+  }
+
+  .services-header {
+    padding: 90px 16px 10px;
+  }
 }
