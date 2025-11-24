@@ -72,12 +72,8 @@ router.post('/register', async (req, res) => {
     );
 
     // ✅ In development, log code instead of sending real email
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`📨 [DEV MODE] Verification code for ${email}: ${verificationCode}`);
-    } else {
-      await sendVerificationEmail(email, verificationCode);
-    }
-
+    await sendVerificationEmail(email, verificationCode);
+    console.log(`📨 Verification code sent to ${email}: ${verificationCode}`);
     res.json({
       success: true,
       message: 'Registration successful! Please check your email (or console in dev mode).'
