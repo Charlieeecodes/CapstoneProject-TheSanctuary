@@ -80,7 +80,7 @@ router.post('/register', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Registration successful! Please check your email (or console in dev mode).'
+      message: 'Registration successful! Please check your email.'
     });
   } catch (err) {
     console.error('❌ Registration error:', err);
