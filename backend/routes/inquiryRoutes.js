@@ -1,10 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-router.get('/test', (req, res) => {
-  res.send('✅ Inquiry routes working');
-});
-
 const {
   addInquiry,
   getAllInquiries,
