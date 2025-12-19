@@ -33,13 +33,13 @@ app.use((req, res, next) => {
 // ----------------------
 // Serve all frontend files (HTML, JS, CSS, images)
 // ----------------------
-app.use(express.static(path.join(__dirname, '../frontend')));
+app.use(express.static(path.join(__dirname, '../docs')));
 
 // ----------------------
 // Pretty URL for /inquiry (optional)
 // ----------------------
 app.get('/inquiry', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/inquiry.html'));
+  res.sendFile(path.join(__dirname, '../docs/inquiry.html'));
 });
 
 // ----------------------
@@ -64,7 +64,7 @@ app.use('/api/auth', authRoutes); // <-- login/register API
 
 // ----------------------
 console.log('✅ Routes mounted successfully');
-console.log(path.join(__dirname, '../frontend'));
+console.log(path.join(__dirname, '../docs'));
 
 // ----------------------
 const PORT = process.env.PORT || 5000;
