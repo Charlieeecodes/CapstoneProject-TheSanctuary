@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../models/db');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
-
+const requireAdmin = require('../middleware/requireAdmin');
 const router = express.Router();
 
 // -----------------------------
@@ -187,6 +187,45 @@ router.post('/resend', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 });
+// -----------------------------
+// Admin Login
+// POST /api/auth/admin/login
+// -----------------------------
+router.post('/admin/login', async (req, res) => {
+  const { username, password } = req.body;
 
+  try {
+    const [rows] = await db.query('SELECT * FROM admins WHERE username = ?', [username]);
+    if (!rows || rows.length === 0) {
+      return res.status(400).json({ success: false, message: '⚠️ Admin account not found.' });
+    }
+
+    const admin = rows[0];
+    const match = await bcrypt.compare(password, admin.password);
+
+    if (!match) {
+      return res.status(400).json({ success: false, message: '⚠️ Incorrect password.' });
+    }
+
+    const token = jwt.sign(
+      { id: admin.id, username: admin.username, role: "admin" },
+      process.env.JWT_SECRET,
+      { expiresIn: "8h" }
+    );
+
+    return res.json({ success: true, token, admin: { id: admin.id, username: admin.username } });
+
+  } catch (err) {
+    console.error("❌ Admin login error:", err);
+    return res.status(500).json({ success: false, message: "Admin login failed" });
+  }
+});
+// ----------------------------
+// Admin Token Validation
+// GET /api/auth/admin/me
+// -----------------------------
+router.get("/admin/me", requireAdmin, (req, res) => {
+  res.json({ ok: true, admin: req.admin });
+});
 
 module.exports = router;

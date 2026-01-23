@@ -1,3 +1,8 @@
+function adminAuthHeaders() {
+  const token = localStorage.getItem("adminToken");
+  if (!token) return {}; // prevent Bearer null
+  return { Authorization: `Bearer ${token}` };
+}
 document.addEventListener("DOMContentLoaded", async () => {
   /* ========================================
      🧩 ELEMENT REFERENCES
@@ -8,6 +13,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const recordTableBody = document.getElementById("recordTableBody");
   const API_URL = "http://localhost:5000/api/records";
   let editingId = null;
+  const viewArchivedBtn = document.getElementById("viewArchivedBtn");
+  const viewActiveBtn = document.getElementById("viewActiveBtn");
+  let viewingArchived = false;
 
   // Auto-fill cost when service is selected
   const serviceSelect = document.getElementById("serviceAvailed");
@@ -38,21 +46,56 @@ document.addEventListener("DOMContentLoaded", async () => {
   setInterval(updateDateTime, 1000);
   updateDateTime();
 
+    async function loadArchivedRecords() {
+    recordTableBody.innerHTML = "<tr><td colspan='9'>Loading archived...</td></tr>";
+
+    try {
+      const res = await fetch(`${API_URL}/archived`, {
+        headers: { ...adminAuthHeaders() },
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("❌ loadArchivedRecords failed:", res.status, text);
+        recordTableBody.innerHTML = `<tr><td colspan='9'>Failed to load archived (${res.status}).</td></tr>`;
+        return;
+      }
+
+      const records = await res.json();
+      displayRecords(records);
+    } catch (err) {
+      console.error("❌ Error loading archived records:", err);
+      recordTableBody.innerHTML = "<tr><td colspan='9'>Failed to load archived records.</td></tr>";
+    }
+  }
+
   /* ========================================
      📥 LOAD RECORDS
   ======================================== */
   async function loadRecords() {
-    recordTableBody.innerHTML = "<tr><td colspan='8'>Loading...</td></tr>";
+    recordTableBody.innerHTML = "<tr><td colspan='9'>Loading...</td></tr>";
+
     try {
-      const res = await fetch(API_URL);
+      const res = await fetch(API_URL, {
+        headers: {
+          ...adminAuthHeaders(),
+        },
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("❌ loadRecords failed:", res.status, text);
+        recordTableBody.innerHTML = `<tr><td colspan='9'>Failed to load records (${res.status}).</td></tr>`;
+        return;
+      }
+
       const records = await res.json();
       displayRecords(records);
     } catch (err) {
       console.error("❌ Error loading records:", err);
-      recordTableBody.innerHTML = "<tr><td colspan='8'>Failed to load records.</td></tr>";
+      recordTableBody.innerHTML = "<tr><td colspan='9'>Failed to load records.</td></tr>";
     }
   }
-
   /* ========================================
      🧾 DISPLAY RECORDS
   ======================================== */
@@ -76,8 +119,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         <td>${record.date ? record.date.split("T")[0] : ""}</td>
         <td>${record.status}</td>
         <td>
-          <button class="edit" data-id="${record.id}">Edit</button>
-          <button class="delete" data-id="${record.id}">Delete</button>
+          ${
+            viewingArchived
+              ? `<button class="restore" data-id="${record.id}">Restore</button>`
+              : `<button class="edit" data-id="${record.id}">Edit</button>
+                <button class="archive" data-id="${record.id}">Archive</button>`
+          }
         </td>
       `;
       recordTableBody.appendChild(row);
@@ -185,7 +232,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     try {
-      const res = await fetch(`${API_URL}/search?query=${encodeURIComponent(query)}`);
+      const res = await fetch(`${API_URL}/search?query=${encodeURIComponent(query)}`, {
+        headers: { ...adminAuthHeaders() },
+      });
       const records = await res.json();
       displayRecords(records);
     } catch (err) {
@@ -207,7 +256,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (filters.startDate) queryParams.append("startDate", filters.startDate);
       if (filters.endDate) queryParams.append("endDate", filters.endDate);
 
-      const res = await fetch(`${API_URL}?${queryParams.toString()}`);
+      const res = await fetch(`${API_URL}?${queryParams.toString()}`, {
+        headers: { ...adminAuthHeaders() },
+      });
       const records = await res.json();
       displayRecords(records);
     } catch (err) {
@@ -265,14 +316,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     const id = btn.dataset.id;
     if (!id) return;
 
-    if (btn.classList.contains("delete")) {
-      if (confirm("Delete this record?")) {
+    if (btn.classList.contains("archive")) {
+      if (confirm("Archive this record?")) {
         try {
-          const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-          if (res.ok) await loadRecords();
-          else alert("Failed to delete record.");
+          const res = await fetch(`${API_URL}/${id}/archive`, {
+            method: "PUT",
+            headers: {
+              ...adminAuthHeaders(),
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (res.ok) {
+            await loadRecords();
+            showUploadNotification("📦 Record archived successfully!");
+          } else {
+            const text = await res.text();
+            console.error("❌ Failed to archive:", res.status, text);
+            alert("Failed to archive record.");
+          }
         } catch (err) {
-          console.error("❌ Error deleting record:", err);
+          console.error("❌ Error archiving record:", err);
         }
       }
     }
@@ -300,6 +364,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       editingId = id;
     }
+    if (btn.classList.contains("restore")) {
+    if (confirm("Restore this record back to active?")) {
+      try {
+        const res = await fetch(`${API_URL}/${id}/restore`, {
+          method: "PUT",
+          headers: { ...adminAuthHeaders() },
+        });
+
+        if (res.ok) {
+          await loadArchivedRecords();
+          showUploadNotification("♻️ Record restored!");
+        } else {
+          const text = await res.text();
+          console.error("❌ Restore failed:", res.status, text);
+          alert("Failed to restore record.");
+        }
+      } catch (err) {
+        console.error("❌ Error restoring record:", err);
+      }
+    }
+  }
   });
 
   /* ========================================
@@ -559,6 +644,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   document
     .getElementById("previewRecordsBtn")
     .addEventListener("click", () => generateRecordsPDF(true));
+  if (viewArchivedBtn && viewActiveBtn) {
+  viewArchivedBtn.addEventListener("click", async () => {
+    viewingArchived = true;
+    viewArchivedBtn.style.display = "none";
+    viewActiveBtn.style.display = "inline-block";
+    await loadArchivedRecords();
+  });
+
+  viewActiveBtn.addEventListener("click", async () => {
+    viewingArchived = false;
+    viewActiveBtn.style.display = "none";
+    viewArchivedBtn.style.display = "inline-block";
+    await loadRecords();
+  });
+}
+
   /* ========================================
      🚀 INITIALIZE PAGE
   ======================================== */

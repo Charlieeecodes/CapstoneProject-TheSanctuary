@@ -1,3 +1,8 @@
+function adminAuthHeaders() {
+  const token = localStorage.getItem("adminToken");
+  if (!token) return {}; // prevents "Bearer null"
+  return { Authorization: `Bearer ${token}` };
+}
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('📊 [Analytics] Page Loaded');
 
@@ -130,7 +135,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function updateInquiriesKPI(period = 'month') {
     try {
       const url = `http://localhost:5000/api/analytics/inquiries?period=${encodeURIComponent(period)}&mode=summary`;
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch(url, {
+        cache: 'no-store',
+        headers: adminAuthHeaders()
+      });
+
       const data = await res.json();
 
       if (totalInquiriesEl) totalInquiriesEl.textContent = data.total ?? 0;
@@ -142,7 +151,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (window.miniInquiriesChart) window.miniInquiriesChart.destroy();
 
         // Fetch small trend data from backend
-        const trendRes = await fetch(`http://localhost:5000/api/analytics/inquiries?period=${period}&mode=trend`);
+        const trendRes = await fetch(`http://localhost:5000/api/analytics/inquiries?period=${period}&mode=trend`, {
+          headers: adminAuthHeaders()
+        });
         const trendData = await trendRes.json();
 
         const labels = trendData.map(d => d.label);
@@ -179,7 +190,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // -----------------------------
   async function loadKPIs() {
     try {
-      const res = await fetch('http://localhost:5000/api/analytics/kpis', { cache: 'no-store' });
+      const res = await fetch('http://localhost:5000/api/analytics/kpis', {
+        cache: 'no-store',
+        headers: adminAuthHeaders()
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'KPI fetch failed');
 
@@ -204,7 +218,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         url += `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
       }
 
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch(url, {
+        cache: 'no-store',
+        headers: adminAuthHeaders()
+      });
       const data = await res.json();
       console.log('🧩 [Feedback Chart Debug]', { url, data });
 
@@ -259,7 +276,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         url += `&period=${encodeURIComponent(period)}`;
       }
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch(url, {
+        cache: 'no-store',
+        headers: adminAuthHeaders()
+      });
       const data = await res.json();
 
       const labels = data.map(d => d.label);
@@ -296,7 +316,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function updateFeedbackKPI(period = 'month') {
     try {
       // Fetch all feedbacks (no ?period filter yet)
-      const feedbackRes = await fetch('http://localhost:5000/api/feedbacks', { cache: 'no-store' });
+      const feedbackRes = await fetch('http://localhost:5000/api/feedbacks', {
+        cache: 'no-store',
+        headers: adminAuthHeaders()
+      });
       const feedbackData = await feedbackRes.json();
 
       // Filter manually by created_at field (if it exists)
@@ -313,7 +336,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (totalFeedbacksEl) totalFeedbacksEl.textContent = totalFeedbacks;
 
       // Average ratings from analytics endpoint
-      const ratingsRes = await fetch(`http://localhost:5000/api/analytics/feedbacks/ratings?period=${period}`, { cache: 'no-store' });
+      const ratingsRes = await fetch(`http://localhost:5000/api/analytics/feedbacks/ratings?period=${period}`, {
+        cache: 'no-store',
+        headers: adminAuthHeaders()
+      });
       const ratingsData = await ratingsRes.json();
 
       const ratings = [
@@ -357,7 +383,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function updateTopServiceKPI(period = 'month') {
     try {
       const url = `http://localhost:5000/api/analytics/services/top?period=${encodeURIComponent(period)}`;
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch(url, {
+        cache: 'no-store',
+        headers: adminAuthHeaders()
+      });
       const data = await res.json();
 
       if (topServiceNameEl) topServiceNameEl.textContent = data[0]?.name || 'N/A';
@@ -397,7 +426,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function updateTotalServicesKPI(period = 'month') {
     try {
       const url = `http://localhost:5000/api/analytics/services/trend?period=${encodeURIComponent(period)}`;
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch(url, {
+        cache: 'no-store',
+        headers: adminAuthHeaders()
+      });
       const data = await res.json();
 
       const total = data.reduce((a, b) => a + Number(b.count), 0);
@@ -448,7 +480,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         url += `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
       }
 
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch(url, {
+        cache: 'no-store',
+        headers: adminAuthHeaders()
+      });
       const data = await res.json();
 
       if (!res.ok) {
@@ -525,7 +560,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (period === 'custom' && start && end) {
         url += `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
       }
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch(url, {
+        cache: 'no-store',
+        headers: adminAuthHeaders()
+      });
       const data = await res.json();
 
       const labels = data.map(d => d.label);
@@ -787,7 +825,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       let avgRatings = null;
       try {
-        const res = await fetch(url, { cache: 'no-store' });
+        const res = await fetch(url, {
+          cache: 'no-store',
+          headers: adminAuthHeaders()
+        });
         avgRatings = await res.json();
       } catch (err) {
         console.error('❌ Failed to fetch feedback ratings for insights:', err);
@@ -936,7 +977,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       if (url) {
-        const res = await fetch(url, { cache: 'no-store' });
+          const res = await fetch(url, {
+            cache: 'no-store',
+            headers: adminAuthHeaders()
+          });
+
         if (!res.ok) {
           console.error('Trend API failed:', res.status, url);
           insightsModal.classList.remove('hidden');

@@ -52,12 +52,12 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 const publicInquiriesRoute = require('./routes/public/inquiries');
 const publicFeedbacksRoute = require('./routes/public/feedbacks');
 const authRoutes = require('./routes/auth'); // <-- new auth router
+const requireAdmin = require('./middleware/requireAdmin'); 
 
-
-app.use('/api/inquiries', inquiryRoutes);
-app.use('/api/records', recordRoutes);
+app.use('/api/inquiries', requireAdmin, inquiryRoutes);
+app.use('/api/records', requireAdmin, recordRoutes);
 app.use('/api/feedbacks', feedbackRoutes);
-app.use('/api/analytics', analyticsRoutes);
+app.use('/api/analytics', requireAdmin, analyticsRoutes);
 app.use('/api/public/inquiries', publicInquiriesRoute);
 app.use('/api/public/feedbacks', publicFeedbacksRoute);
 app.use('/api/auth', authRoutes); // <-- login/register API

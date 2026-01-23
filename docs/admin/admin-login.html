@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Login | The Sanctuary</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/admin-login.css" />
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="login-header">
+      <img src="../admin/icons/logo.PNG" alt="The Sanctuary" class="login-logo" />
+      <h2>Admin Login</h2>
+      <p class="subtext">Authorized personnel only</p>
+    </div>
+
+    <form id="adminLoginForm" autocomplete="off">
+      <label class="field">
+        <span>Username</span>
+        <input type="text" id="username" placeholder="Enter username" required />
+      </label>
+
+      <label class="field">
+        <span>Password</span>
+        <div class="password-wrap">
+          <input type="password" id="password" placeholder="Enter password" required />
+          <button type="button" id="togglePassword" class="toggle-btn">Show</button>
+        </div>
+      </label>
+
+      <label class="remember">
+        <input type="checkbox" id="rememberUser" />
+        <span>Remember username</span>
+      </label>
+
+      <button type="submit" id="btnLogin">
+        <span id="btnText">Login</span>
+        <span id="btnSpinner" class="spinner" style="display:none;"></span>
+      </button>
+
+      <p id="loginError" class="error" style="display:none;"></p>
+    </form>
+
+  </div>
+
+  <script src="../admin/js/admin-login.js"></script>
+</body>
+</html>

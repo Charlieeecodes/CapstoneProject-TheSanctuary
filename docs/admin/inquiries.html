@@ -6,6 +6,7 @@
   <title>Inquiries | Admin Dashboard</title>
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/inquiries.css">
+  <script src="../assets/js/admin-guard.js"></script>
 </head>
 <body>
   <div class="admin-container">
@@ -21,7 +22,7 @@
           <li><a href="datarecords.html"><img src="icons/folder.jpg" alt="Data Records Icon" class="nav-icon"> Service Records</a></li>
           <li><a href="inquiries.html" class="active"><img src="icons/paper.jpg" alt="Inquiries Icon" class="nav-icon"> Inquiries</a></li>
           <li><a href="feedbacks.html"><img src="icons/feedback.jpg" alt="Feedbacks Icon" class="nav-icon"> Feedbacks</a></li>
-          <li><a href="../index.html"><img src="icons/logout.jpg" alt="Logout Icon" class="nav-icon"> Logout</a></li>
+          <li><a href="#" id="btnLogout"><img src="icons/logout.jpg" class="nav-icon"> Logout</a></li>
         </ul>
       </nav>
     </aside>
@@ -37,8 +38,7 @@
           <div class="user-profile">
             <img src="../assets/images/user.png" alt="User" class="profile-icon">
             <div class="user-info">
-              <strong>Maria Osana</strong><br>
-              <small>Head Management</small>
+              <strong>Admin</strong><br>
             </div>
           </div>
         </div>
@@ -70,7 +70,6 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/fetchInquiries.js"></script>
   <script src="js/inquiries.js"></script>
   <script>
     // Topbar date & time

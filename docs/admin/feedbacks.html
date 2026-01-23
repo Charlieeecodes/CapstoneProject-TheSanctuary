@@ -5,7 +5,7 @@
   <title>Feedbacks | Admin Dashboard</title>
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/feedbacks.css">
-
+  <script src="../assets/js/admin-guard.js"></script>
 </head>
 <body>
   <div class="admin-container">
@@ -21,7 +21,7 @@
           <li><a href="datarecords.html"><img src="icons/folder.jpg" class="nav-icon"> Service Records</a></li>
           <li><a href="inquiries.html"><img src="icons/paper.jpg" class="nav-icon"> Inquiries</a></li>
           <li><a href="feedbacks.html" class="active"><img src="icons/feedback.jpg" class="nav-icon"> Feedbacks</a></li>
-          <li><a href="../index.html"><img src="icons/logout.jpg" class="nav-icon"> Logout</a></li>
+          <li><a href="#" id="btnLogout"><img src="icons/logout.jpg" class="nav-icon"> Logout</a></li>
         </ul>
       </nav>
     </aside>
@@ -37,8 +37,7 @@
           <div class="user-profile">
             <img src="../assets/images/user.png" alt="User" class="profile-icon">
             <div class="user-info">
-              <strong>Maria Osana</strong><br>
-              <small>Head Management</small>
+              <strong>Admin</strong><br>
             </div>
           </div>
         </div>
@@ -62,5 +61,6 @@
     setInterval(updateDateTime, 1000);
     updateDateTime();
   </script>
+  <script src="../assets/js/admin-logout.js"></script>
 </body>
 </html>

@@ -1,60 +1,112 @@
-document.addEventListener('DOMContentLoaded', async () => {
-  const sidebarContainer = document.querySelector('.inquiries-container');
-  const detailPanel = document.getElementById('inquiry-full-content');
+function adminAuthHeaders() {
+  const token = localStorage.getItem("adminToken");
+  if (!token) return {};
+  return { Authorization: `Bearer ${token}` };
+}
 
-  // Fetch all inquiries from backend
+async function fetchJSON(url, options = {}) {
+  const res = await fetch(url, {
+    cache: "no-store",
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      ...adminAuthHeaders(),
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    console.error("❌ Request failed:", res.status, url, text);
+    throw new Error(`Request failed (${res.status})`);
+  }
+
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    console.error("❌ Invalid JSON:", url, text);
+    throw new Error("Invalid server response");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const sidebarContainer = document.querySelector(".inquiries-container");
+  const detailPanel = document.getElementById("inquiry-full-content");
+
+  if (!sidebarContainer || !detailPanel) return;
+
+  /* ================================
+     📥 FETCH INQUIRIES
+  ================================ */
   async function fetchInquiries() {
     try {
-      const res = await fetch('http://localhost:5000/api/inquiries');
-      return await res.json();
+      return await fetchJSON("http://localhost:5000/api/inquiries");
     } catch (err) {
-      console.error('Error fetching inquiries:', err);
+      console.error("Error fetching inquiries:", err);
       return [];
     }
   }
 
-  // Load inquiries into sidebar
+  /* ================================
+     📋 LOAD SIDEBAR
+  ================================ */
   async function loadInquiries() {
+    sidebarContainer.innerHTML = "<p>Loading inquiries...</p>";
+
     try {
       const data = await fetchInquiries();
-      data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        sidebarContainer.innerHTML = data.map(inquiry => {
-          let statusColor =
-            inquiry.status === 'Resolved' ? 'status-resolved' :
-            inquiry.status === 'In Progress' ? 'status-progress' :
-            'status-pending';
+      const safeData = Array.isArray(data) ? data : [];
+
+      if (safeData.length === 0) {
+        sidebarContainer.innerHTML = "<p>No inquiries found.</p>";
+        return;
+      }
+
+      safeData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      sidebarContainer.innerHTML = safeData
+        .map((inquiry) => {
+          const statusColor =
+            inquiry.status === "Resolved"
+              ? "status-resolved"
+              : inquiry.status === "In Progress"
+              ? "status-progress"
+              : "status-pending";
 
           return `
             <div class="inquiry-card" data-id="${inquiry.id}">
               <div>
                 <p><strong>ID:</strong> ${inquiry.id}</p>
-                <p><strong>Name:</strong> ${inquiry.name}</p>
-                <p><strong>Subject:</strong> ${inquiry.subject}</p>
+                <p><strong>Name:</strong> ${inquiry.name || "—"}</p>
+                <p><strong>Subject:</strong> ${inquiry.subject || "—"}</p>
                 <p><small>${new Date(inquiry.created_at).toLocaleString()}</small></p>
               </div>
               <div class="status-and-button">
-                <span class="status-badge ${statusColor}">${inquiry.status}</span>
+                <span class="status-badge ${statusColor}">${inquiry.status || "Pending"}</span>
                 <button class="view-btn" data-id="${inquiry.id}">View</button>
               </div>
             </div>
           `;
-        }).join('');
-      attachCardEvents(data);
+        })
+        .join("");
+
+      attachCardEvents(safeData);
     } catch (err) {
-      console.error('Error loading inquiries:', err);
+      console.error("Error loading inquiries:", err);
       sidebarContainer.innerHTML = `<p style="color:red;">Error loading inquiries.</p>`;
     }
   }
 
-  // Attach click events to sidebar cards
+  /* ================================
+     👁️ VIEW INQUIRY
+  ================================ */
   function attachCardEvents(inquiries) {
-    document.querySelectorAll('.view-btn').forEach(button => {
-      button.addEventListener('click', () => {
+    document.querySelectorAll(".view-btn").forEach((button) => {
+      button.addEventListener("click", () => {
         const id = Number(button.dataset.id);
-        const inquiry = inquiries.find(i => i.id === id);
+        const inquiry = inquiries.find((i) => i.id === id);
         if (!inquiry) return;
 
-        // Render detail panel
         detailPanel.innerHTML = `
           <h3>Inquiry #${inquiry.id}</h3>
           <p><strong>Name:</strong> ${inquiry.name}</p>
@@ -64,11 +116,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           <p><strong>Message:</strong></p>
           <div class="message-box">${inquiry.message}</div>
           <hr>
-          <p><strong>Status:</strong> 
+          <p><strong>Status:</strong>
             <select id="statusSelect">
-              <option value="Pending" ${inquiry.status === 'Pending' ? 'selected' : ''}>Pending</option>
-              <option value="In Progress" ${inquiry.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-              <option value="Resolved" ${inquiry.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+              <option value="Pending" ${inquiry.status === "Pending" ? "selected" : ""}>Pending</option>
+              <option value="In Progress" ${inquiry.status === "In Progress" ? "selected" : ""}>In Progress</option>
+              <option value="Resolved" ${inquiry.status === "Resolved" ? "selected" : ""}>Resolved</option>
             </select>
           </p>
           <p><strong>Date:</strong> ${new Date(inquiry.created_at).toLocaleString()}</p>
@@ -77,120 +129,94 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div class="send-message-form">
             <h4>Send a Response</h4>
             <p><strong>To:</strong> <span id="recipientEmail">${inquiry.email}</span></p>
-            <textarea id="responseMessage" placeholder="Write your message here..." rows="5" style="width:100%;"></textarea>
+            <textarea id="responseMessage" rows="5" placeholder="Write your message..."></textarea>
             <button id="sendMessageBtn">Send Message</button>
           </div>
         `;
 
-        // Handle status update
-        document.getElementById('statusSelect').addEventListener('change', async (e) => {
-          const newStatus = e.target.value;
+        /* ================================
+           🔄 UPDATE STATUS
+        ================================ */
+        document.getElementById("statusSelect").addEventListener("change", async (e) => {
           try {
-            await fetch(`http://localhost:5000/api/inquiries/${id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ status: newStatus })
+            await fetchJSON(`http://localhost:5000/api/inquiries/${id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: e.target.value }),
             });
-            alert('Status updated successfully!');
+
             await loadInquiries();
             notifyDashboardUpdate();
           } catch (err) {
-            console.error('Failed to update status:', err);
+            alert("Failed to update status.");
           }
         });
 
-        // Handle delete
-        document.getElementById('deleteBtn').addEventListener('click', async () => {
-          if (confirm('Are you sure you want to delete this inquiry?')) {
-            try {
-              const res = await fetch(`http://localhost:5000/api/inquiries/${id}`, { method: 'DELETE' });
-              const result = await res.json();
-              if (res.ok) {
-                alert('Inquiry deleted successfully!');
-                detailPanel.innerHTML = `<p>Select an inquiry from the left to view details.</p>`;
-                await loadInquiries();
-                notifyDashboardUpdate();
-              } else {
-                alert('Failed to delete inquiry: ' + result.message);
-              }
-            } catch (err) {
-              console.error('Delete failed:', err);
-            }
-          }
-        });
-
-        document.getElementById('sendMessageBtn').addEventListener('click', async () => {
-          const recipient = document.getElementById('recipientEmail').textContent;
-          const message = document.getElementById('responseMessage').value.trim();
-          const sendBtn = document.getElementById('sendMessageBtn');
-          const form = document.querySelector('.send-message-form');
-
-          if (!message) {
-            alert('Please enter a message before sending.');
-            return;
-          }
-
-          sendBtn.disabled = true;
-          sendBtn.textContent = 'Sending...';
+        /* ================================
+           🗑️ DELETE
+        ================================ */
+        document.getElementById("deleteBtn").addEventListener("click", async () => {
+          if (!confirm("Delete this inquiry?")) return;
 
           try {
-            const res = await fetch('http://localhost:5000/api/inquiries/sendMessage', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ to: recipient, message, inquiryId: id })
+            await fetchJSON(`http://localhost:5000/api/inquiries/${id}`, {
+              method: "DELETE",
             });
 
-            const result = await res.json();
-
-            if (res.ok) {
-              // Clear textarea
-              document.getElementById('responseMessage').value = '';
-
-              // ✅ Create and show success message below the form
-              const successDiv = document.createElement('div');
-              successDiv.className = 'message-sent';
-              successDiv.innerHTML = `
-                <p>✅ Message sent successfully to <strong>${recipient}</strong></p>
-                <div class="sent-message-preview">${message}</div>
-              `;
-
-              form.appendChild(successDiv);
-
-              // Fade out after 5 seconds
-              setTimeout(() => {
-                successDiv.style.opacity = '0';
-                setTimeout(() => successDiv.remove(), 500);
-              }, 5000);
-            } else {
-              alert('Failed to send message: ' + result.message);
-            }
+            detailPanel.innerHTML = "<p>Select an inquiry from the left.</p>";
+            await loadInquiries();
+            notifyDashboardUpdate();
           } catch (err) {
-            console.error('Error sending message:', err);
-            alert('Error sending message.');
-          } finally {
-            sendBtn.disabled = false;
-            sendBtn.textContent = 'Send Message';
+            alert("Failed to delete inquiry.");
+          }
+        });
+
+        /* ================================
+           ✉️ SEND MESSAGE
+        ================================ */
+        document.getElementById("sendMessageBtn").addEventListener("click", async () => {
+          const message = document.getElementById("responseMessage").value.trim();
+          if (!message) return alert("Message cannot be empty.");
+
+          try {
+            await fetchJSON("http://localhost:5000/api/inquiries/sendMessage", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                to: inquiry.email,
+                message,
+                inquiryId: id,
+              }),
+            });
+
+            document.getElementById("responseMessage").value = "";
+            alert("✅ Message sent successfully!");
+          } catch (err) {
+            alert("Failed to send message.");
           }
         });
       });
     });
   }
 
-  // Notify dashboard to refresh if inquiries change
   function notifyDashboardUpdate() {
-    localStorage.setItem('dashboardNeedsRefresh', 'true');
+    localStorage.setItem("dashboardNeedsRefresh", "true");
   }
 
-  // Initial load
+  /* ================================
+     🚀 INIT
+  ================================ */
   await loadInquiries();
 });
-// ✅ Auto-open inquiry if redirected from Dashboard
-const selectedId = sessionStorage.getItem('selectedInquiryId');
+
+/* ================================
+   🔁 AUTO-OPEN FROM DASHBOARD
+================================ */
+const selectedId = sessionStorage.getItem("selectedInquiryId");
 if (selectedId) {
-  setTimeout(async () => {
-    const card = document.querySelector(`.inquiry-card[data-id="${selectedId}"]`);
-    if (card) card.querySelector('.view-btn').click();
-    sessionStorage.removeItem('selectedInquiryId');
+  setTimeout(() => {
+    const btn = document.querySelector(`.inquiry-card[data-id="${selectedId}"] .view-btn`);
+    if (btn) btn.click();
+    sessionStorage.removeItem("selectedInquiryId");
   }, 500);
 }
-

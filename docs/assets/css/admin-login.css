@@ -1,0 +1,131 @@
+/* docs/assets/css/admin-login.css */
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f3f4f6;
+  filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Kill overlay/blur patterns if main.css has any */
+body::before, body::after { content: none !important; display: none !important; }
+
+.login-container {
+  width: min(440px, 92vw);
+  background: #ffffff;
+  padding: 26px;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.10);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.login-logo {
+  width: 70px;
+  height: auto;
+  margin-bottom: 8px;
+}
+
+.login-header h2 {
+  margin: 6px 0 4px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.subtext {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.field { display: block; margin: 12px 0; }
+.field span {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+#adminLoginForm input {
+  width: 90%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+}
+
+#adminLoginForm input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
+}
+
+.password-wrap {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.toggle-btn {
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.remember {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 10px 0 14px;
+  font-size: 13px;
+  color: #374151;
+}
+
+#btnLogin {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #7c3aed;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#btnLogin:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.error {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #b91c1c;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: rgba(255,255,255,0.9);
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.6s linear infinite;
+  margin-left: 8px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
