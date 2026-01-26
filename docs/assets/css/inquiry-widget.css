@@ -1,0 +1,245 @@
+/* =========================
+   Floating Inquiry Button
+   ========================= */
+.inq-fab{
+  position:fixed;
+  right:24px;
+  bottom:24px;
+
+  display:flex;
+  align-items:center;
+  gap:12px;
+
+  padding:16px 22px;
+  min-height:56px;
+
+  border-radius:999px;
+  background:#1d8338;
+  color:#ffffff;
+
+  border:2px solid rgba(255,255,255,.08);
+
+  cursor:pointer;
+
+  font-size:16px;
+  font-weight:700;
+
+  box-shadow:0 14px 35px rgba(0,0,0,.35);
+  z-index:9999;
+
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+
+.inq-fab:hover{
+  transform:translateY(-3px);
+  box-shadow:0 18px 45px rgba(0,0,0,.45);
+}
+
+.inq-fab-icon{
+  font-size:22px;
+  line-height:1;
+}
+
+/* IMPORTANT: do NOT shrink the text here */
+.inq-fab-text{
+  font-size:16px;
+  font-weight:700;
+  letter-spacing:.3px;
+}
+
+/* Optional attention pulse class (added by JS) */
+.inq-fab.attention{
+  animation:inqPulse 1.8s ease-out 1;
+}
+.inq-guest-fields{
+  margin-bottom: 6px;
+}
+
+.inq-captcha-wrap{
+  margin-top: 10px;
+}
+
+/* reCAPTCHA scales nicely in the panel on small screens */
+@media (max-width: 480px){
+  .inq-captcha-wrap{
+    transform: scale(0.92);
+    transform-origin: 0 0;
+  }
+}
+/* =========================
+   Overlay
+   ========================= */
+.inq-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  z-index:9998;
+}
+.hidden{ display:none !important; }
+/* =========================
+   Slide-in Panel
+   ========================= */
+.inq-panel{
+  position:fixed;
+  right:18px;
+  bottom:140px; /* slightly higher so it doesn't touch the bigger button */
+
+  width:min(380px, calc(100vw - 36px));
+  max-height:70vh;
+
+  background:#1d8338;
+  border-radius:16px;
+  box-shadow:0 18px 45px rgba(0,0,0,.25);
+
+  overflow:hidden;
+  z-index:9999;
+
+  transform:translateY(10px);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease;
+}
+
+.inq-panel.open{
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
+}
+
+.inq-panel-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  padding:12px 14px;
+  border-bottom:1px solid rgba(0,0,0,.08);
+  background:#1d8338;
+}
+
+.inq-title{ font-weight:700; }
+
+.inq-close{
+  border:none;
+  background:transparent;
+  cursor:pointer;
+  font-size:16px;
+  padding:6px 8px;
+  border-radius:10px;
+}
+
+.inq-close:hover{ background:rgba(0,0,0,.06); }
+
+/* =========================
+   Panel Content
+   ========================= */
+.inq-screen{ padding:14px; }
+
+.inq-bubble{
+  background:#196734;
+  padding:10px 12px;
+  border-radius:14px;
+  margin-bottom:12px;
+  font-size:14px;
+}
+
+.inq-actions{
+  display:grid;
+  gap:10px;
+}
+
+.inq-actions-row{
+  display:flex;
+  gap:10px;
+  justify-content:space-between;
+  margin-top:12px;
+}
+
+.inq-btn{
+  border:1px solid rgba(0,0,0,.15);
+  background:#fff;
+  padding:10px 12px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.inq-btn.primary{
+  border:none;
+  background:#111;
+  color:#fff;
+}
+
+.inq-hint{
+  margin-top:10px;
+  font-size:12px;
+  opacity:.75;
+}
+
+.inq-hint.small{ margin-top:8px; }
+
+/* =========================
+   Form Fields
+   ========================= */
+.inq-form label{
+  display:block;
+  font-size:13px;
+  font-weight:700;
+  margin:10px 0 6px;
+}
+
+.inq-form input,
+.inq-form textarea{
+  width:90%;
+  padding:10px 11px;
+  border-radius:12px;
+  border:1px solid rgba(0,0,0,.15);
+  outline:none;
+}
+
+.inq-form textarea{
+  resize:vertical;
+  min-height:86px;
+}
+
+/* =========================
+   Pulse Animation
+   ========================= */
+@keyframes inqPulse {
+  0%   { box-shadow:0 0 0 0 rgba(0,0,0,.35); }
+  70%  { box-shadow:0 0 0 14px rgba(0,0,0,0); }
+  100% { box-shadow:0 0 0 0 rgba(0,0,0,0); }
+}
+
+/* =========================
+   Mobile Adjustments
+   ========================= */
+@media (max-width: 480px) {
+  .inq-fab{
+    right:16px;
+    bottom:16px;
+    padding:14px 18px;
+    min-height:52px;
+    font-size:15px;
+  }
+
+  .inq-fab-text{
+    font-size:15px;
+  }
+
+  .inq-panel{
+    right:16px;
+    bottom:80px;
+    width:min(380px, calc(100vw - 32px));
+  }
+}
+/* EMERGENCY FORCE VISIBILITY (debug) */
+#inqFab{
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  position:fixed !important;
+  right:24px !important;
+  bottom:24px !important;
+  z-index:2147483647 !important;
+  transform:none !important;
+}

@@ -67,6 +67,19 @@
 
   <p id="responseMessage"></p>
 </div>
+<script>
+  (function () {
+    const params = new URLSearchParams(window.location.search);
+    const subject = params.get("subject");
+    const message = params.get("message");
+    if (subject) document.getElementById("subject").value = subject;
+    if (message) document.getElementById("message").value = message;
+
+    if (params.get("fromWidget") === "1") {
+      setTimeout(() => document.getElementById("subject")?.focus(), 200);
+    }
+  })();
+</script>
 
 </body>
 </html>

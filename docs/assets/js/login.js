@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Determine default redirect based on current page
   const currentPage = window.location.pathname;
-  let defaultRedirect = '/inquiry.html';
+  let defaultRedirect = '/index.html';
   if (currentPage.includes('feedback.html')) defaultRedirect = '/feedback.html';
 
   // Check for query param override

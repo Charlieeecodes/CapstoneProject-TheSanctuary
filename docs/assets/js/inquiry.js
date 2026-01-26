@@ -96,19 +96,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // reCAPTCHA token
     // -----------------------------
     let recaptchaToken = '';
-    try {
-      if (typeof grecaptcha !== 'undefined' && grecaptcha.getResponse) {
-        recaptchaToken = grecaptcha.getResponse();
-      }
-      if (!recaptchaToken) {
+
+    if (!user) {
+      try {
+        if (typeof grecaptcha !== 'undefined' && grecaptcha.getResponse) {
+          recaptchaToken = grecaptcha.getResponse();
+        }
+
+        if (!recaptchaToken) {
+          responseMessage.textContent = '⚠️ Please complete the reCAPTCHA.';
+          responseMessage.style.color = 'orange';
+          return;
+        }
+      } catch (err) {
+        console.warn('reCAPTCHA not available:', err);
         responseMessage.textContent = '⚠️ Please complete the reCAPTCHA.';
         responseMessage.style.color = 'orange';
         return;
       }
-    } catch (err) {
-      console.warn('reCAPTCHA not available:', err);
     }
-
     const payload = {
       name,
       email,
