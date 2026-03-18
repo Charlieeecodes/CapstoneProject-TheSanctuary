@@ -8,13 +8,13 @@ const db = require('../models/db'); // promise-based database connection
 router.post('/', async (req, res) => {
   const { clientName, email, contact, address, serviceAvailed, cost, date } = req.body;
 
-  if (!clientName || !email || !contact || !address || !serviceAvailed || !cost || !date) {
+  if (!clientName || !email || !contact || !address || !serviceAvailed || cost === undefined || !date) {
     return res.status(400).json({ error: 'All fields are required.' });
   }
 
   const sql = `
     INSERT INTO records (client_name, email, contact, address, service, cost, date, status, is_archived)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   try {
@@ -24,17 +24,18 @@ router.post('/', async (req, res) => {
       contact,
       address,
       serviceAvailed,
-      cost,
+      Number(cost) || 0,
       date,
-      'Pending'
+      'Pending',
+      0
     ]);
+
     res.json({ message: '✅ Record added successfully', id: result.insertId });
   } catch (err) {
     console.error('❌ Error inserting record:', err);
     res.status(500).json({ error: 'Database error' });
   }
 });
-
 /* ========================================
    ✏️ Update a record
 ======================================== */
@@ -43,7 +44,7 @@ router.put('/:id', async (req, res) => {
   const { clientName, email, contact, address, serviceAvailed, cost, date, status } = req.body;
 
   // ✅ Allow cost = 0, just validate required text fields
-  if (!clientName || !email || !contact || !address || !serviceAvailed || !date || !status) {
+  if (!clientName || !email || !contact || !address || !serviceAvailed || cost === undefined || !date) {
     return res.status(400).json({ error: 'All fields are required (except cost can be 0).' });
   }
 
@@ -230,7 +231,6 @@ router.post('/upload-csv', async (req, res) => {
       });
     }
 
-    // 🧾 Standardized service price map
     const servicePrices = {
       "Unit with perpetual care": 50000,
       "Interment service": 10000,
@@ -256,29 +256,29 @@ router.post('/upload-csv', async (req, res) => {
 
     const insertSQL = `
       INSERT INTO records (client_name, email, contact, address, service, cost, date, status, is_archived)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     let inserted = 0;
 
     for (const r of records) {
-      // 🧠 Normalize the service text (fix casing + extra spaces)
       const cleanService = (r.service || '').trim();
 
-      // 💰 Auto-compute cost if not provided
-      const autoCost = r.cost && Number(r.cost) > 0
-        ? Number(r.cost)
-        : servicePrices[cleanService] || 0;
+      const autoCost =
+        r.cost && Number(r.cost) > 0
+          ? Number(r.cost)
+          : servicePrices[cleanService] || 0;
 
       await db.query(insertSQL, [
         r.client_name || null,
         r.email || null,
         r.contact || null,
         r.address || null,
-        cleanService,
+        cleanService || null,
         autoCost,
         r.date || null,
-        r.status || 'Pending'
+        r.status || 'Pending',
+        0
       ]);
 
       inserted++;

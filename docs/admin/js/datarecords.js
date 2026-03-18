@@ -1,5 +1,5 @@
 function adminAuthHeaders() {
-  const token = localStorage.getItem("adminToken");
+  const token = localStorage.getItem("adminToken", );
   if (!token) return {}; // prevent Bearer null
   return { Authorization: `Bearer ${token}` };
 }
@@ -185,14 +185,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (isEdit) {
         res = await fetch(`${API_URL}/${editingId}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...adminAuthHeaders(),
+          },
           body: JSON.stringify(payload),
         });
         editingId = null;
       } else {
         res = await fetch(API_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...adminAuthHeaders(),
+          },
           body: JSON.stringify(payload),
         });
       }
@@ -464,7 +470,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       const res = await fetch(`${API_URL}/upload-csv`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...adminAuthHeaders(),
+        },
         body: JSON.stringify({ records: parsedData }),
       });
 
