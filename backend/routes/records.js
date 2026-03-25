@@ -36,6 +36,7 @@ router.post('/', async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 });
+
 /* ========================================
    ✏️ Update a record
 ======================================== */
@@ -43,12 +44,11 @@ router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { clientName, email, contact, address, serviceAvailed, cost, date, status } = req.body;
 
-  // ✅ Allow cost = 0, just validate required text fields
   if (!clientName || !email || !contact || !address || !serviceAvailed || cost === undefined || !date) {
     return res.status(400).json({ error: 'All fields are required (except cost can be 0).' });
   }
 
-  const numericCost = Number(cost) || 0; // safely cast to number, allow 0
+  const numericCost = Number(cost) || 0;
 
   const sql = `
     UPDATE records 
@@ -79,62 +79,130 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 });
+
 /* ========================================
-   📦 Archive a record (instead of delete)
+   📦 Archive a record (move to archived_records)
 ======================================== */
 router.put('/:id/archive', async (req, res) => {
   const { id } = req.params;
+  const connection = await db.getConnection();
 
   try {
-    const [result] = await db.query(
-      'UPDATE records SET is_archived = 1 WHERE id = ?',
+    await connection.beginTransaction();
+
+    const [rows] = await connection.query(
+      'SELECT * FROM records WHERE id = ?',
       [id]
     );
 
-    if (result.affectedRows === 0) {
+    if (rows.length === 0) {
+      await connection.rollback();
       return res.status(404).json({ message: 'Record not found' });
     }
 
+    const record = rows[0];
+
+    await connection.query(
+      `INSERT INTO archived_records
+      (id, client_name, email, contact, address, service, date, status, cost)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        record.id,
+        record.client_name,
+        record.email,
+        record.contact,
+        record.address,
+        record.service,
+        record.date,
+        record.status,
+        record.cost
+      ]
+    );
+
+    await connection.query(
+      'DELETE FROM records WHERE id = ?',
+      [id]
+    );
+
+    await connection.commit();
     res.json({ message: '📦 Record archived successfully' });
   } catch (err) {
+    await connection.rollback();
     console.error('❌ Error archiving record:', err);
     res.status(500).json({ error: 'Database error' });
+  } finally {
+    connection.release();
   }
 });
+
 /* ========================================
    🗄️ Get all archived records
 ======================================== */
 router.get('/archived', async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM records WHERE is_archived = 1 ORDER BY date DESC"
+      'SELECT * FROM archived_records ORDER BY archived_at DESC, date DESC'
     );
     res.json(rows);
   } catch (err) {
-    console.error("❌ Error fetching archived records:", err);
-    res.status(500).json({ message: "Database error", error: err });
+    console.error('❌ Error fetching archived records:', err);
+    res.status(500).json({ message: 'Database error', error: err });
   }
 });
+
 /* ========================================
    ♻️ Restore an archived record
 ======================================== */
 router.put('/:id/restore', async (req, res) => {
   const { id } = req.params;
+  const connection = await db.getConnection();
 
   try {
-    const [result] = await db.query(
-      'UPDATE records SET is_archived = 0 WHERE id = ?',
+    await connection.beginTransaction();
+
+    const [rows] = await connection.query(
+      'SELECT * FROM archived_records WHERE id = ?',
       [id]
     );
 
-    if (result.affectedRows === 0) {
+    if (rows.length === 0) {
+      await connection.rollback();
       return res.status(404).json({ message: 'Record not found' });
     }
 
+    const record = rows[0];
+
+    await connection.query(
+      `INSERT INTO records
+      (id, client_name, email, contact, address, service, cost, date, status, is_archived)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        record.id,
+        record.client_name,
+        record.email,
+        record.contact,
+        record.address,
+        record.service,
+        record.cost,
+        record.date,
+        record.status,
+        0
+      ]
+    );
+
+    await connection.query(
+      'DELETE FROM archived_records WHERE id = ?',
+      [id]
+    );
+
+    await connection.commit();
     res.json({ message: '♻️ Record restored successfully' });
   } catch (err) {
+    await connection.rollback();
     console.error('❌ Error restoring record:', err);
     res.status(500).json({ error: 'Database error' });
+  } finally {
+    connection.release();
   }
 });
 
@@ -147,14 +215,14 @@ router.get('/search', async (req, res) => {
 
   const sql = `
     SELECT * FROM records
-    WHERE is_archived = 0
-      AND (
-        client_name LIKE ? 
-        OR email LIKE ?
-        OR contact LIKE ?
-        OR address LIKE ?
-        OR service LIKE ?
-      )
+    WHERE (
+      client_name LIKE ? 
+      OR email LIKE ?
+      OR contact LIKE ?
+      OR address LIKE ?
+      OR service LIKE ?
+    )
+    ORDER BY date DESC
   `;
   const likeQuery = `%${query}%`;
 
@@ -167,55 +235,51 @@ router.get('/search', async (req, res) => {
   }
 });
 
-
 /* ========================================
-   📤 Get all records + Combined filters
+   📤 Get all active records + Combined filters
 ======================================== */
 router.get('/', async (req, res) => {
   try {
     const { service, status, startDate, endDate } = req.query;
 
-    let sql = "SELECT * FROM records";
+    let sql = 'SELECT * FROM records';
     const params = [];
-    const conditions = ["is_archived = 0"];
-    
+    const conditions = [];
 
     if (service) {
-      conditions.push("service LIKE ?");
+      conditions.push('service LIKE ?');
       params.push(`%${service}%`);
     }
 
     if (status) {
-      conditions.push("LOWER(status) = LOWER(?)");
+      conditions.push('LOWER(status) = LOWER(?)');
       params.push(status);
     }
 
-    // ✅ Handle date range
     if (startDate && endDate) {
-      conditions.push("DATE(date) BETWEEN DATE(?) AND DATE(?)");
+      conditions.push('DATE(date) BETWEEN DATE(?) AND DATE(?)');
       params.push(startDate, endDate);
     } else if (startDate) {
-      conditions.push("DATE(date) >= DATE(?)");
+      conditions.push('DATE(date) >= DATE(?)');
       params.push(startDate);
     } else if (endDate) {
-      conditions.push("DATE(date) <= DATE(?)");
+      conditions.push('DATE(date) <= DATE(?)');
       params.push(endDate);
     }
 
     if (conditions.length > 0) {
-      sql += " WHERE " + conditions.join(" AND ");
+      sql += ' WHERE ' + conditions.join(' AND ');
     }
 
-    sql += " ORDER BY date DESC";
-    const [rows] = await db.query(sql, params);
+    sql += ' ORDER BY date DESC';
 
+    const [rows] = await db.query(sql, params);
     res.json(rows);
   } catch (err) {
     console.error('❌ Error fetching records with filters:', err);
-    res.status(500).json({ message: "Database error", error: err });
+    res.status(500).json({ message: 'Database error', error: err });
   }
 });
-
 
 /* ========================================
    📂 Upload CSV to Database
@@ -298,6 +362,5 @@ router.post('/upload-csv', async (req, res) => {
     });
   }
 });
-
 
 module.exports = router;

@@ -1,47 +1,129 @@
-/* Feedback container grid */
 #feedback-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
   padding: 20px;
 }
 
-/* Individual feedback card */
 .feedback-card {
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-  padding: 15px;
-  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  padding: 20px 22px;
+  border: 1px solid #eef1f4;
+  transition: 0.2s ease;
 }
 
 .feedback-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
-/* Client info */
-.feedback-card .client-info h3 {
+.feedback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.client-info h3 {
   margin: 0;
-  font-size: 1.2em;
+  font-size: 1.1rem;
+  color: #1f2937;
 }
 
-/* Ratings display (read-only) */
-.feedback-card .ratings p {
-  margin: 5px 0;
-  font-weight: bold;
-  color: #333;
+.client-info p {
+  margin: 4px 0 0;
+  color: #6b7280;
+  font-size: 0.92rem;
 }
 
-/* Feedback message */
-.feedback-card .message {
-  margin: 10px 0;
+.feedback-date {
+  font-size: 0.85rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.ratings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  gap: 12px 22px;
+  margin-bottom: 16px;
+}
+
+.rating-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rating-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.rating-bar {
+  width: 100%;
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.rating-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.rating-fill.high {
+  background: #22c55e;
+}
+
+.rating-fill.mid {
+  background: #f59e0b;
+}
+
+.rating-fill.low {
+  background: #ef4444;
+}
+
+.message {
+  background: #f9fafb;
+  border-left: 4px solid #d1d5db;
+  padding: 14px 16px;
+  border-radius: 10px;
+  color: #4b5563;
   font-style: italic;
-  color: #555;
+  line-height: 1.5;
 }
 
-/* Date of submission */
-.feedback-card .date {
-  font-size: 0.8em;
-  color: #777;
+.no-feedback,
+.error-feedback {
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.error-feedback {
+  color: #dc2626;
+}
+
+@media (max-width: 768px) {
+  .ratings {
+    grid-template-columns: 1fr;
+  }
+
+  .feedback-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
