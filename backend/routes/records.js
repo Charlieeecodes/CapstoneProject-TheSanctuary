@@ -13,8 +13,8 @@ router.post('/', async (req, res) => {
   }
 
   const sql = `
-    INSERT INTO records (client_name, email, contact, address, service, cost, date, status, is_archived)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO records (client_name, email, contact, address, service, cost, date, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   try {
@@ -26,8 +26,7 @@ router.post('/', async (req, res) => {
       serviceAvailed,
       Number(cost) || 0,
       date,
-      'Pending',
-      0
+      'Pending'
     ]);
 
     res.json({ message: '✅ Record added successfully', id: result.insertId });
@@ -174,8 +173,8 @@ router.put('/:id/restore', async (req, res) => {
 
     await connection.query(
       `INSERT INTO records
-      (id, client_name, email, contact, address, service, cost, date, status, is_archived)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (id, client_name, email, contact, address, service, cost, date, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         record.id,
         record.client_name,
@@ -185,8 +184,7 @@ router.put('/:id/restore', async (req, res) => {
         record.service,
         record.cost,
         record.date,
-        record.status,
-        0
+        record.status
       ]
     );
 
@@ -319,8 +317,8 @@ router.post('/upload-csv', async (req, res) => {
     };
 
     const insertSQL = `
-      INSERT INTO records (client_name, email, contact, address, service, cost, date, status, is_archived)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO records (client_name, email, contact, address, service, cost, date, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     let inserted = 0;
@@ -341,8 +339,7 @@ router.post('/upload-csv', async (req, res) => {
         cleanService || null,
         autoCost,
         r.date || null,
-        r.status || 'Pending',
-        0
+        r.status || 'Pending'
       ]);
 
       inserted++;
