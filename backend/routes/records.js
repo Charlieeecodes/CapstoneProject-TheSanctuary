@@ -1,20 +1,39 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../models/db'); // promise-based database connection
+const db = require('../models/db');
 
 /* ========================================
    📥 Create a new record
 ======================================== */
 router.post('/', async (req, res) => {
-  const { clientName, email, contact, address, serviceAvailed, cost, date } = req.body;
+  const {
+    clientName,
+    email,
+    contact,
+    address,
+    serviceAvailed,
+    cost,
+    managementInCharge,
+    date,
+    status
+  } = req.body;
 
-  if (!clientName || !email || !contact || !address || !serviceAvailed || cost === undefined || !date) {
+  if (
+    !clientName ||
+    !email ||
+    !contact ||
+    !address ||
+    !serviceAvailed ||
+    cost === undefined ||
+    !date
+  ) {
     return res.status(400).json({ error: 'All fields are required.' });
   }
 
   const sql = `
-    INSERT INTO records (client_name, email, contact, address, service, cost, date, status, is_archived)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO records 
+    (client_name, email, contact, address, service, cost, management_in_charge, date, status, is_archived)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   try {
@@ -25,8 +44,9 @@ router.post('/', async (req, res) => {
       address,
       serviceAvailed,
       Number(cost) || 0,
+      managementInCharge?.trim() || 'N/A',
       date,
-      'Pending',
+      status || 'Pending',
       0
     ]);
 
@@ -42,18 +62,44 @@ router.post('/', async (req, res) => {
 ======================================== */
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { clientName, email, contact, address, serviceAvailed, cost, date, status } = req.body;
 
-  if (!clientName || !email || !contact || !address || !serviceAvailed || cost === undefined || !date) {
-    return res.status(400).json({ error: 'All fields are required (except cost can be 0).' });
+  const {
+    clientName,
+    email,
+    contact,
+    address,
+    serviceAvailed,
+    cost,
+    managementInCharge,
+    date,
+    status
+  } = req.body;
+
+  if (
+    !clientName ||
+    !email ||
+    !contact ||
+    !address ||
+    !serviceAvailed ||
+    cost === undefined ||
+    !date
+  ) {
+    return res.status(400).json({ error: 'All fields are required.' });
   }
-
-  const numericCost = Number(cost) || 0;
 
   const sql = `
     UPDATE records 
-    SET client_name=?, email=?, contact=?, address=?, service=?, cost=?, date=?, status=? 
-    WHERE id=?
+    SET 
+      client_name = ?,
+      email = ?,
+      contact = ?,
+      address = ?,
+      service = ?,
+      cost = ?,
+      management_in_charge = ?,
+      date = ?,
+      status = ?
+    WHERE id = ?
   `;
 
   try {
@@ -63,9 +109,10 @@ router.put('/:id', async (req, res) => {
       contact,
       address,
       serviceAvailed,
-      numericCost,
+      Number(cost) || 0,
+      managementInCharge?.trim() || 'N/A',
       date,
-      status,
+      status || 'Pending',
       id
     ]);
 
@@ -81,7 +128,8 @@ router.put('/:id', async (req, res) => {
 });
 
 /* ========================================
-   📦 Archive a record (move to archived_records)
+   📦 Archive a record
+   Pending/Ongoing records are blocked
 ======================================== */
 router.put('/:id/archive', async (req, res) => {
   const { id } = req.params;
@@ -101,11 +149,23 @@ router.put('/:id/archive', async (req, res) => {
     }
 
     const record = rows[0];
+    const recordStatus = String(record.status || '').trim().toLowerCase();
+
+    if (
+      recordStatus === 'pending' ||
+      recordStatus === 'ongoing' ||
+      recordStatus === 'on going'
+    ) {
+      await connection.rollback();
+      return res.status(400).json({
+        message: 'Pending or ongoing records cannot be archived.'
+      });
+    }
 
     await connection.query(
       `INSERT INTO archived_records
-      (id, client_name, email, contact, address, service, date, status, cost)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (id, client_name, email, contact, address, service, date, status, cost, management_in_charge)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         record.id,
         record.client_name,
@@ -115,7 +175,8 @@ router.put('/:id/archive', async (req, res) => {
         record.service,
         record.date,
         record.status,
-        record.cost
+        record.cost,
+        record.management_in_charge || 'N/A'
       ]
     );
 
@@ -143,6 +204,7 @@ router.get('/archived', async (req, res) => {
     const [rows] = await db.query(
       'SELECT * FROM archived_records ORDER BY archived_at DESC, date DESC'
     );
+
     res.json(rows);
   } catch (err) {
     console.error('❌ Error fetching archived records:', err);
@@ -174,8 +236,8 @@ router.put('/:id/restore', async (req, res) => {
 
     await connection.query(
       `INSERT INTO records
-      (id, client_name, email, contact, address, service, cost, date, status, is_archived)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (id, client_name, email, contact, address, service, cost, management_in_charge, date, status, is_archived)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         record.id,
         record.client_name,
@@ -184,6 +246,7 @@ router.put('/:id/restore', async (req, res) => {
         record.address,
         record.service,
         record.cost,
+        record.management_in_charge || 'N/A',
         record.date,
         record.status,
         0
@@ -207,11 +270,14 @@ router.put('/:id/restore', async (req, res) => {
 });
 
 /* ========================================
-   🔍 Search records by name, email, contact, address, or service
+   🔍 Search records
 ======================================== */
 router.get('/search', async (req, res) => {
   const { query } = req.query;
-  if (!query) return res.status(400).json({ message: 'Search query is required' });
+
+  if (!query) {
+    return res.status(400).json({ message: 'Search query is required' });
+  }
 
   const sql = `
     SELECT * FROM records
@@ -221,13 +287,23 @@ router.get('/search', async (req, res) => {
       OR contact LIKE ?
       OR address LIKE ?
       OR service LIKE ?
+      OR management_in_charge LIKE ?
     )
     ORDER BY date DESC
   `;
+
   const likeQuery = `%${query}%`;
 
   try {
-    const [results] = await db.query(sql, [likeQuery, likeQuery, likeQuery, likeQuery, likeQuery]);
+    const [results] = await db.query(sql, [
+      likeQuery,
+      likeQuery,
+      likeQuery,
+      likeQuery,
+      likeQuery,
+      likeQuery
+    ]);
+
     res.json(results);
   } catch (err) {
     console.error('❌ Error searching records:', err);
@@ -236,7 +312,7 @@ router.get('/search', async (req, res) => {
 });
 
 /* ========================================
-   📤 Get all active records + Combined filters
+   📤 Get all active records + filters
 ======================================== */
 router.get('/', async (req, res) => {
   try {
@@ -312,15 +388,13 @@ router.post('/upload-csv', async (req, res) => {
       "Fetus cremation": 6000,
       "Bone cremation": 5000,
       "Urns": 3000,
-      "Keepsakes": 1200,
-      "Chapel A (30-50 pax)": 150000,
-      "Chapel B (75-100 pax)": 250000,
-      "Main Chapel (100-150 pax)": 350000
+      "Keepsakes": 1200
     };
 
     const insertSQL = `
-      INSERT INTO records (client_name, email, contact, address, service, cost, date, status, is_archived)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO records 
+      (client_name, email, contact, address, service, cost, management_in_charge, date, status, is_archived)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     let inserted = 0;
@@ -333,6 +407,12 @@ router.post('/upload-csv', async (req, res) => {
           ? Number(r.cost)
           : servicePrices[cleanService] || 0;
 
+      const managementInCharge =
+        r.management_in_charge ||
+        r.managementInCharge ||
+        r.management ||
+        'N/A';
+
       await db.query(insertSQL, [
         r.client_name || null,
         r.email || null,
@@ -340,6 +420,7 @@ router.post('/upload-csv', async (req, res) => {
         r.address || null,
         cleanService || null,
         autoCost,
+        managementInCharge,
         r.date || null,
         r.status || 'Pending',
         0
@@ -355,6 +436,7 @@ router.post('/upload-csv', async (req, res) => {
 
   } catch (error) {
     console.error('❌ Error processing CSV upload:', error);
+
     return res.status(500).json({
       success: false,
       message: '🚨 Server error during CSV upload.',

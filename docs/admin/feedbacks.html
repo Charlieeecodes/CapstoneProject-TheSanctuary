@@ -14,14 +14,39 @@
       <div class="logo">
         <img src="icons/logo.PNG" alt="The Sanctuary Logo" class="logo-img" />
       </div>
+
       <nav>
         <ul>
-          <li><a href="dashboard.html"><img src="icons/dashboard.jpg" class="nav-icon"> Dashboard</a></li>
-          <li><a href="analytics.html"><img src="icons/graph.jpg" class="nav-icon"> Analytics</a></li>
-          <li><a href="datarecords.html"><img src="icons/folder.jpg" class="nav-icon"> Service Records</a></li>
-          <li><a href="inquiries.html"><img src="icons/paper.jpg" class="nav-icon"> Inquiries</a></li>
-          <li><a href="feedbacks.html" class="active"><img src="icons/feedback.jpg" class="nav-icon"> Feedbacks</a></li>
-          <li><a href="#" id="btnLogout"><img src="icons/logout.jpg" class="nav-icon"> Logout</a></li>
+          <li>
+            <a href="dashboard.html">
+              <img src="icons/dashboard.jpg" class="nav-icon"> Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="analytics.html">
+              <img src="icons/graph.jpg" class="nav-icon"> Analytics
+            </a>
+          </li>
+          <li>
+            <a href="datarecords.html">
+              <img src="icons/folder.jpg" class="nav-icon"> Service Records
+            </a>
+          </li>
+          <li>
+            <a href="inquiries.html">
+              <img src="icons/paper.jpg" class="nav-icon"> Inquiries
+            </a>
+          </li>
+          <li>
+            <a href="feedbacks.html" class="active">
+              <img src="icons/feedback.jpg" class="nav-icon"> Feedbacks
+            </a>
+          </li>
+          <li>
+            <a href="#" id="btnLogout">
+              <img src="icons/logout.jpg" class="nav-icon"> Logout
+            </a>
+          </li>
         </ul>
       </nav>
     </aside>
@@ -32,8 +57,10 @@
         <div class="topbar-left">
           <h2>Customer Feedbacks</h2>
         </div>
+
         <div class="topbar-right">
           <span id="currentDateTime"></span>
+
           <div class="user-profile">
             <img src="../assets/images/user.png" alt="User" class="profile-icon">
             <div class="user-info">
@@ -43,24 +70,134 @@
         </div>
       </div>
 
+      <!-- Feedback Filter Area -->
+      <section class="feedback-filter-card">
+        <div class="filter-header">
+          <div>
+            <h3>Filter Feedbacks</h3>
+            <p>Filter customer feedbacks by keyword, rating category, stars, sorting, and date range.</p>
+          </div>
+
+          <button id="resetFilters" class="reset-filter-btn">
+            Reset Filters
+          </button>
+        </div>
+
+        <div class="feedback-filters">
+          <div class="filter-group search-group">
+            <label for="feedbackSearch">Search</label>
+            <input 
+              type="text" 
+              id="feedbackSearch" 
+              placeholder="Search name, email, or message..."
+            >
+          </div>
+
+          <div class="filter-group">
+            <label for="ratingCategoryFilter">Evaluate By</label>
+            <select id="ratingCategoryFilter">
+              <option value="overall_rating">Overall</option>
+              <option value="service_rating">Service</option>
+              <option value="satisfaction_rating">Satisfaction</option>
+              <option value="professionalism_rating">Professionalism</option>
+              <option value="communication_rating">Communication</option>
+              <option value="facility_rating">Facility & Ambiance</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="starFilter">Star Rating</label>
+            <select id="starFilter">
+              <option value="">All Stars</option>
+              <option value="5">5 Stars</option>
+              <option value="4">4 Stars</option>
+              <option value="3">3 Stars</option>
+              <option value="2">2 Stars</option>
+              <option value="1">1 Star</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="sortFilter">Sort By</label>
+            <select id="sortFilter">
+              <option value="latest">Latest to Oldest</option>
+              <option value="oldest">Oldest to Latest</option>
+              <option value="highest">Highest Rating</option>
+              <option value="lowest">Lowest Rating</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="dateFromFilter">From Date</label>
+            <input type="date" id="dateFromFilter">
+          </div>
+
+          <div class="filter-group">
+            <label for="dateToFilter">To Date</label>
+            <input type="date" id="dateToFilter">
+          </div>
+        </div>
+
+        <!-- Feedback Summary -->
+        <div class="feedback-summary" id="feedbackSummary">
+          <div class="summary-box">
+            <span>Total Results</span>
+            <strong id="summaryTotal">0</strong>
+          </div>
+
+          <div class="summary-box">
+            <span>Avg Overall</span>
+            <strong id="summaryOverall">0/5</strong>
+          </div>
+
+          <div class="summary-box">
+            <span>Avg Selected</span>
+            <strong id="summarySelected">0/5</strong>
+          </div>
+
+          <div class="summary-box">
+            <span>Top Category</span>
+            <strong id="summaryTop">N/A</strong>
+          </div>
+
+          <div class="summary-box">
+            <span>Needs Focus</span>
+            <strong id="summaryLowest">N/A</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Result Count -->
+      <div id="feedbackResultCount" class="feedback-result-count"></div>
+
       <!-- Feedback cards container -->
       <div id="feedback-container"></div>
+
+      <!-- Pagination -->
+      <div id="feedbackPaginationContainer" class="pagination-container"></div>
     </main>
   </div>
 
   <!-- External JS -->
   <script src="js/feedbackadmin.js"></script>
+
   <script>
     // Topbar date/time
     function updateDateTime() {
       const now = new Date();
-      const options = { year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" };
+      const options = { 
+        year: "numeric", 
+        month: "long", 
+        day: "numeric", 
+        hour: "numeric", 
+        minute: "2-digit" 
+      };
+
       document.getElementById("currentDateTime").textContent = now.toLocaleString("en-US", options);
     }
 
     setInterval(updateDateTime, 1000);
     updateDateTime();
   </script>
-  <script src="../assets/js/admin-logout.js"></script>
 </body>
 </html>

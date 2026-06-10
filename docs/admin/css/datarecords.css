@@ -137,11 +137,11 @@
 .search-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
 }
 
 .search-bar input {
-  width: 290px;
+  width: 180px;
   height: 100px;
   padding: 0 15px;
   border: 2px solid #ddd;
@@ -163,7 +163,7 @@
   background: #f8f9fa;
   border: 1px solid #ccc;
   border-radius: 5px;
-  padding: 10px;
+  padding:5px;
   width: fit-content;
   display: flex;
   flex-direction: column;
@@ -194,11 +194,11 @@
 .csv-buttons {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
 }
 
 .csv-buttons button {
-  padding: 8px 14px;
+  padding: 5px 10px;
   border-radius: 8px;
   border: none;
   cursor: pointer;
@@ -240,7 +240,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
+  width: 80%;
   gap: 10px;
 }
 
@@ -636,4 +636,113 @@
 
 .records-table .delete:hover {
   background-color: #b52b38;
+}
+/* ===================== */
+/* ✅ Final Service Records Revisions */
+/* ===================== */
+
+/* Make Add Record dropdowns full width */
+#recordForm select {
+  width: 100%;
+}
+
+/* Keep Preview Report hover consistent with green buttons */
+.preview-btn:hover {
+  background-color: #17854f;
+  transform: scale(1.05);
+}
+
+/* Visible orange Archive button */
+.records-table .archive {
+  background-color: #823802;
+  color: #fff;
+}
+
+.records-table .archive:hover {
+  background-color: #933401;
+}
+
+/* Visible orange Restore button */
+.records-table .restore {
+  background-color: #7d3502;
+  color: #fff;
+}
+
+.records-table .restore:hover {
+  background-color: #9e3700;
+}
+
+/* Pagination design */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin: 18px 0 5px;
+  flex-wrap: wrap;
+}
+
+.pagination-container button {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #e5e7eb;
+  color: #333;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.pagination-container button:hover {
+  background: #d1d5db;
+}
+
+.pagination-container button.active {
+  background: #1b965a;
+  color: #fff;
+}
+
+.pagination-container button:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Better empty/loading state */
+.records-table td[colspan="10"] {
+  text-align: center;
+  padding: 18px;
+}
+
+/* Toolbar action buttons alignment */
+.record-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+}
+/* ===================== */
+/* 💰 Services Cost Total */
+/* ===================== */
+.service-total-card {
+  min-width: 170px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+  margin-left: 20px; /* pushes it to the right */
+}
+
+.service-total-card strong {
+  color: #ea580c;
+  font-size: 17px;
+}
+
+.service-total-label {
+  color: #058c30;
+  font-size: 12px;
 }

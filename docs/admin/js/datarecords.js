@@ -1,138 +1,31 @@
 function adminAuthHeaders() {
-  const token = localStorage.getItem("adminToken", );
-  if (!token) return {}; // prevent Bearer null
+  const token = localStorage.getItem("adminToken");
+  if (!token) return {};
   return { Authorization: `Bearer ${token}` };
 }
+
 document.addEventListener("DOMContentLoaded", async () => {
-  /* ========================================
-     🧩 ELEMENT REFERENCES
-  ======================================== */
   const addRecordBtn = document.getElementById("addRecordBtn");
-  const addRecordForm = document.getElementById("addRecordForm");
   const recordForm = document.getElementById("recordForm");
   const recordTableBody = document.getElementById("recordTableBody");
-  const API_URL = "http://localhost:5000/api/records";
-  let editingId = null;
+  const paginationContainer = document.getElementById("paginationContainer");
+  const servicesCostTotal = document.getElementById("servicesCostTotal");
+
   const viewArchivedBtn = document.getElementById("viewArchivedBtn");
   const viewActiveBtn = document.getElementById("viewActiveBtn");
+
+  const API_URL = "http://localhost:5000/api/records";
+
+  let editingId = null;
   let viewingArchived = false;
 
-  // Auto-fill cost when service is selected
+  let allRecords = [];
+  let currentPage = 1;
+  const recordsPerPage = 10;
+
   const serviceSelect = document.getElementById("serviceAvailed");
   const costInput = document.getElementById("serviceCost");
 
-  if (serviceSelect && costInput) {
-    serviceSelect.addEventListener("change", (e) => {
-      const selected = e.target.value;
-      costInput.value = servicePrices[selected] || "";
-    });
-  }
-
-  /* ========================================
-     🕒 TOPBAR DATE & TIME
-  ======================================== */
-  function updateDateTime() {
-    const now = new Date();
-    const options = {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    };
-    const el = document.getElementById("currentDateTime");
-    if (el) el.textContent = now.toLocaleString("en-US", options);
-  }
-  setInterval(updateDateTime, 1000);
-  updateDateTime();
-
-    async function loadArchivedRecords() {
-    recordTableBody.innerHTML = "<tr><td colspan='9'>Loading archived...</td></tr>";
-
-    try {
-      const res = await fetch(`${API_URL}/archived`, {
-        headers: { ...adminAuthHeaders() },
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("❌ loadArchivedRecords failed:", res.status, text);
-        recordTableBody.innerHTML = `<tr><td colspan='9'>Failed to load archived (${res.status}).</td></tr>`;
-        return;
-      }
-
-      const records = await res.json();
-      displayRecords(records);
-    } catch (err) {
-      console.error("❌ Error loading archived records:", err);
-      recordTableBody.innerHTML = "<tr><td colspan='9'>Failed to load archived records.</td></tr>";
-    }
-  }
-
-  /* ========================================
-     📥 LOAD RECORDS
-  ======================================== */
-  async function loadRecords() {
-    recordTableBody.innerHTML = "<tr><td colspan='9'>Loading...</td></tr>";
-
-    try {
-      const res = await fetch(API_URL, {
-        headers: {
-          ...adminAuthHeaders(),
-        },
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("❌ loadRecords failed:", res.status, text);
-        recordTableBody.innerHTML = `<tr><td colspan='9'>Failed to load records (${res.status}).</td></tr>`;
-        return;
-      }
-
-      const records = await res.json();
-      displayRecords(records);
-    } catch (err) {
-      console.error("❌ Error loading records:", err);
-      recordTableBody.innerHTML = "<tr><td colspan='9'>Failed to load records.</td></tr>";
-    }
-  }
-  /* ========================================
-     🧾 DISPLAY RECORDS
-  ======================================== */
-  function displayRecords(records) {
-    recordTableBody.innerHTML = "";
-
-    if (!records || records.length === 0) {
-      recordTableBody.innerHTML = "<tr><td colspan='8'>No records found.</td></tr>";
-      return;
-    }
-
-    records.forEach((record) => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${record.client_name}</td>
-        <td>${record.email}</td>
-        <td>${record.contact}</td>
-        <td>${record.address}</td>
-        <td>${record.service}</td>
-        <td>₱${Number(record.cost || 0).toLocaleString()}</td>
-        <td>${record.date ? record.date.split("T")[0] : ""}</td>
-        <td>${record.status}</td>
-        <td>
-          ${
-            viewingArchived
-              ? `<button class="restore" data-id="${record.id}">Restore</button>`
-              : `<button class="edit" data-id="${record.id}">Edit</button>
-                <button class="archive" data-id="${record.id}">Archive</button>`
-          }
-        </td>
-      `;
-      recordTableBody.appendChild(row);
-    });
-  }
-  // ========================================
-  // 💰 SERVICE PRICES (Standardized)
-  // ========================================
   const servicePrices = {
     "Unit with perpetual care": 50000,
     "Interment service": 10000,
@@ -151,14 +44,249 @@ document.addEventListener("DOMContentLoaded", async () => {
     "Bone cremation": 5000,
     "Urns": 3000,
     "Keepsakes": 1200,
-    "Chapel A (30-50 pax)": 150000,
-    "Chapel B (75-100 pax)": 250000,
-    "Main Chapel (100-150 pax)": 350000,
   };
 
-  /* ========================================
-     ➕ ADD / UPDATE RECORD
-  ======================================== */
+  if (serviceSelect && costInput) {
+    serviceSelect.addEventListener("change", (e) => {
+      const selected = e.target.value;
+      costInput.value = servicePrices[selected] || "";
+    });
+  }
+
+  function updateDateTime() {
+    const now = new Date();
+
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    };
+
+    const el = document.getElementById("currentDateTime");
+    if (el) el.textContent = now.toLocaleString("en-US", options);
+  }
+
+  setInterval(updateDateTime, 1000);
+  updateDateTime();
+
+  function updateServicesCostTotal() {
+    if (!servicesCostTotal) return;
+
+    const total = allRecords.reduce((sum, record) => {
+      return sum + (Number(record.cost) || 0);
+    }, 0);
+
+    servicesCostTotal.textContent = `₱${total.toLocaleString()}`;
+  }
+
+  async function loadRecords() {
+    viewingArchived = false;
+    recordTableBody.innerHTML = "<tr><td colspan='10'>Loading...</td></tr>";
+
+    try {
+      const res = await fetch(API_URL, {
+        headers: { ...adminAuthHeaders() },
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("❌ loadRecords failed:", res.status, text);
+        recordTableBody.innerHTML = `<tr><td colspan='10'>Failed to load records (${res.status}).</td></tr>`;
+        return;
+      }
+
+      const records = await res.json();
+      displayRecords(records);
+    } catch (err) {
+      console.error("❌ Error loading records:", err);
+      recordTableBody.innerHTML = "<tr><td colspan='10'>Failed to load records.</td></tr>";
+    }
+  }
+
+  async function loadArchivedRecords() {
+    viewingArchived = true;
+    recordTableBody.innerHTML = "<tr><td colspan='10'>Loading archived...</td></tr>";
+
+    try {
+      const res = await fetch(`${API_URL}/archived`, {
+        headers: { ...adminAuthHeaders() },
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("❌ loadArchivedRecords failed:", res.status, text);
+        recordTableBody.innerHTML = `<tr><td colspan='10'>Failed to load archived (${res.status}).</td></tr>`;
+        return;
+      }
+
+      const records = await res.json();
+      displayRecords(records);
+    } catch (err) {
+      console.error("❌ Error loading archived records:", err);
+      recordTableBody.innerHTML = "<tr><td colspan='10'>Failed to load archived records.</td></tr>";
+    }
+  }
+
+  function displayRecords(records) {
+    allRecords = Array.isArray(records) ? records : [];
+    currentPage = 1;
+    renderPaginatedRecords();
+  }
+
+  function renderPaginatedRecords() {
+    recordTableBody.innerHTML = "";
+    updateServicesCostTotal();
+
+    if (!allRecords || allRecords.length === 0) {
+      recordTableBody.innerHTML = "<tr><td colspan='10'>No records found.</td></tr>";
+      renderPagination();
+      return;
+    }
+
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    const endIndex = startIndex + recordsPerPage;
+    const pageRecords = allRecords.slice(startIndex, endIndex);
+
+    pageRecords.forEach((record) => {
+      const status = record.status || "";
+
+      const managementInCharge =
+        record.management_in_charge ||
+        record.managementInCharge ||
+        record.management ||
+        "N/A";
+
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${record.client_name || ""}</td>
+        <td>${record.email || ""}</td>
+        <td>${record.contact || ""}</td>
+        <td>${record.address || ""}</td>
+        <td>${record.service || ""}</td>
+        <td>₱${Number(record.cost || 0).toLocaleString()}</td>
+        <td>${managementInCharge}</td>
+        <td>${record.date ? record.date.split("T")[0] : ""}</td>
+        <td>${status}</td>
+        <td>
+          ${
+            viewingArchived
+              ? `<button class="restore" data-id="${record.id}">Restore</button>`
+              : `<button class="edit" data-id="${record.id}">Edit</button>
+                 <button class="archive" data-id="${record.id}" data-status="${status}">Archive</button>`
+          }
+        </td>
+      `;
+
+      recordTableBody.appendChild(row);
+    });
+
+    renderPagination();
+  }
+
+function renderPagination() {
+  if (!paginationContainer) return;
+
+  paginationContainer.innerHTML = "";
+
+  const totalPages = Math.ceil(allRecords.length / recordsPerPage);
+
+  if (totalPages <= 1) return;
+
+  const maxVisiblePages = 5;
+
+  const createButton = (text, disabled, onClick, active = false) => {
+    const btn = document.createElement("button");
+    btn.textContent = text;
+    btn.disabled = disabled;
+
+    if (active) {
+      btn.classList.add("active");
+    }
+
+    btn.addEventListener("click", onClick);
+    paginationContainer.appendChild(btn);
+  };
+
+  // First page button
+  createButton("«", currentPage === 1, () => {
+    currentPage = 1;
+    renderPaginatedRecords();
+  });
+
+  // Previous page button
+  createButton("‹", currentPage === 1, () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderPaginatedRecords();
+    }
+  });
+
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let endPage = startPage + maxVisiblePages - 1;
+
+  if (endPage > totalPages) {
+    endPage = totalPages;
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+
+  if (startPage > 1) {
+    createButton("1", false, () => {
+      currentPage = 1;
+      renderPaginatedRecords();
+    });
+
+    if (startPage > 2) {
+      const dots = document.createElement("span");
+      dots.className = "pagination-dots";
+      dots.textContent = "...";
+      paginationContainer.appendChild(dots);
+    }
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    createButton(
+      i,
+      false,
+      () => {
+        currentPage = i;
+        renderPaginatedRecords();
+      },
+      i === currentPage
+    );
+  }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      const dots = document.createElement("span");
+      dots.className = "pagination-dots";
+      dots.textContent = "...";
+      paginationContainer.appendChild(dots);
+    }
+
+    createButton(totalPages, false, () => {
+      currentPage = totalPages;
+      renderPaginatedRecords();
+    });
+  }
+
+  // Next page button
+  createButton("›", currentPage === totalPages, () => {
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderPaginatedRecords();
+    }
+  });
+
+  // Last page button
+  createButton("»", currentPage === totalPages, () => {
+    currentPage = totalPages;
+    renderPaginatedRecords();
+  });
+}
+
   recordForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -168,19 +296,37 @@ document.addEventListener("DOMContentLoaded", async () => {
     const address = document.getElementById("address").value.trim();
     const serviceAvailed = document.getElementById("serviceAvailed").value.trim();
     const cost = parseFloat(document.getElementById("serviceCost").value) || 0;
+    const managementInCharge = document.getElementById("managementInCharge").value.trim();
     const date = document.getElementById("recordDate").value;
     const status = document.getElementById("status").value;
 
-    if (!clientName || !email || !contact || !address || !serviceAvailed || !date) {
-      alert("Please fill in all fields.");
+    if (
+      !clientName ||
+      !email ||
+      !contact ||
+      !address ||
+      !serviceAvailed ||
+      !date
+    ) {
+      alert("Please fill in all required fields.");
       return;
     }
 
-    const payload = { clientName, email, contact, address, serviceAvailed, cost, date, status };
+    const payload = {
+      clientName,
+      email,
+      contact,
+      address,
+      serviceAvailed,
+      cost,
+      managementInCharge: managementInCharge || "N/A",
+      date,
+      status,
+    };
 
     try {
       let res;
-      let isEdit = !!editingId; // ✅ check if we're editing
+      const isEdit = !!editingId;
 
       if (isEdit) {
         res = await fetch(`${API_URL}/${editingId}`, {
@@ -191,6 +337,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           },
           body: JSON.stringify(payload),
         });
+
         editingId = null;
       } else {
         res = await fetch(API_URL, {
@@ -205,35 +352,64 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (res.ok) {
         recordForm.reset();
-        await loadRecords();
 
-        // ✅ Close modal after saving
+        if (viewingArchived) {
+          await loadArchivedRecords();
+        } else {
+          await loadRecords();
+        }
+
         const modal = document.getElementById("addRecordModal");
         if (modal) modal.classList.remove("show");
 
-        // ✅ Reset modal title
         const modalTitle = document.getElementById("modalTitle");
         if (modalTitle) modalTitle.textContent = "Add New Record";
 
-        // ✅ Show success popup
-        showUploadNotification(isEdit ? "✅ Record updated successfully!" : "✅ New record added!");
-
+        showUploadNotification(
+          isEdit ? "✅ Record updated successfully!" : "✅ New record added!"
+        );
       } else {
+        const text = await res.text();
+        console.error("❌ Save failed:", res.status, text);
         alert("Failed to save record.");
       }
     } catch (err) {
       console.error("❌ Error saving record:", err);
+      alert("Something went wrong while saving the record.");
     }
   });
 
-  /* ========================================
-     🔍 SEARCH
-  ======================================== */
   document.getElementById("searchInput").addEventListener("input", async (e) => {
-    const query = e.target.value.trim();
+    const query = e.target.value.trim().toLowerCase();
 
     if (!query) {
-      await loadRecords();
+      if (viewingArchived) {
+        await loadArchivedRecords();
+      } else {
+        await loadRecords();
+      }
+
+      return;
+    }
+
+    if (viewingArchived) {
+      const filtered = allRecords.filter((record) => {
+        const values = [
+          record.client_name,
+          record.email,
+          record.contact,
+          record.address,
+          record.service,
+          record.management_in_charge,
+          record.status,
+        ];
+
+        return values.some((value) =>
+          String(value || "").toLowerCase().includes(query)
+        );
+      });
+
+      displayRecords(filtered);
       return;
     }
 
@@ -241,20 +417,29 @@ document.addEventListener("DOMContentLoaded", async () => {
       const res = await fetch(`${API_URL}/search?query=${encodeURIComponent(query)}`, {
         headers: { ...adminAuthHeaders() },
       });
+
       const records = await res.json();
       displayRecords(records);
     } catch (err) {
       console.error("❌ Search failed:", err);
-      recordTableBody.innerHTML = "<tr><td colspan='8'>Error while searching records.</td></tr>";
+      recordTableBody.innerHTML = "<tr><td colspan='10'>Error while searching records.</td></tr>";
     }
   });
 
-  /* ========================================
-     🧮 FILTERS
-  ======================================== */
-  const filters = { service: "", status: "", startDate: "", endDate: "" };
+  const filters = {
+    service: "",
+    status: "",
+    startDate: "",
+    endDate: "",
+  };
+
   async function applyFilters() {
     try {
+      if (viewingArchived) {
+        await loadArchivedRecords();
+        return;
+      }
+
       const queryParams = new URLSearchParams();
 
       if (filters.service) queryParams.append("service", filters.service);
@@ -265,15 +450,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       const res = await fetch(`${API_URL}?${queryParams.toString()}`, {
         headers: { ...adminAuthHeaders() },
       });
+
       const records = await res.json();
       displayRecords(records);
     } catch (err) {
       console.error("❌ Failed to apply filters:", err);
-      recordTableBody.innerHTML = "<tr><td colspan='8'>Error filtering records.</td></tr>";
+      recordTableBody.innerHTML = "<tr><td colspan='10'>Error filtering records.</td></tr>";
     }
   }
 
-  // Update event listeners
   document.getElementById("filterService").addEventListener("change", (e) => {
     filters.service = e.target.value;
     applyFilters();
@@ -294,13 +479,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     applyFilters();
   });
 
-  /* ========================================
-    🟣 TOGGLE ADD RECORD MODAL
-  ======================================== */
   const addRecordModal = document.getElementById("addRecordModal");
   const closeRecordModal = document.getElementById("closeRecordModal");
 
   addRecordBtn.addEventListener("click", () => {
+    editingId = null;
+    recordForm.reset();
+
+    const modalTitle = document.getElementById("modalTitle");
+    if (modalTitle) modalTitle.textContent = "Add New Record";
+
     addRecordModal.classList.add("show");
   });
 
@@ -312,9 +500,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (e.key === "Escape") addRecordModal.classList.remove("show");
   });
 
-  /* ========================================
-     🗑️ DELETE / ✏️ EDIT
-  ======================================== */
   recordTableBody.addEventListener("click", async (e) => {
     const btn = e.target.closest("button");
     if (!btn) return;
@@ -323,6 +508,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!id) return;
 
     if (btn.classList.contains("archive")) {
+      const status = (btn.dataset.status || "").trim().toLowerCase();
+
+      if (status === "pending" || status === "ongoing" || status === "on going") {
+        showUploadNotification("⚠️ Pending or ongoing records cannot be archived.");
+        return;
+      }
+
       if (confirm("Archive this record?")) {
         try {
           const res = await fetch(`${API_URL}/${id}/archive`, {
@@ -337,80 +529,92 @@ document.addEventListener("DOMContentLoaded", async () => {
             await loadRecords();
             showUploadNotification("📦 Record archived successfully!");
           } else {
-            const text = await res.text();
-            console.error("❌ Failed to archive:", res.status, text);
-            alert("Failed to archive record.");
+            const result = await res.json().catch(() => null);
+            alert(result?.message || "Failed to archive record.");
           }
         } catch (err) {
           console.error("❌ Error archiving record:", err);
+          alert("Something went wrong while archiving.");
         }
       }
     }
+
     if (btn.classList.contains("edit")) {
       const row = btn.closest("tr");
-      document.getElementById("clientName").value = row.children[0].textContent;
-      document.getElementById("email").value = row.children[1].textContent;
-      document.getElementById("contact").value = row.children[2].textContent;
-      document.getElementById("address").value = row.children[3].textContent;
-      document.getElementById("serviceAvailed").value = row.children[4].textContent;
-      document.getElementById("serviceCost").value = row.children[5].textContent.replace(/[₱,]/g, "").trim();
 
-      const dateText = row.children[6].textContent.trim();
+      document.getElementById("clientName").value = row.children[0].textContent.trim();
+      document.getElementById("email").value = row.children[1].textContent.trim();
+      document.getElementById("contact").value = row.children[2].textContent.trim();
+      document.getElementById("address").value = row.children[3].textContent.trim();
+      document.getElementById("serviceAvailed").value = row.children[4].textContent.trim();
+
+      document.getElementById("serviceCost").value = row.children[5].textContent
+        .replace(/[₱,]/g, "")
+        .trim();
+
+      document.getElementById("managementInCharge").value =
+        row.children[6].textContent.trim() || "N/A";
+
+      const dateText = row.children[7].textContent.trim();
+
       document.getElementById("recordDate").value = dateText.includes("T")
         ? dateText.split("T")[0]
         : dateText;
 
-      document.getElementById("status").value = row.children[7].textContent.trim();
+      document.getElementById("status").value = row.children[8].textContent.trim();
 
-      // ✅ Show modal and update title
       const modal = document.getElementById("addRecordModal");
       const modalTitle = document.getElementById("modalTitle");
+
       modalTitle.textContent = "Edit Record";
       modal.classList.add("show");
 
       editingId = id;
     }
-    if (btn.classList.contains("restore")) {
-    if (confirm("Restore this record back to active?")) {
-      try {
-        const res = await fetch(`${API_URL}/${id}/restore`, {
-          method: "PUT",
-          headers: { ...adminAuthHeaders() },
-        });
 
-        if (res.ok) {
-          await loadArchivedRecords();
-          showUploadNotification("♻️ Record restored!");
-        } else {
-          const text = await res.text();
-          console.error("❌ Restore failed:", res.status, text);
-          alert("Failed to restore record.");
+    if (btn.classList.contains("restore")) {
+      if (confirm("Restore this record back to active?")) {
+        try {
+          const res = await fetch(`${API_URL}/${id}/restore`, {
+            method: "PUT",
+            headers: { ...adminAuthHeaders() },
+          });
+
+          if (res.ok) {
+            await loadArchivedRecords();
+            showUploadNotification("♻️ Record restored!");
+          } else {
+            const text = await res.text();
+            console.error("❌ Restore failed:", res.status, text);
+            alert("Failed to restore record.");
+          }
+        } catch (err) {
+          console.error("❌ Error restoring record:", err);
+          alert("Something went wrong while restoring.");
         }
-      } catch (err) {
-        console.error("❌ Error restoring record:", err);
       }
     }
-  }
   });
 
-  /* ========================================
-     📤 CSV UPLOAD & PREVIEW
-  ======================================== */
   const csvInput = document.getElementById("csvFileInput");
   const previewBtn = document.getElementById("previewCsvBtn");
   const confirmBtn = document.getElementById("confirmUploadBtn");
   const previewTable = document.getElementById("csvPreviewTable");
   const fileNameLabel = document.getElementById("fileNameLabel");
+
   let parsedData = [];
 
   csvInput.addEventListener("change", () => {
-    fileNameLabel.textContent = csvInput.files.length
-      ? csvInput.files[0].name
-      : "No file chosen";
+    if (fileNameLabel) {
+      fileNameLabel.textContent = csvInput.files.length
+        ? csvInput.files[0].name
+        : "No file chosen";
+    }
   });
 
   previewBtn.addEventListener("click", () => {
     const file = csvInput.files[0];
+
     if (!file) {
       alert("Please select a CSV file first!");
       return;
@@ -421,9 +625,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       skipEmptyLines: true,
       complete: (results) => {
         const data = results.data;
+
+        if (!data || data.length === 0) {
+          alert("CSV file is empty.");
+          return;
+        }
+
         const previewColumns = Object.keys(data[0]).filter(
           (h) => h.toLowerCase() !== "id"
         );
+
         document.getElementById("csvPreviewContainer").style.display = "block";
 
         previewTable.querySelector("thead").innerHTML =
@@ -434,6 +645,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const filtered = previewColumns
               .map((h) => `<td>${row[h] || ""}</td>`)
               .join("");
+
             return `<tr>${filtered}</tr>`;
           })
           .join("");
@@ -445,6 +657,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           address: row.address?.trim() || null,
           service: row.service?.trim() || null,
           cost: parseFloat(row.cost) || 0,
+          management_in_charge:
+            row.management_in_charge?.trim() ||
+            row.managementInCharge?.trim() ||
+            row.management?.trim() ||
+            "N/A",
           date: row.date?.trim() || null,
           status: row.status?.trim() || "Pending",
         }));
@@ -492,7 +709,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       showUploadNotification(result.message || "✅ Upload complete!");
       confirmBtn.style.display = "none";
-      await loadRecords(); // reload after upload
+
+      if (viewingArchived) {
+        await loadArchivedRecords();
+      } else {
+        await loadRecords();
+      }
     } catch (err) {
       console.error("❌ Upload failed:", err);
       alert("❌ " + err.message);
@@ -504,48 +726,49 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function showUploadNotification(message) {
     const popup = document.getElementById("uploadNotification");
+    if (!popup) return;
+
     popup.textContent = message;
     popup.classList.add("show");
+
     setTimeout(() => popup.classList.remove("show"), 3000);
   }
-  /* ========================================
-    📄 GENERATE SERVICE RECORDS REPORT (Export or Preview)
-  ======================================== */
+
   function generateRecordsPDF(preview = false) {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
     const pageWidth = doc.internal.pageSize.getWidth();
 
-    // 🕊️ Logo (left side)
     const logo = new Image();
     logo.src = "../assets/images/logo.png";
-    const logoWidth = 35;
-    const logoHeight = 10;
-    doc.addImage(logo, "PNG", 10, 12, logoWidth, logoHeight);
 
-    // 🏛️ Title ("THE SANCTUARY")
+    try {
+      doc.addImage(logo, "PNG", 10, 12, 35, 10);
+    } catch (err) {
+      console.warn("Logo could not be added to PDF:", err);
+    }
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
     doc.text("THE SANCTUARY", 50, 17);
 
-    // 🗓️ Generation date (right-aligned)
     const dateStr = new Date().toLocaleString("en-PH", {
       dateStyle: "medium",
       timeStyle: "short",
     });
+
     doc.setFontSize(10);
     doc.text(`Report Created: ${dateStr}`, pageWidth - 10, 15, { align: "right" });
 
-    // 📘 Subtitle ("Service Records Report")
     doc.setFontSize(9);
     doc.text("Service Records Report", 50, 21);
 
-    // 🧠 Filter summary (left-aligned, below subtitle)
     const filterService = document.getElementById("filterService")?.value || "All";
     const filterStatus = document.getElementById("filterStatus")?.value || "All";
     const filterStartDate = document.getElementById("filterStartDate")?.value || "";
     const filterEndDate = document.getElementById("filterEndDate")?.value || "";
+
     let dateRangeDisplay = "All";
 
     if (filterStartDate && filterEndDate) {
@@ -556,121 +779,118 @@ document.addEventListener("DOMContentLoaded", async () => {
       dateRangeDisplay = `Until ${filterEndDate}`;
     }
 
-    let filtersSummary = `Service: ${filterService} | Status: ${filterStatus} | Date: ${dateRangeDisplay}`;
-    filtersSummary = filtersSummary.replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim();
+    const totalCost = allRecords.reduce((sum, record) => {
+      return sum + (Number(record.cost) || 0);
+    }, 0);
+
+    const filtersSummary = `Service: ${filterService || "All"} | Status: ${
+      filterStatus || "All"
+    } | Date: ${dateRangeDisplay} | Total Cost: PHP ${totalCost.toLocaleString()}`;
 
     doc.setFontSize(10);
-    doc.text(filtersSummary, 9, 28); // left aligned under subtitle
+    doc.text(filtersSummary, 9, 28);
 
-    // 🟢 Divider line (Sanctuary green)
     doc.setDrawColor(27, 150, 90);
     doc.setLineWidth(0.5);
     doc.line(10, 30, pageWidth - 10, 30);
 
+    const headers = [
+      "Client Name",
+      "Email",
+      "Contact",
+      "Address",
+      "Service Availed",
+      "Service Cost",
+      "Management in Charge",
+      "Date",
+      "Status",
+    ];
 
-    // 📋 Table data
-    const table = document.querySelector(".records-table");
-    if (!table) {
-      alert("No records table found to export.");
-      return;
-    }
+    const body = allRecords.map((record) => {
+      const managementInCharge =
+        record.management_in_charge ||
+        record.managementInCharge ||
+        record.management ||
+        "N/A";
 
-    // Exclude last column (Actions)
-    const headers = Array.from(table.querySelectorAll("thead th"))
-      .map(th => th.textContent.trim())
-      .slice(0, -1);
-
-    const body = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
-      const cells = Array.from(tr.children)
-        .slice(0, -1)
-        .map(td => td.textContent.trim());
-
-      // 🗓️ Clean up Date (column 6)
-      const dateIndex = 6;
-      if (cells[dateIndex]) cells[dateIndex] = cells[dateIndex].split("T")[0];
-
-      // 💰 Clean up Cost (column 5)
-      const costIndex = 5;
-      if (cells[costIndex]) {
-        const clean = cells[costIndex].replace(/[₱\s,]/g, "").trim();
-        const num = Number(clean);
-        cells[costIndex] = num ? `PHP ${num.toLocaleString()}` : "PHP 0";
-      }
-
-      return cells;
+      return [
+        record.client_name || "",
+        record.email || "",
+        record.contact || "",
+        record.address || "",
+        record.service || "",
+        `PHP ${Number(record.cost || 0).toLocaleString()}`,
+        managementInCharge,
+        record.date ? record.date.split("T")[0] : "",
+        record.status || "",
+      ];
     });
 
-    // 🧾 Generate table
     doc.autoTable({
       head: [headers],
-      body: body,
-      startY: 33, // start below header and line
+      body,
+      startY: 33,
       tableWidth: "auto",
       styles: {
-        fontSize: 8.5,
-        cellPadding: 2.5,
+        fontSize: 8,
+        cellPadding: 2.2,
         valign: "middle",
         overflow: "linebreak",
-        cellWidth: "wrap",
       },
       headStyles: {
         fillColor: [27, 150, 90],
         textColor: 255,
-        fontSize: 9,
+        fontSize: 8.5,
         halign: "center",
       },
-      bodyStyles: { minCellHeight: 6 },
       columnStyles: {
-        0: { cellWidth: 25 },
-        1: { cellWidth: 30 },
-        2: { cellWidth: 22 },
-        3: { cellWidth: 28 },
-        4: { cellWidth: 28 },
-        5: { cellWidth: 18, halign: "right" },
-        6: { cellWidth: 25 },
-        7: { cellWidth: 20 },
+        0: { cellWidth: 28 },
+        1: { cellWidth: 35 },
+        2: { cellWidth: 24 },
+        3: { cellWidth: 35 },
+        4: { cellWidth: 35 },
+        5: { cellWidth: 24, halign: "right" },
+        6: { cellWidth: 35 },
+        7: { cellWidth: 24 },
+        8: { cellWidth: 22 },
       },
       alternateRowStyles: { fillColor: [245, 245, 245] },
       margin: { left: 8, right: 8 },
     });
 
-    // 💾 Preview or Save
     if (preview) {
       const blobUrl = doc.output("bloburl");
-      window.open(blobUrl, "_blank"); // 👁️ Opens in new tab
+      window.open(blobUrl, "_blank");
     } else {
       doc.save(
         `Sanctuary_Service_Records_${new Date().toISOString().split("T")[0]}.pdf`
       );
     }
   }
-  /* ========================================
-    📄 BUTTON EVENT LISTENERS
-  ======================================== */
+
   document
     .getElementById("exportRecordsBtn")
     .addEventListener("click", () => generateRecordsPDF(false));
+
   document
     .getElementById("previewRecordsBtn")
     .addEventListener("click", () => generateRecordsPDF(true));
+
   if (viewArchivedBtn && viewActiveBtn) {
-  viewArchivedBtn.addEventListener("click", async () => {
-    viewingArchived = true;
-    viewArchivedBtn.style.display = "none";
-    viewActiveBtn.style.display = "inline-block";
-    await loadArchivedRecords();
-  });
+    viewArchivedBtn.addEventListener("click", async () => {
+      viewingArchived = true;
+      viewArchivedBtn.style.display = "none";
+      viewActiveBtn.style.display = "inline-block";
+      await loadArchivedRecords();
+    });
 
-  viewActiveBtn.addEventListener("click", async () => {
-    viewingArchived = false;
-    viewActiveBtn.style.display = "none";
-    viewArchivedBtn.style.display = "inline-block";
-    await loadRecords();
-  });
-}
+    viewActiveBtn.addEventListener("click", async () => {
+      viewingArchived = false;
+      viewActiveBtn.style.display = "none";
+      viewArchivedBtn.style.display = "inline-block";
+      await loadRecords();
+    });
+  }
 
-  /* ========================================
-     🚀 INITIALIZE PAGE
-  ======================================== */
   await loadRecords();
 });
