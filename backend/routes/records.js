@@ -31,9 +31,14 @@ router.post('/', async (req, res) => {
   }
 
   const sql = `
+<<<<<<< HEAD
     INSERT INTO records 
     (client_name, email, contact, address, service, cost, management_in_charge, date, status, is_archived)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+=======
+    INSERT INTO records (client_name, email, contact, address, service, cost, date, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+>>>>>>> c8910f51627967f10667eedc1ca84531a6a564ce
   `;
 
   try {
@@ -46,8 +51,12 @@ router.post('/', async (req, res) => {
       Number(cost) || 0,
       managementInCharge?.trim() || 'N/A',
       date,
+<<<<<<< HEAD
       status || 'Pending',
       0
+=======
+      'Pending'
+>>>>>>> c8910f51627967f10667eedc1ca84531a6a564ce
     ]);
 
     res.json({ message: '✅ Record added successfully', id: result.insertId });
@@ -236,8 +245,13 @@ router.put('/:id/restore', async (req, res) => {
 
     await connection.query(
       `INSERT INTO records
+<<<<<<< HEAD
       (id, client_name, email, contact, address, service, cost, management_in_charge, date, status, is_archived)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+=======
+      (id, client_name, email, contact, address, service, cost, date, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+>>>>>>> c8910f51627967f10667eedc1ca84531a6a564ce
       [
         record.id,
         record.client_name,
@@ -248,8 +262,7 @@ router.put('/:id/restore', async (req, res) => {
         record.cost,
         record.management_in_charge || 'N/A',
         record.date,
-        record.status,
-        0
+        record.status
       ]
     );
 
@@ -392,9 +405,14 @@ router.post('/upload-csv', async (req, res) => {
     };
 
     const insertSQL = `
+<<<<<<< HEAD
       INSERT INTO records 
       (client_name, email, contact, address, service, cost, management_in_charge, date, status, is_archived)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+=======
+      INSERT INTO records (client_name, email, contact, address, service, cost, date, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+>>>>>>> c8910f51627967f10667eedc1ca84531a6a564ce
     `;
 
     let inserted = 0;
@@ -422,8 +440,7 @@ router.post('/upload-csv', async (req, res) => {
         autoCost,
         managementInCharge,
         r.date || null,
-        r.status || 'Pending',
-        0
+        r.status || 'Pending'
       ]);
 
       inserted++;
